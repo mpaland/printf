@@ -3,6 +3,7 @@ printf
 
 This is a very tiny but fully loaded printf, sprintf and snprintf implementation.
 Designed for usage in embedded systems, where printf is not available due to memory issues or avoidance of linking against libc.
+You have to provide your own _putchar() low level function as output.
 
 All type and format specifiers are supported.
 
@@ -13,4 +14,5 @@ Design goals:
 
  - No dependencies
  - LINT and compiler L4 warning free, clean code
+ - Reentrant and thread-safe
  - MIT license
