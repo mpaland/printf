@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////////////
 // \author (c) Marco Paland (info@paland.com)
-//             2014, PALANDesign Hannover, Germany
+//             2014-2015, PALANDesign Hannover, Germany
 //
 // \license The MIT License (MIT)
 //
@@ -25,8 +25,8 @@
 // \brief Tiny printf, sprintf and snprintf implementation, optimized for speed on
 //        embedded systems with a very limited resources. These routines are thread
 //        safe and reentrant!
-//        Use this instead of bloated standard/newlib printf cause they use malloc
-//        for printf (and may not be thread safe).
+//        Use this instead of the bloated standard/newlib printf cause these use
+//        malloc for printf (and may not be thread safe).
 //
 ///////////////////////////////////////////////////////////////////////////////
 
@@ -44,7 +44,7 @@
 #define FTOA_BUFFER_SIZE      32U
 
 // define this to support floating point (%f)
-#define PRINTF_FLOAT_SUPPORT  1
+#define PRINTF_FLOAT_SUPPORT
 
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -58,17 +58,6 @@
 #define FLAGS_UPPERCASE (1U << 5U)
 #define FLAGS_LONG      (1U << 6U)
 #define FLAGS_LONG_LONG (1U << 7U)
-
-
-// internal strlen, returns the length of the string
-static inline size_t _strlen(const char* str)
-{
-  size_t len = 0U;
-  while (str[len] != '\0') {
-    len++;
-  }
-  return len;
-}
 
 
 // returns 1 if char is a digit, 0 if not
@@ -97,7 +86,7 @@ static size_t _ntoa(T value, char* buffer, unsigned int base, size_t maxlen, uns
   size_t len = 0U;
   unsigned int negative = 0U;
 
-  if (maxlen == 0) {
+  if (maxlen == 0U) {
     return 0U;
   }
   if (base > 16U) {
@@ -105,11 +94,11 @@ static size_t _ntoa(T value, char* buffer, unsigned int base, size_t maxlen, uns
   }
   if (value < 0) {
     negative = 1;
-    value = value * -1;
+    value = 0 - value;
   }
 
   do {
-    char digit = (char)(value % base);
+    char digit = (char)((unsigned)value % base);
     buf[len++] = digit < 10 ? '0' + digit : (flags & FLAGS_UPPERCASE ? 'A' : 'a') + digit - 10;
     value /= (T)base;
   } while ((len < NTOA_BUFFER_SIZE) && (value > 0));
@@ -204,7 +193,7 @@ static size_t _ftoa(double value, char* buffer, size_t maxlen, unsigned int prec
       ++whole;
     }
     else if (diff == 0.5 && (whole & 1)) {
-      // exactly 0.5 and ODD, then round up */
+      // exactly 0.5 and ODD, then round up
       // 1.5 -> 2, but 2.5 -> 2
       ++whole;
     }
@@ -227,8 +216,7 @@ static size_t _ftoa(double value, char* buffer, size_t maxlen, unsigned int prec
   }
 
   // do whole part
-  // Take care of sign
-  // Conversion. Number is reversed.
+  // Take care of sign conversion. Number is reversed
   size_t wlen = 0U;
   do {
     buf[len++] = (char)(48 + (whole % 10));
@@ -312,7 +300,7 @@ static size_t vsnprintf(char* buffer, size_t buffer_len, const char* format, va_
     }
 
     // evaluate precision field
-    precision = 0;
+    precision = 0U;
     if (*format == '.') {
       format++;
       if (_is_digit(*format)) {
@@ -324,7 +312,7 @@ static size_t vsnprintf(char* buffer, size_t buffer_len, const char* format, va_
       }
     }
 
-    // evaluate the length field
+    // evaluate length field
     if (*format == 'l' || *format == 'L') {
       flags |= FLAGS_LONG;
       format++;
@@ -423,10 +411,11 @@ static size_t vsnprintf(char* buffer, size_t buffer_len, const char* format, va_
         break;
       }
 
-      case 'p' :
+      case 'p' : {
         width = sizeof(void*) * 2U;
         flags |= FLAGS_ZEROPAD;
-        if (sizeof(void*) > sizeof(long)) {
+        size_t size_void = sizeof(void*);
+        if (size_void > sizeof(long)) {
           idx +=_ntoa<unsigned long long>(reinterpret_cast<unsigned long long>(va_arg(va, void*)), &buffer[idx], 16U, buffer_len - idx, width, flags);
         }
         else {
@@ -434,6 +423,7 @@ static size_t vsnprintf(char* buffer, size_t buffer_len, const char* format, va_
         }
         format++;
         break;
+      }
 
       case '%' :
         buffer[idx++] = '%';
@@ -456,12 +446,12 @@ int printf(const char* format, ...)
   va_list va;
   va_start(va, format);
   char buffer[PRINTF_BUFFER_SIZE];
-  int ret = (int)vsnprintf(buffer, PRINTF_BUFFER_SIZE, format, va);
+  size_t ret = vsnprintf(buffer, PRINTF_BUFFER_SIZE, format, va);
   va_end(va);
-  for (int i = 0; i < ret; ++i) {
+  for (size_t i = 0; i < ret; ++i) {
     _putchar(buffer[i]);
   }
-  return ret;
+  return (int)ret;
 }
 
 
@@ -469,9 +459,9 @@ int sprintf(char* buffer, const char* format, ...)
 {
   va_list va;
   va_start(va, format);
-  int ret = (int)vsnprintf(buffer, (size_t)-1, format, va);
+  size_t ret = vsnprintf(buffer, (size_t)-1, format, va);
   va_end(va);
-  return ret;
+  return (int)ret;
 }
 
 
@@ -479,7 +469,7 @@ int snprintf(char* buffer, size_t count, const char* format, ...)
 {
   va_list va;
   va_start(va, format);
-  int ret = (int)vsnprintf(buffer, count, format, va);
+  size_t ret = vsnprintf(buffer, count, format, va);
   va_end(va);
-  return ret;
+  return (int)ret;
 }
