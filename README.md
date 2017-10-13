@@ -22,18 +22,18 @@ When using printf (instead of sprintf) you have to provide your own `_putchar()`
 ## Usage
 This is 1:1 like the according stdio.h library version:  
 
-`int printf(const char* format, ...);`
-`int sprintf(char* buffer, const char* format, ...);`
-`int snprintf(char* buffer, size_t count, const char* format, ...);`
+`int printf(const char* format, ...);`  
+`int sprintf(char* buffer, const char* format, ...);`  
+`int snprintf(char* buffer, size_t count, const char* format, ...);`  
 
 
 ## Format specifiers
 
-A format specifier follows this prototype: `%[flags][width][.precision][length]type`
+A format specifier follows this prototype: `%[flags][width][.precision][length]type`  
 The following format specifiers are supported:
 
 
-### Supported type specifiers
+### Supported types
 
 | Type   | Output |
 |--------|--------|
@@ -56,7 +56,7 @@ The following format specifiers are supported:
 | Flags | Description |
 |-------|-------------|
 | -     | Left-justify within the given field width; Right justification is the default. |
-| +     | Forces to preceed the result with a plus or minus sign (+ or -) even for positive numbers. By default, only negative numbers are preceded with a - sign. |
+| +     | Forces to preceed the result with a plus or minus sign (+ or -) even for positive numbers.<br>By default, only negative numbers are preceded with a - sign. |
 | (space) | If no sign is going to be written, a blank space is inserted before the value. |
 | #     | Used with o, x or X specifiers the value is preceeded with 0, 0x or 0X respectively for values different than zero.<br>Used with f, F it forces the written output to contain a decimal point even if no more digits follow. By default, if no digits follow, no decimal point is written. |
 | 0     | Left-pads the number with zeroes (0) instead of spaces when padding is specified (see width sub-specifier). |
