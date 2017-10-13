@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////////////
 // \author (c) Marco Paland (info@paland.com)
-//             2014-2015, PALANDesign Hannover, Germany
+//             2014-2017, PALANDesign Hannover, Germany
 //
 // \license The MIT License (MIT)
 //
@@ -58,6 +58,19 @@
 #define FLAGS_UPPERCASE (1U << 5U)
 #define FLAGS_LONG      (1U << 6U)
 #define FLAGS_LONG_LONG (1U << 7U)
+#define FLAGS_PRECISION (1U << 8U)
+#define FLAGS_WIDTH     (1U << 9U)
+
+
+// internal strlen, returns the length of the string 
+static inline size_t _strlen(const char* str) 
+{ 
+  size_t len = 0U; 
+  while (str[len] != '\0') { 
+    len++; 
+  } 
+  return len; 
+} 
 
 
 // returns 1 if char is a digit, 0 if not
@@ -97,34 +110,61 @@ static size_t _ntoa(T value, char* buffer, unsigned int base, size_t maxlen, uns
     value = 0 - value;
   }
 
-  do {
-    char digit = (char)((unsigned)value % base);
-    buf[len++] = digit < 10 ? '0' + digit : (flags & FLAGS_UPPERCASE ? 'A' : 'a') + digit - 10;
-    value /= (T)base;
-  } while ((len < maxlen) && (value > 0));
+  // write if precision != 0 and value is != 0
+  if (!(flags & FLAGS_PRECISION) || (value != 0)) {
+    do {
+      char digit = (char)((unsigned)value % base);
+      buf[len++] = digit < 10 ? '0' + digit : (flags & FLAGS_UPPERCASE ? 'A' : 'a') + digit - 10;
+      value /= (T)base;
+    } while ((len < NTOA_BUFFER_SIZE) && (value > 0));
+  }
 
-  // pad zeros
-  while ((flags & FLAGS_ZEROPAD) && !(flags & FLAGS_LEFT) && (len < prec) && (len < width) && (len < maxlen)) {
+  // pad leading zeros
+  while (!(flags & FLAGS_LEFT) && (len < prec) && (len < NTOA_BUFFER_SIZE)) {
     buf[len++] = '0';
+  }
+  while (!(flags & FLAGS_LEFT) && (flags & FLAGS_ZEROPAD) && (len < width) && (len < NTOA_BUFFER_SIZE)) {
+    buf[len++] = '0';
+  }
+
+  // handle hash
+  if (flags & FLAGS_HASH) {
+    if (((len == prec) || (len == width)) && (len > 0U)) {
+      len--;
+      if ((base == 16U) && (len > 0U)) {
+        len--;
+      }
+    }
+    if ((base == 16U) && !(flags & FLAGS_UPPERCASE) && (len < NTOA_BUFFER_SIZE)) {
+      buf[len++] = 'x';
+    }
+    if ((base == 16U) &&  (flags & FLAGS_UPPERCASE) && (len < NTOA_BUFFER_SIZE)) {
+      buf[len++] = 'X';
+    }
+    if (len < NTOA_BUFFER_SIZE) {
+      buf[len++] = '0';
+    }
   }
 
   // handle sign
   if ((len == width) && (negative || (flags & FLAGS_PLUS) || (flags & FLAGS_SPACE))) {
-    len = width - 1U;
+    len--;
   }
-  if (negative) {
-    buf[len++] = '-';
-  }
-  else if (flags & FLAGS_PLUS) {
-    buf[len++] = '+';  // ignore the space if the '+' exists
-  }
-  else if (flags & FLAGS_SPACE) {
-    buf[len++] = ' ';
+  if (len < NTOA_BUFFER_SIZE) {
+    if (negative) {
+      buf[len++] = '-';
+    }
+    else if (flags & FLAGS_PLUS) {
+      buf[len++] = '+';  // ignore the space if the '+' exists
+    }
+    else if (flags & FLAGS_SPACE) {
+      buf[len++] = ' ';
+    }
   }
 
   // pad spaces up to given width
-  if (!(flags & FLAGS_LEFT)) {
-    while ((len < width) && (len < maxlen)) {
+  if (!(flags & FLAGS_LEFT) && !(flags & FLAGS_ZEROPAD)) {
+    while ((len < width) && (len < NTOA_BUFFER_SIZE)) {
       buf[len++] = ' ';
     }
   }
@@ -161,10 +201,10 @@ static size_t _ftoa(double value, char* buffer, size_t maxlen, unsigned int prec
   double diff = 0.0;
 
   // powers of 10
-  static const double pow10[] = {1, 10, 100, 1000, 10000, 100000, 1000000, 10000000, 100000000, 1000000000};
+  static const double pow10[] = { 1, 10, 100, 1000, 10000, 100000, 1000000, 10000000, 100000000, 1000000000 };
 
   // limit precision
-  if (prec == (unsigned int)-1) {
+  if (!(flags & FLAGS_PRECISION)) {
     prec = 6U;  // by default, precesion is 6
   }
   if (prec > 9U) {
@@ -175,7 +215,7 @@ static size_t _ftoa(double value, char* buffer, size_t maxlen, unsigned int prec
   unsigned int negative = 0U;
   if (value < 0) {
     negative = 1U;
-    value = value * -1;
+    value = 0 - value;
   }
 
   int whole = (int)value;
@@ -238,11 +278,15 @@ static size_t _ftoa(double value, char* buffer, size_t maxlen, unsigned int prec
     buf[len++] = (char)(48 + (whole % 10));
     wlen++;
   } while ((len < FTOA_BUFFER_SIZE) && (whole /= 10));
-  // pad zeros
-  while ((flags & FLAGS_ZEROPAD) && (wlen < width) && (len < FTOA_BUFFER_SIZE)) {
+
+  // pad leading zeros
+  while (!(flags & FLAGS_LEFT) && (len < prec) && (len < FTOA_BUFFER_SIZE)) {
     buf[len++] = '0';
-    wlen++;
   }
+  while (!(flags & FLAGS_LEFT) && (flags & FLAGS_ZEROPAD) && (len < width) && (len < FTOA_BUFFER_SIZE)) {
+    buf[len++] = '0';
+  }
+
   // handle sign
   if (len < FTOA_BUFFER_SIZE) {
     if (negative) {
@@ -255,20 +299,29 @@ static size_t _ftoa(double value, char* buffer, size_t maxlen, unsigned int prec
       buf[len++] = ' ';
     }
   }
+
   // pad spaces up to given width
-  while ((wlen < width) && (len < FTOA_BUFFER_SIZE)) {
-    buf[len++] = ' ';
-    wlen++;
+  if (!(flags & FLAGS_LEFT) && !(flags & FLAGS_ZEROPAD)) {
+    while ((len < width) && (len < FTOA_BUFFER_SIZE)) {
+      buf[len++] = ' ';
+    }
   }
 
-  // reverse it
+  // reverse string
   for (size_t i = 0U; (i < len) && (i < maxlen); ++i) {
     buffer[i] = buf[len - i - 1];
   }
 
+  // append pad spaces up to given width
+  if (flags & FLAGS_LEFT) {
+    while ((len < width) && (len < maxlen)) {
+      buffer[len++] = ' ';
+    }
+  }
+
   return len;
 }
-#endif
+#endif  // PRINTF_FLOAT_SUPPORT
 
 
 // internal vsnprintf
@@ -310,18 +363,26 @@ static size_t vsnprintf(char* buffer, size_t buffer_len, const char* format, va_
     } while (n);
 
     // evaluate width field
-    width = 1U;
+    width = 0U;
     if (_is_digit(*format)) {
       width = _atoi(&format);
     }
     else if (*format == '*') {
-      width = (unsigned int)va_arg(va, int);
+      const int w = (unsigned int)va_arg(va, int);
+      if (w < 0) {
+        flags |= FLAGS_LEFT;    // reverse padding
+        width = (unsigned int)-w;
+      }
+      else {
+        width = (unsigned int)w;
+      }
       format++;
     }
 
     // evaluate precision field
-    precision = (unsigned int)-1;
+    precision = 0U;
     if (*format == '.') {
+      flags |= FLAGS_PRECISION;
       format++;
       if (_is_digit(*format)) {
         precision = _atoi(&format);
@@ -330,7 +391,6 @@ static size_t vsnprintf(char* buffer, size_t buffer_len, const char* format, va_
         precision = (unsigned int)va_arg(va, int);
         format++;
       }
-      flags |= FLAGS_ZEROPAD;
     }
 
     // evaluate length field
@@ -350,7 +410,8 @@ static size_t vsnprintf(char* buffer, size_t buffer_len, const char* format, va_
       case 'X' :
       case 'o' :
       case 'b' :
-        flags = flags & ~(FLAGS_PLUS | FLAGS_SPACE);
+        // no plus or space flag for the types above
+        flags &= ~(FLAGS_PLUS | FLAGS_SPACE);
       case 'd' :
       case 'i' : {
         // set the base
@@ -363,25 +424,15 @@ static size_t vsnprintf(char* buffer, size_t buffer_len, const char* format, va_
         }
         else if (*format == 'b') {
           base =  2U;
+          flags &= ~FLAGS_HASH;   // no hash for bin format
         }
         else {
           base = 10U;
+          flags &= ~FLAGS_HASH;   // no hash for dec format
         }
         // uppercase
         if (*format == 'X') {
           flags |= FLAGS_UPPERCASE;
-        }
-
-        if (flags & FLAGS_HASH) {
-          if (buffer_len - idx > 0U) {
-            buffer[idx++] = '0';
-          }
-          if ((*format == 'x') && (buffer_len - idx > 0U)) {
-            buffer[idx++] = 'x';
-          }
-          if ((*format == 'X') && (buffer_len - idx > 0U)) {
-            buffer[idx++] = 'X';
-          }
         }
 
         // convert the integer
@@ -418,16 +469,48 @@ static size_t vsnprintf(char* buffer, size_t buffer_len, const char* format, va_
         idx += _ftoa(va_arg(va, double), &buffer[idx], buffer_len - idx, precision, width, flags);
         format++;
         break;
-#endif
-      case 'c' :
-        buffer[idx++] = (char)va_arg(va, char);
+#endif  // PRINTF_FLOAT_SUPPORT
+      case 'c' : {
+        size_t l = 1U;
+        // pre padding
+        if (!(flags & FLAGS_LEFT)) {
+          while ((idx < buffer_len) && (l++ < width)) {
+            buffer[idx++] = ' ';
+          }
+        }
+        // char output
+        buffer[idx++] = va_arg(va, char);
+        // post padding
+        if (flags & FLAGS_LEFT) {
+          while ((idx < buffer_len) && (l++ < width)) {
+            buffer[idx++] = ' ';
+          }
+        }
         format++;
         break;
+      }
 
       case 's' : {
         char* p = va_arg(va, char*);
-        while ((idx < buffer_len) && (*p != 0) && precision--) {
+        size_t l = _strlen(p);
+        // pre padding
+        if (flags & FLAGS_PRECISION) {
+          l = (l < precision ? l : precision);
+        }
+        if (!(flags & FLAGS_LEFT)) {
+          while ((idx < buffer_len) && (l++ < width)) {
+            buffer[idx++] = ' ';
+          }
+        }
+        // string output
+        while ((idx < buffer_len) && (*p != 0) && (!(flags & FLAGS_PRECISION) || precision--)) {
           buffer[idx++] = *(p++);
+        }
+        // post padding
+        if (flags & FLAGS_LEFT) {
+          while ((idx < buffer_len) && (l++ < width)) {
+            buffer[idx++] = ' ';
+          }
         }
         format++;
         break;
