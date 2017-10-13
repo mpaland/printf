@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////////////
 // \author (c) Marco Paland (info@paland.com)
-//             2014-2015, PALANDesign Hannover, Germany
+//             2014-2017, PALANDesign Hannover, Germany
 //
 // \license The MIT License (MIT)
 //
@@ -71,5 +71,6 @@ int sprintf(char* buffer, const char* format, ...);
  * \return The number of characters that are written into the array, not counting the terminating null character
  */
 int snprintf(char* buffer, size_t count, const char* format, ...);
+
 
 #endif  // _PRINTF_H_
