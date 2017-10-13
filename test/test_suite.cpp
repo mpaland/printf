@@ -58,6 +58,9 @@ TEST_CASE("printf", "[]" ) {
 
   test::sprintf(buffer, "%10.5d", 4);
   REQUIRE(!strcmp(buffer, "     00004"));
+
+  test::sprintf(buffer, "%*sx", -3, "hi");
+  REQUIRE(!strcmp(buffer, "hi x"));
 }
 
 
@@ -323,6 +326,542 @@ TEST_CASE("specifier", "[]" ) {
 
   test::sprintf(buffer, "%%");
   REQUIRE(!strcmp(buffer, "%"));
+}
 
+
+TEST_CASE("width", "[]" ) {
+  char buffer[100];
+
+  test::sprintf(buffer, "%1s", "Hello testing");
+  REQUIRE(!strcmp(buffer, "Hello testing"));
+
+  test::sprintf(buffer, "%1d", 1024);
+  REQUIRE(!strcmp(buffer, "1024"));
+
+  test::sprintf(buffer, "%1d", -1024);
+  REQUIRE(!strcmp(buffer, "-1024"));
+
+  test::sprintf(buffer, "%1i", 1024);
+  REQUIRE(!strcmp(buffer, "1024"));
+
+  test::sprintf(buffer, "%1i", -1024);
+  REQUIRE(!strcmp(buffer, "-1024"));
+
+  test::sprintf(buffer, "%1u", 1024);
+  REQUIRE(!strcmp(buffer, "1024"));
+
+  test::sprintf(buffer, "%1u", 4294966272U);
+  REQUIRE(!strcmp(buffer, "4294966272"));
+
+  test::sprintf(buffer, "%1o", 511);
+  REQUIRE(!strcmp(buffer, "777"));
+
+  test::sprintf(buffer, "%1o", 4294966785U);
+  REQUIRE(!strcmp(buffer, "37777777001"));
+
+  test::sprintf(buffer, "%1x", 305441741);
+  REQUIRE(!strcmp(buffer, "1234abcd"));
+
+  test::sprintf(buffer, "%1x", 3989525555U);
+  REQUIRE(!strcmp(buffer, "edcb5433"));
+
+  test::sprintf(buffer, "%1X", 305441741);
+  REQUIRE(!strcmp(buffer, "1234ABCD"));
+
+  test::sprintf(buffer, "%1X", 3989525555U);
+  REQUIRE(!strcmp(buffer, "EDCB5433"));
+
+  test::sprintf(buffer, "%1c", 'x');
+  REQUIRE(!strcmp(buffer, "x"));
+}
+
+
+TEST_CASE("width 20", "[]" ) {
+  char buffer[100];
+
+  test::sprintf(buffer, "%20s", "Hello");
+  REQUIRE(!strcmp(buffer, "               Hello"));
+
+  test::sprintf(buffer, "%20d", 1024);
+  REQUIRE(!strcmp(buffer, "                1024"));
+
+  test::sprintf(buffer, "%20d", -1024);
+  REQUIRE(!strcmp(buffer, "               -1024"));
+
+  test::sprintf(buffer, "%20i", 1024);
+  REQUIRE(!strcmp(buffer, "                1024"));
+
+  test::sprintf(buffer, "%20i", -1024);
+  REQUIRE(!strcmp(buffer, "               -1024"));
+
+  test::sprintf(buffer, "%20u", 1024);
+  REQUIRE(!strcmp(buffer, "                1024"));
+
+  test::sprintf(buffer, "%20u", 4294966272U);
+  REQUIRE(!strcmp(buffer, "          4294966272"));
+
+  test::sprintf(buffer, "%20o", 511);
+  REQUIRE(!strcmp(buffer, "                 777"));
+
+  test::sprintf(buffer, "%20o", 4294966785U);
+  REQUIRE(!strcmp(buffer, "         37777777001"));
+
+  test::sprintf(buffer, "%20x", 305441741);
+  REQUIRE(!strcmp(buffer, "            1234abcd"));
+
+  test::sprintf(buffer, "%20x", 3989525555U);
+  REQUIRE(!strcmp(buffer, "            edcb5433"));
+
+  test::sprintf(buffer, "%20X", 305441741);
+  REQUIRE(!strcmp(buffer, "            1234ABCD"));
+
+  test::sprintf(buffer, "%20X", 3989525555U);
+  REQUIRE(!strcmp(buffer, "            EDCB5433"));
+
+  test::sprintf(buffer, "%20c", 'x');
+  REQUIRE(!strcmp(buffer, "                   x"));
+}
+
+
+TEST_CASE("width *20", "[]" ) {
+  char buffer[100];
+
+  test::sprintf(buffer, "%*s", 20, "Hello");
+  REQUIRE(!strcmp(buffer, "               Hello"));
+
+  test::sprintf(buffer, "%*d", 20, 1024);
+  REQUIRE(!strcmp(buffer, "                1024"));
+
+  test::sprintf(buffer, "%*d", 20, -1024);
+  REQUIRE(!strcmp(buffer, "               -1024"));
+
+  test::sprintf(buffer, "%*i", 20, 1024);
+  REQUIRE(!strcmp(buffer, "                1024"));
+
+  test::sprintf(buffer, "%*i", 20, -1024);
+  REQUIRE(!strcmp(buffer, "               -1024"));
+
+  test::sprintf(buffer, "%*u", 20, 1024);
+  REQUIRE(!strcmp(buffer, "                1024"));
+
+  test::sprintf(buffer, "%*u", 20, 4294966272U);
+  REQUIRE(!strcmp(buffer, "          4294966272"));
+
+  test::sprintf(buffer, "%*o", 20, 511);
+  REQUIRE(!strcmp(buffer, "                 777"));
+
+  test::sprintf(buffer, "%*o", 20, 4294966785U);
+  REQUIRE(!strcmp(buffer, "         37777777001"));
+
+  test::sprintf(buffer, "%*x", 20, 305441741);
+  REQUIRE(!strcmp(buffer, "            1234abcd"));
+
+  test::sprintf(buffer, "%*x", 20, 3989525555U);
+  REQUIRE(!strcmp(buffer, "            edcb5433"));
+
+  test::sprintf(buffer, "%*X", 20, 305441741);
+  REQUIRE(!strcmp(buffer, "            1234ABCD"));
+
+  test::sprintf(buffer, "%*X", 20, 3989525555U);
+  REQUIRE(!strcmp(buffer, "            EDCB5433"));
+
+  test::sprintf(buffer, "%*c", 20,'x');
+  REQUIRE(!strcmp(buffer, "                   x"));
+}
+
+
+TEST_CASE("width -20", "[]" ) {
+  char buffer[100];
+
+  test::sprintf(buffer, "%-20s", "Hello");
+  REQUIRE(!strcmp(buffer, "Hello               "));
+
+  test::sprintf(buffer, "%-20d", 1024);
+  REQUIRE(!strcmp(buffer, "1024                "));
+
+  test::sprintf(buffer, "%-20d", -1024);
+  REQUIRE(!strcmp(buffer, "-1024               "));
+
+  test::sprintf(buffer, "%-20i", 1024);
+  REQUIRE(!strcmp(buffer, "1024                "));
+
+  test::sprintf(buffer, "%-20i", -1024);
+  REQUIRE(!strcmp(buffer, "-1024               "));
+
+  test::sprintf(buffer, "%-20u", 1024);
+  REQUIRE(!strcmp(buffer, "1024                "));
+
+  test::sprintf(buffer, "%-20u", 4294966272U);
+  REQUIRE(!strcmp(buffer, "4294966272          "));
+
+  test::sprintf(buffer, "%-20o", 511);
+  REQUIRE(!strcmp(buffer, "777                 "));
+
+  test::sprintf(buffer, "%-20o", 4294966785U);
+  REQUIRE(!strcmp(buffer, "37777777001         "));
+
+  test::sprintf(buffer, "%-20x", 305441741);
+  REQUIRE(!strcmp(buffer, "1234abcd            "));
+
+  test::sprintf(buffer, "%-20x", 3989525555U);
+  REQUIRE(!strcmp(buffer, "edcb5433            "));
+
+  test::sprintf(buffer, "%-20X", 305441741);
+  REQUIRE(!strcmp(buffer, "1234ABCD            "));
+
+  test::sprintf(buffer, "%-20X", 3989525555U);
+  REQUIRE(!strcmp(buffer, "EDCB5433            "));
+
+  test::sprintf(buffer, "%-20c", 'x');
+  REQUIRE(!strcmp(buffer, "x                   "));
+}
+
+
+TEST_CASE("width 0-20", "[]" ) {
+  char buffer[100];
+
+  test::sprintf(buffer, "%0-20s", "Hello");
+  REQUIRE(!strcmp(buffer, "Hello               "));
+
+  test::sprintf(buffer, "%0-20d", 1024);
+  REQUIRE(!strcmp(buffer, "1024                "));
+
+  test::sprintf(buffer, "%0-20d", -1024);
+  REQUIRE(!strcmp(buffer, "-1024               "));
+
+  test::sprintf(buffer, "%0-20i", 1024);
+  REQUIRE(!strcmp(buffer, "1024                "));
+
+  test::sprintf(buffer, "%0-20i", -1024);
+  REQUIRE(!strcmp(buffer, "-1024               "));
+
+  test::sprintf(buffer, "%0-20u", 1024);
+  REQUIRE(!strcmp(buffer, "1024                "));
+
+  test::sprintf(buffer, "%0-20u", 4294966272U);
+  REQUIRE(!strcmp(buffer, "4294966272          "));
+
+  test::sprintf(buffer, "%0-20o", 511);
+  REQUIRE(!strcmp(buffer, "777                 "));
+
+  test::sprintf(buffer, "%0-20o", 4294966785U);
+  REQUIRE(!strcmp(buffer, "37777777001         "));
+
+  test::sprintf(buffer, "%0-20x", 305441741);
+  REQUIRE(!strcmp(buffer, "1234abcd            "));
+
+  test::sprintf(buffer, "%0-20x", 3989525555U);
+  REQUIRE(!strcmp(buffer, "edcb5433            "));
+
+  test::sprintf(buffer, "%0-20X", 305441741);
+  REQUIRE(!strcmp(buffer, "1234ABCD            "));
+
+  test::sprintf(buffer, "%0-20X", 3989525555U);
+  REQUIRE(!strcmp(buffer, "EDCB5433            "));
+
+  test::sprintf(buffer, "%0-20c", 'x');
+  REQUIRE(!strcmp(buffer, "x                   "));
+}
+
+
+TEST_CASE("padding 20", "[]" ) {
+  char buffer[100];
+
+  test::sprintf(buffer, "%020d", 1024);
+  REQUIRE(!strcmp(buffer, "00000000000000001024"));
+
+  test::sprintf(buffer, "%020d", -1024);
+  REQUIRE(!strcmp(buffer, "-0000000000000001024"));
+
+  test::sprintf(buffer, "%020i", 1024);
+  REQUIRE(!strcmp(buffer, "00000000000000001024"));
+
+  test::sprintf(buffer, "%020i", -1024);
+  REQUIRE(!strcmp(buffer, "-0000000000000001024"));
+
+  test::sprintf(buffer, "%020u", 1024);
+  REQUIRE(!strcmp(buffer, "00000000000000001024"));
+
+  test::sprintf(buffer, "%020u", 4294966272U);
+  REQUIRE(!strcmp(buffer, "00000000004294966272"));
+
+  test::sprintf(buffer, "%020o", 511);
+  REQUIRE(!strcmp(buffer, "00000000000000000777"));
+
+  test::sprintf(buffer, "%020o", 4294966785U);
+  REQUIRE(!strcmp(buffer, "00000000037777777001"));
+
+  test::sprintf(buffer, "%020x", 305441741);
+  REQUIRE(!strcmp(buffer, "0000000000001234abcd"));
+
+  test::sprintf(buffer, "%020x", 3989525555U);
+  REQUIRE(!strcmp(buffer, "000000000000edcb5433"));
+
+  test::sprintf(buffer, "%020X", 305441741);
+  REQUIRE(!strcmp(buffer, "0000000000001234ABCD"));
+
+  test::sprintf(buffer, "%020X", 3989525555U);
+  REQUIRE(!strcmp(buffer, "000000000000EDCB5433"));
+}
+
+
+TEST_CASE("padding .20", "[]" ) {
+  char buffer[100];
+
+  test::sprintf(buffer, "%.20d", 1024);
+  REQUIRE(!strcmp(buffer, "00000000000000001024"));
+
+  test::sprintf(buffer, "%.20d", -1024);
+  REQUIRE(!strcmp(buffer, "-00000000000000001024"));
+
+  test::sprintf(buffer, "%.20i", 1024);
+  REQUIRE(!strcmp(buffer, "00000000000000001024"));
+
+  test::sprintf(buffer, "%.20i", -1024);
+  REQUIRE(!strcmp(buffer, "-00000000000000001024"));
+
+  test::sprintf(buffer, "%.20u", 1024);
+  REQUIRE(!strcmp(buffer, "00000000000000001024"));
+
+  test::sprintf(buffer, "%.20u", 4294966272U);
+  REQUIRE(!strcmp(buffer, "00000000004294966272"));
+
+  test::sprintf(buffer, "%.20o", 511);
+  REQUIRE(!strcmp(buffer, "00000000000000000777"));
+
+  test::sprintf(buffer, "%.20o", 4294966785U);
+  REQUIRE(!strcmp(buffer, "00000000037777777001"));
+
+  test::sprintf(buffer, "%.20x", 305441741);
+  REQUIRE(!strcmp(buffer, "0000000000001234abcd"));
+
+  test::sprintf(buffer, "%.20x", 3989525555U);
+  REQUIRE(!strcmp(buffer, "000000000000edcb5433"));
+
+  test::sprintf(buffer, "%.20X", 305441741);
+  REQUIRE(!strcmp(buffer, "0000000000001234ABCD"));
+
+  test::sprintf(buffer, "%.20X", 3989525555U);
+  REQUIRE(!strcmp(buffer, "000000000000EDCB5433"));
+}
+
+
+TEST_CASE("padding #020", "[]" ) {
+  char buffer[100];
+
+  test::sprintf(buffer, "%#020d", 1024);
+  REQUIRE(!strcmp(buffer, "00000000000000001024"));
+
+  test::sprintf(buffer, "%#020d", -1024);
+  REQUIRE(!strcmp(buffer, "-0000000000000001024"));
+
+  test::sprintf(buffer, "%#020i", 1024);
+  REQUIRE(!strcmp(buffer, "00000000000000001024"));
+
+  test::sprintf(buffer, "%#020i", -1024);
+  REQUIRE(!strcmp(buffer, "-0000000000000001024"));
+
+  test::sprintf(buffer, "%#020u", 1024);
+  REQUIRE(!strcmp(buffer, "00000000000000001024"));
+
+  test::sprintf(buffer, "%#020u", 4294966272U);
+  REQUIRE(!strcmp(buffer, "00000000004294966272"));
+
+  test::sprintf(buffer, "%#020o", 511);
+  REQUIRE(!strcmp(buffer, "00000000000000000777"));
+
+  test::sprintf(buffer, "%#020o", 4294966785U);
+  REQUIRE(!strcmp(buffer, "00000000037777777001"));
+
+  test::sprintf(buffer, "%#020x", 305441741);
+  REQUIRE(!strcmp(buffer, "0x00000000001234abcd"));
+
+  test::sprintf(buffer, "%#020x", 3989525555U);
+  REQUIRE(!strcmp(buffer, "0x0000000000edcb5433"));
+
+  test::sprintf(buffer, "%#020X", 305441741);
+  REQUIRE(!strcmp(buffer, "0X00000000001234ABCD"));
+
+  test::sprintf(buffer, "%#020X", 3989525555U);
+  REQUIRE(!strcmp(buffer, "0X0000000000EDCB5433"));
+}
+
+
+TEST_CASE("padding #20", "[]" ) {
+  char buffer[100];
+
+  test::sprintf(buffer, "%#20d", 1024);
+  REQUIRE(!strcmp(buffer, "                1024"));
+
+  test::sprintf(buffer, "%#20d", -1024);
+  REQUIRE(!strcmp(buffer, "               -1024"));
+
+  test::sprintf(buffer, "%#20i", 1024);
+  REQUIRE(!strcmp(buffer, "                1024"));
+
+  test::sprintf(buffer, "%#20i", -1024);
+  REQUIRE(!strcmp(buffer, "               -1024"));
+
+  test::sprintf(buffer, "%#20u", 1024);
+  REQUIRE(!strcmp(buffer, "                1024"));
+
+  test::sprintf(buffer, "%#20u", 4294966272U);
+  REQUIRE(!strcmp(buffer, "          4294966272"));
+
+  test::sprintf(buffer, "%#20o", 511);
+  REQUIRE(!strcmp(buffer, "                0777"));
+
+  test::sprintf(buffer, "%#20o", 4294966785U);
+  REQUIRE(!strcmp(buffer, "        037777777001"));
+
+  test::sprintf(buffer, "%#20x", 305441741);
+  REQUIRE(!strcmp(buffer, "          0x1234abcd"));
+
+  test::sprintf(buffer, "%#20x", 3989525555U);
+  REQUIRE(!strcmp(buffer, "          0xedcb5433"));
+
+  test::sprintf(buffer, "%#20X", 305441741);
+  REQUIRE(!strcmp(buffer, "          0X1234ABCD"));
+
+  test::sprintf(buffer, "%#20X", 3989525555U);
+  REQUIRE(!strcmp(buffer, "          0XEDCB5433"));
+}
+
+
+TEST_CASE("padding 20.5", "[]" ) {
+  char buffer[100];
+
+  test::sprintf(buffer, "%20.5d", 1024);
+  REQUIRE(!strcmp(buffer, "               01024"));
+
+  test::sprintf(buffer, "%20.5d", -1024);
+  REQUIRE(!strcmp(buffer, "              -01024"));
+
+  test::sprintf(buffer, "%20.5i", 1024);
+  REQUIRE(!strcmp(buffer, "               01024"));
+
+  test::sprintf(buffer, "%20.5i", -1024);
+  REQUIRE(!strcmp(buffer, "              -01024"));
+
+  test::sprintf(buffer, "%20.5u", 1024);
+  REQUIRE(!strcmp(buffer, "               01024"));
+
+  test::sprintf(buffer, "%20.5u", 4294966272U);
+  REQUIRE(!strcmp(buffer, "          4294966272"));
+
+  test::sprintf(buffer, "%20.5o", 511);
+  REQUIRE(!strcmp(buffer, "               00777"));
+
+  test::sprintf(buffer, "%20.5o", 4294966785U);
+  REQUIRE(!strcmp(buffer, "         37777777001"));
+
+  test::sprintf(buffer, "%20.5x", 305441741);
+  REQUIRE(!strcmp(buffer, "            1234abcd"));
+
+  test::sprintf(buffer, "%20.10x", 3989525555U);
+  REQUIRE(!strcmp(buffer, "          00edcb5433"));
+
+  test::sprintf(buffer, "%20.5X", 305441741);
+  REQUIRE(!strcmp(buffer, "            1234ABCD"));
+
+  test::sprintf(buffer, "%20.10X", 3989525555U);
+  REQUIRE(!strcmp(buffer, "          00EDCB5433"));
+}
+
+
+TEST_CASE("length", "[]" ) {
+  char buffer[100];
+
+  test::sprintf(buffer, "%.0s", "Hello testing");
+  REQUIRE(!strcmp(buffer, ""));
+
+  test::sprintf(buffer, "%20.0s", "Hello testing");
+  REQUIRE(!strcmp(buffer, "                    "));
+
+  test::sprintf(buffer, "%.s", "Hello testing");
+  REQUIRE(!strcmp(buffer, ""));
+
+  test::sprintf(buffer, "%20.s", "Hello testing");
+  REQUIRE(!strcmp(buffer, "                    "));
+
+  test::sprintf(buffer, "%20.0d", 1024);
+  REQUIRE(!strcmp(buffer, "                1024"));
+
+  test::sprintf(buffer, "%20.0d", -1024);
+  REQUIRE(!strcmp(buffer, "               -1024"));
+
+  test::sprintf(buffer, "%20.d", 0);
+  REQUIRE(!strcmp(buffer, "                    "));
+
+  test::sprintf(buffer, "%20.0i", 1024);
+  REQUIRE(!strcmp(buffer, "                1024"));
+
+  test::sprintf(buffer, "%20.i", -1024);
+  REQUIRE(!strcmp(buffer, "               -1024"));
+
+  test::sprintf(buffer, "%20.i", 0);
+  REQUIRE(!strcmp(buffer, "                    "));
+
+  test::sprintf(buffer, "%20.u", 1024);
+  REQUIRE(!strcmp(buffer, "                1024"));
+
+  test::sprintf(buffer, "%20.0u", 4294966272U);
+  REQUIRE(!strcmp(buffer, "          4294966272"));
+
+  test::sprintf(buffer, "%20.u", 0U);
+  REQUIRE(!strcmp(buffer, "                    "));
+
+  test::sprintf(buffer, "%20.o", 511);
+  REQUIRE(!strcmp(buffer, "                 777"));
+
+  test::sprintf(buffer, "%20.0o", 4294966785U);
+  REQUIRE(!strcmp(buffer, "         37777777001"));
+
+  test::sprintf(buffer, "%20.o", 0U);
+  REQUIRE(!strcmp(buffer, "                    "));
+
+  test::sprintf(buffer, "%20.x", 305441741);
+  REQUIRE(!strcmp(buffer, "            1234abcd"));
+
+  test::sprintf(buffer, "%20.0x", 3989525555U);
+  REQUIRE(!strcmp(buffer, "            edcb5433"));
+
+  test::sprintf(buffer, "%20.x", 0U);
+  REQUIRE(!strcmp(buffer, "                    "));
+
+  test::sprintf(buffer, "%20.X", 305441741);
+  REQUIRE(!strcmp(buffer, "            1234ABCD"));
+
+  test::sprintf(buffer, "%20.0X", 3989525555U);
+  REQUIRE(!strcmp(buffer, "            EDCB5433"));
+
+  test::sprintf(buffer, "%20.X", 0U);
+  REQUIRE(!strcmp(buffer, "                    "));
+}
+
+
+TEST_CASE("float", "[]" ) {
+  char buffer[100];
+
+  test::sprintf(buffer, "%.4f", 3.1415354);
+  REQUIRE(!strcmp(buffer, "3.1415"));
+
+  test::sprintf(buffer, "%.3f", 30343.1415354);
+  REQUIRE(!strcmp(buffer, "30343.142"));
+
+  test::sprintf(buffer, "%.0f", 34.1415354);
+  REQUIRE(!strcmp(buffer, "34"));
+
+  test::sprintf(buffer, "%.2f", 42.8952);
+  REQUIRE(!strcmp(buffer, "42.90"));
+
+  test::sprintf(buffer, "%.9f", 42.8952);
+  REQUIRE(!strcmp(buffer, "42.895200000"));
+
+  test::sprintf(buffer, "%6.2f", 42.8952);
+  REQUIRE(!strcmp(buffer, " 42.90"));
+
+  test::sprintf(buffer, "%+6.2f", 42.8952);
+  REQUIRE(!strcmp(buffer, "+42.90"));
 
 }
