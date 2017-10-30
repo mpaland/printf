@@ -16,7 +16,7 @@ If memory footprint is really a critical issue, floating point support can be tu
 When using printf (instead of sprintf) you have to provide your own `_putchar()` low level function as console output.
 
 
-## Design goals
+## Highligths and design goals
 
 There is a boatload of so called 'tiny' printf implementations around. So why this one?  
 I've tested many implementations, but most of them have very limited flag/specifier support, a lot of other dependencies or are just not standard compliant and failing the test suite.
