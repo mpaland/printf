@@ -85,7 +85,7 @@ static inline unsigned int _atoi(const char** str)
 {
   unsigned int i = 0U;
   while (_is_digit(**str)) {
-    i = i * 10U + *((*str)++) - '0';
+    i = i * 10U + (unsigned int)(*((*str)++) - '0');
   }
   return i;
 }
@@ -197,8 +197,8 @@ static size_t _ftoa(double value, char* buffer, size_t maxlen, unsigned int prec
   const double thres_max = (double)0x7FFFFFFF;
 
   char buf[FTOA_BUFFER_SIZE];
-  size_t len = 0U;
-  double diff = 0.0;
+  size_t len  = 0U;
+  double diff = 0;
 
   // powers of 10
   static const double pow10[] = { 1, 10, 100, 1000, 10000, 100000, 1000000, 10000000, 100000000, 1000000000 };
@@ -225,7 +225,7 @@ static size_t _ftoa(double value, char* buffer, size_t maxlen, unsigned int prec
 
   if (diff > 0.5) {
     ++frac;
-    // handle rollover, e.g.  case 0.99 with prec 1 is 1.0
+    // handle rollover, e.g. case 0.99 with prec 1 is 1.0
     if (frac >= pow10[prec]) {
       frac = 0;
       ++whole;
@@ -479,7 +479,7 @@ static size_t vsnprintf(char* buffer, size_t buffer_len, const char* format, va_
           }
         }
         // char output
-        buffer[idx++] = va_arg(va, char);
+        buffer[idx++] = (char)va_arg(va, int);
         // post padding
         if (flags & FLAGS_LEFT) {
           while ((idx < buffer_len) && (l++ < width)) {
