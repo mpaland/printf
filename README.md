@@ -1,8 +1,15 @@
 # printf / sprintf for embedded systems
 
+[![Build Status](https://travis-ci.org/mpaland/printf.svg?branch=master)](https://travis-ci.org/mpaland/printf)
+[![Coveralls Status](https://coveralls.io/repos/github/mpaland/printf/badge.svg?branch=master)](https://coveralls.io/github/mpaland/printf?branch=master)
+[![Coverity Status](https://img.shields.io/coverity/scan/14180.svg)](https://scan.coverity.com/projects/mpaland-printf)
+[![Github Issues](https://img.shields.io/github/issues/mpaland/printf.svg)](http://github.com/mpaland/printf/issues)
+[![Github Releases](https://img.shields.io/github/release/mpaland/printf.svg)](https://github.com/mpaland/printf/releases)
+[![GitHub license](https://img.shields.io/badge/license-MIT-blue.svg)](https://raw.githubusercontent.com/mpaland/avl_array/master/LICENSE)
+
 This is a tiny but fully loaded printf, sprintf and snprintf implementation.  
 Primarily designed for usage in embedded systems, where printf is not available due to memory issues or in avoidance of linking against libc.  
-Using the standard libc printf may pull a lot of unwanted library stuff and can bloat code size about 20k. In this case the following implementation can be used.  
+Using the standard libc printf may pull **a lot** of unwanted library stuff and can bloat code size about 20k. In this case the following implementation can be used.  
 Absolutely **NO dependencies** are required, printf.cpp brings all necessary routines, even its own fast ftoa conversion.
 
 If memory footprint is really a critical issue, floating point support can be turned off via the `PRINTF_FLOAT_SUPPORT` compiler switch.
@@ -12,13 +19,13 @@ When using printf (instead of sprintf) you have to provide your own `_putchar()`
 ## Design goals
 
 There is a boatload of so called 'tiny' printf implementations around. So why this one?  
-I tested many implementations, but most of them have very limited flag/specifier support, a lot of other dependencies or are just not standard compliant and failing the test suite.
+I've tested many implementations, but most of them have very limited flag/specifier support, a lot of other dependencies or are just not standard compliant and failing the test suite.
 Therefore I decided to write an own implementation which meets the following items:
 
  - Very small implementation (< 500 code lines)
  - NO dependencies, no libs, just one module file
  - Support of all important flags, width and precision sub-specifiers (see below)
- - Support of float number representation (with an own fast ftoa)
+ - Support of dec/float number representation (with an own fast itoa/ftoa)
  - Reentrant and thread-safe, malloc free
  - LINT and compiler L4 warning free, clean code
  - Extensive test suite passing

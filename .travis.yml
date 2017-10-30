@@ -1,0 +1,65 @@
+# Use a C++11 distro
+dist: trusty
+sudo: required
+
+# Enable C++ support
+language: cpp
+
+# Compiler selection
+compiler: gcc
+
+env:
+  global:
+    # coverity key
+    - secure: "MQNBwhFpj7NaDbN6NujsXQGRMpBYHvGtcjLXY9gCXhLUw+Ex40ArBEy1IEQAol7aGtFZiTZDijH1ihL4itzVmu4Bo2sx5WdMGRFS5tp/t4zFFiqpmmtbkYOUHY8wAp3xyxV2NL2EU0KlDloNvFd/4tY2opklUB3eTF+7TQ5CmwWRFGOf2GpGpmQ3+KS1ANhrxdn9sQIP8rSU+JD1/zwrAgeEN7RAxB23t9AU9MeGsOW3CCp3te8vrgNJ/xnOh7T4F/8hQ4lA5iCqqf7OUvcWOif3uBPzlckBTmQ6ylMvOncslj6TBkPJOd33MOmZcWHiPPEAvcXQlzERaLqgHLIg5A/0aTVo27J4iImHbwE61L2JhWvrx5mPkKz/9aTpZyYyQL1hXInk8R9VJ5+JENA5+maF+KNvdf1Zp2Foa3BLFFdRl5thpgyafvcEAZ/7KJ1BC3u4OgTBhh9Tw+1UMFXB9W9+2W2iYUIun8BunDny1aLmnp/t7O1auXjqW2lAWHtH86v9NickDupzkw1klN3Ac+hmfBDffyxUjE2LlmjpC20z2uwKrZCT7XRhalYstPPIwQ6uGr6TVZjqq6mzEjpmmF93U8WYx7iWBJmen0CHbkjY3n8dbUe7aiXQHwjbXFZ8MsWszFvr9eicJOcAOxXKK5jOw4uQSER6NI2H04rwbIs="
+
+# addons
+addons:
+  apt:
+    packages:
+      - gcc-6
+      - g++-6
+    sources:
+      - ubuntu-toolchain-r-test
+
+  coverity_scan:
+    project:
+      name: "mpaland/printf"
+      description: "printf implementation"
+    notification_email: marco@paland.com
+    build_command_prepend: "make clean"
+    build_command: "make"
+    branch_pattern: master
+
+before_install:
+  # install coveralls
+  - pip install --user cpp-coveralls
+  # connect coverity
+  - echo -n | openssl s_client -connect scan.coverity.com:443 | sed -ne '/-BEGIN CERTIFICATE-/,/-END CERTIFICATE-/p' | sudo tee -a /etc/ssl/certs/ca-
+
+# Active branches
+branches:
+  only:
+   - travis
+
+script:
+  # Link gcc-6 and g++-6 to their standard commands
+  - sudo rm /usr/bin/gcc
+  - sudo rm /usr/bin/g++
+  - sudo ln -s /usr/bin/gcc-6 /usr/bin/gcc
+  - sudo ln -s /usr/bin/g++-6 /usr/bin/g++
+  # Export CC and CXX
+  - export CC=/usr/bin/gcc-6
+  - export CXX=/usr/bin/g++-6
+  # Check versions of gcc, g++
+  - gcc -v && g++ -v
+  # Run build commands
+  - make
+  # execute the text suite
+  - bin/test_suite -d yes
+  # coverall profiling
+  - tmp/cov/test_suite
+
+after_success:
+  # Report to coveralls
+  - coveralls --build-root ${TRAVIS_BUILD_DIR} --include printf.cpp --gcov 'gcov-6' --gcov-options '\-lp'
