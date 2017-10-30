@@ -11,7 +11,7 @@ compiler: gcc
 env:
   global:
     # coverity key
-    - secure: "MQNBwhFpj7NaDbN6NujsXQGRMpBYHvGtcjLXY9gCXhLUw+Ex40ArBEy1IEQAol7aGtFZiTZDijH1ihL4itzVmu4Bo2sx5WdMGRFS5tp/t4zFFiqpmmtbkYOUHY8wAp3xyxV2NL2EU0KlDloNvFd/4tY2opklUB3eTF+7TQ5CmwWRFGOf2GpGpmQ3+KS1ANhrxdn9sQIP8rSU+JD1/zwrAgeEN7RAxB23t9AU9MeGsOW3CCp3te8vrgNJ/xnOh7T4F/8hQ4lA5iCqqf7OUvcWOif3uBPzlckBTmQ6ylMvOncslj6TBkPJOd33MOmZcWHiPPEAvcXQlzERaLqgHLIg5A/0aTVo27J4iImHbwE61L2JhWvrx5mPkKz/9aTpZyYyQL1hXInk8R9VJ5+JENA5+maF+KNvdf1Zp2Foa3BLFFdRl5thpgyafvcEAZ/7KJ1BC3u4OgTBhh9Tw+1UMFXB9W9+2W2iYUIun8BunDny1aLmnp/t7O1auXjqW2lAWHtH86v9NickDupzkw1klN3Ac+hmfBDffyxUjE2LlmjpC20z2uwKrZCT7XRhalYstPPIwQ6uGr6TVZjqq6mzEjpmmF93U8WYx7iWBJmen0CHbkjY3n8dbUe7aiXQHwjbXFZ8MsWszFvr9eicJOcAOxXKK5jOw4uQSER6NI2H04rwbIs="
+    - secure: "NKZbBnMALGIIQJy/s2kc3EST/stw+gjhtrGq0jkbsWr7Wx3FH+lmLeHNsDXRnD1VbpG02c5YsLllqz9OVu+0yxWGepvKNmCz1cNITIALEHbrax8/Af9LzPRL/QZxS/Qe11sMuySp4X16mFBUyxMd/X+I9i96Xf1vKkZABklYD1Q="
 
 # addons
 addons:
@@ -25,7 +25,7 @@ addons:
   coverity_scan:
     project:
       name: "mpaland/printf"
-      description: "printf implementation"
+      description: "Tiny printf implementation"
     notification_email: marco@paland.com
     build_command_prepend: "make clean"
     build_command: "make"
