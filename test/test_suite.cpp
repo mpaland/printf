@@ -50,17 +50,10 @@ int test::_putchar(char)
 TEST_CASE("printf", "[]" ) {
   char buffer[100] ;
 
-  test::sprintf(buffer, "%.*f", 2, 0.33333333);
-  REQUIRE(!strcmp(buffer, "0.33"));
+  REQUIRE(test::printf("% d", 4232) == 5);
 
-  test::sprintf(buffer, "%.3s", "foobar");
-  REQUIRE(!strcmp(buffer, "foo"));
-
-  test::sprintf(buffer, "%10.5d", 4);
-  REQUIRE(!strcmp(buffer, "     00004"));
-
-  test::sprintf(buffer, "%*sx", -3, "hi");
-  REQUIRE(!strcmp(buffer, "hi x"));
+  test::snprintf(buffer, 100U, "%d", -1000);
+  REQUIRE(!strcmp(buffer, "-1000"));
 }
 
 
@@ -861,6 +854,9 @@ TEST_CASE("float", "[]" ) {
   test::sprintf(buffer, "%.9f", 42.8952);
   REQUIRE(!strcmp(buffer, "42.895200000"));
 
+  test::sprintf(buffer, "%.10f", 42.895223);
+  REQUIRE(!strcmp(buffer, "42.895223000"));
+
   test::sprintf(buffer, "%6.2f", 42.8952);
   REQUIRE(!strcmp(buffer, " 42.90"));
 
@@ -878,6 +874,9 @@ TEST_CASE("float", "[]" ) {
 
   test::sprintf(buffer, "%f", (float)42167);
   REQUIRE(!strcmp(buffer, "42167.000000"));
+
+  test::sprintf(buffer, "%.9f", -12345.987654321);
+  REQUIRE(!strcmp(buffer, "-12345.987654321"));
 }
 
 
@@ -968,4 +967,16 @@ TEST_CASE("misc", "[]" ) {
 
   test::sprintf(buffer, "%u%u%ctest%d %s", 5, 3000, 'a', -20, "bit");
   REQUIRE(!strcmp(buffer, "53000atest-20 bit"));
+
+  test::sprintf(buffer, "%.*f", 2, 0.33333333);
+  REQUIRE(!strcmp(buffer, "0.33"));
+
+  test::sprintf(buffer, "%.3s", "foobar");
+  REQUIRE(!strcmp(buffer, "foo"));
+
+  test::sprintf(buffer, "%10.5d", 4);
+  REQUIRE(!strcmp(buffer, "     00004"));
+
+  test::sprintf(buffer, "%*sx", -3, "hi");
+  REQUIRE(!strcmp(buffer, "hi x"));
 }
