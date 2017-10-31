@@ -28,7 +28,7 @@ Therefore I decided to write an own implementation which meets the following ite
  - Support of dec/float number representation (with an own fast itoa/ftoa)
  - Reentrant and thread-safe, malloc free
  - LINT and compiler L4 warning free, coverity clean, automotive ready
- - Extensive test suite (> 260 test cases) passing
+ - Extensive test suite (> 270 test cases) passing
  - MIT license
 
 
@@ -119,6 +119,10 @@ The length sub-specifier modifies the length of the data type.
 
 ## Test suite
 For testing just compile, build and run the test suite located in `test/test_suite.cpp`. This uses the [catch](https://github.com/philsquared/Catch) framework for unit-tests, which is auto-adding main().
+
+
+## Projects using printf
+- [turnkey-board](https://github.com/mpaland/turnkey-board) uses printf as log and generic display formatting/output.
 
 
 ## Contributing
