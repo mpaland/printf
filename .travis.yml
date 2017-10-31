@@ -40,7 +40,7 @@ before_install:
 # Active branches
 branches:
   only:
-   - travis
+   - master
 
 script:
   # Link gcc-6 and g++-6 to their standard commands
