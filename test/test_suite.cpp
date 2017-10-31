@@ -203,6 +203,9 @@ TEST_CASE("0 flag", "[]" ) {
   test::sprintf(buffer, "%0d", 42);
   REQUIRE(!strcmp(buffer, "42"));
 
+  test::sprintf(buffer, "%0ld", 42L);
+  REQUIRE(!strcmp(buffer, "42"));
+
   test::sprintf(buffer, "%0d", -42);
   REQUIRE(!strcmp(buffer, "-42"));
 
@@ -864,4 +867,105 @@ TEST_CASE("float", "[]" ) {
   test::sprintf(buffer, "%+6.2f", 42.8952);
   REQUIRE(!strcmp(buffer, "+42.90"));
 
+  test::sprintf(buffer, "%+5.1f", 42.9252);
+  REQUIRE(!strcmp(buffer, "+42.9"));
+
+  test::sprintf(buffer, "%f", 42.5);
+  REQUIRE(!strcmp(buffer, "42.500000"));
+
+  test::sprintf(buffer, "%.1f", 42.5);
+  REQUIRE(!strcmp(buffer, "42.5"));
+
+  test::sprintf(buffer, "%f", (float)42167);
+  REQUIRE(!strcmp(buffer, "42167.000000"));
+}
+
+
+TEST_CASE("types", "[]" ) {
+  char buffer[100];
+
+  test::sprintf(buffer, "%i", 1234);
+  REQUIRE(!strcmp(buffer, "1234"));
+
+  test::sprintf(buffer, "%li", 30L);
+  REQUIRE(!strcmp(buffer, "30"));
+
+  test::sprintf(buffer, "%lli", 30LL);
+  REQUIRE(!strcmp(buffer, "30"));
+
+  test::sprintf(buffer, "%lu", 100000L);
+  REQUIRE(!strcmp(buffer, "100000"));
+
+  test::sprintf(buffer, "%llu", 281474976710656LLU);
+  REQUIRE(!strcmp(buffer, "281474976710656"));
+
+  test::sprintf(buffer, "%b", 60000);
+  REQUIRE(!strcmp(buffer, "1110101001100000"));
+
+  test::sprintf(buffer, "%lb", 12345678L);
+  REQUIRE(!strcmp(buffer, "101111000110000101001110"));
+
+  test::sprintf(buffer, "%o", 60000);
+  REQUIRE(!strcmp(buffer, "165140"));
+
+  test::sprintf(buffer, "%lo", 12345678L);
+  REQUIRE(!strcmp(buffer, "57060516"));
+
+  test::sprintf(buffer, "%lx", 0x12345678L);
+  REQUIRE(!strcmp(buffer, "12345678"));
+
+  test::sprintf(buffer, "%llx", 0x1234567891234567LLU);
+  REQUIRE(!strcmp(buffer, "1234567891234567"));
+
+  test::sprintf(buffer, "%lx", 0xabcdefabL);
+  REQUIRE(!strcmp(buffer, "abcdefab"));
+
+  test::sprintf(buffer, "%lX", 0xabcdefabL);
+  REQUIRE(!strcmp(buffer, "ABCDEFAB"));
+
+  test::sprintf(buffer, "%c", 'v');
+  REQUIRE(!strcmp(buffer, "v"));
+
+  test::sprintf(buffer, "%cv", 'w');
+  REQUIRE(!strcmp(buffer, "wv"));
+
+  test::sprintf(buffer, "%s", "A Test");
+  REQUIRE(!strcmp(buffer, "A Test"));
+}
+
+
+TEST_CASE("pointer", "[]" ) {
+  char buffer[100];
+
+  test::sprintf(buffer, "%p", (void*)0x1234U);
+  if (sizeof(void*) == 4U) {
+    REQUIRE(!strcmp(buffer, "00001234"));
+  }
+  else {
+    REQUIRE(!strcmp(buffer, "0000000000001234"));
+  }
+
+  test::sprintf(buffer, "%p", (void*)0x12345678U);
+  if (sizeof(void*) == 4U) {
+    REQUIRE(!strcmp(buffer, "12345678"));
+  }
+  else {
+    REQUIRE(!strcmp(buffer, "0000000012345678"));
+  }
+}
+
+
+TEST_CASE("unknown flag", "[]" ) {
+  char buffer[100];
+
+  test::sprintf(buffer, "%kmarco", 42, 37);
+  REQUIRE(!strcmp(buffer, "kmarco"));
+}
+
+
+TEST_CASE("misc", "[]" ) {
+  char buffer[100];
+
+  test::sprintf(buffer, "%u%u%ctest%d %s", 5, 3000, 'a', -20, "bit");
+  REQUIRE(!strcmp(buffer, "53000atest-20 bit"));
 }

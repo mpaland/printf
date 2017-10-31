@@ -65,18 +65,18 @@
 // internal strlen, returns the length of the string 
 static inline size_t _strlen(const char* str) 
 { 
-  size_t len = 0U; 
-  while (str[len] != '\0') { 
-    len++; 
-  } 
-  return len; 
-} 
+  size_t len = 0U;
+  while (str[len] != '\0') {
+    len++;
+  }
+  return len;
+}
 
 
-// returns 1 if char is a digit, 0 if not
-static inline unsigned int _is_digit(char ch)
+// returns true if char is a digit
+static inline bool _is_digit(char ch)
 {
-  return (ch >= '0' && ch <= '9') ? 1U : 0U;
+  return (ch >= '0') && (ch <= '9');
 }
 
 
@@ -85,7 +85,7 @@ static inline unsigned int _atoi(const char** str)
 {
   unsigned int i = 0U;
   while (_is_digit(**str)) {
-    i = i * 10U + *((*str)++) - '0';
+    i = i * 10U + (unsigned int)(*((*str)++) - '0');
   }
   return i;
 }
@@ -113,7 +113,7 @@ static size_t _ntoa(T value, char* buffer, unsigned int base, size_t maxlen, uns
   // write if precision != 0 and value is != 0
   if (!(flags & FLAGS_PRECISION) || (value != 0)) {
     do {
-      char digit = (char)((unsigned)value % base);
+      char digit = (char)(value % (T)base);
       buf[len++] = digit < 10 ? '0' + digit : (flags & FLAGS_UPPERCASE ? 'A' : 'a') + digit - 10;
       value /= (T)base;
     } while ((len < NTOA_BUFFER_SIZE) && (value > 0));
@@ -197,8 +197,8 @@ static size_t _ftoa(double value, char* buffer, size_t maxlen, unsigned int prec
   const double thres_max = (double)0x7FFFFFFF;
 
   char buf[FTOA_BUFFER_SIZE];
-  size_t len = 0U;
-  double diff = 0.0;
+  size_t len  = 0U;
+  double diff = 0;
 
   // powers of 10
   static const double pow10[] = { 1, 10, 100, 1000, 10000, 100000, 1000000, 10000000, 100000000, 1000000000 };
@@ -225,7 +225,7 @@ static size_t _ftoa(double value, char* buffer, size_t maxlen, unsigned int prec
 
   if (diff > 0.5) {
     ++frac;
-    // handle rollover, e.g.  case 0.99 with prec 1 is 1.0
+    // handle rollover, e.g. case 0.99 with prec 1 is 1.0
     if (frac >= pow10[prec]) {
       frac = 0;
       ++whole;
@@ -271,13 +271,13 @@ static size_t _ftoa(double value, char* buffer, size_t maxlen, unsigned int prec
     }
   }
 
-  // do whole part
-  // Take care of sign conversion. Number is reversed
-  size_t wlen = 0U;
-  do {
+  // do whole part, number is reversed
+  while (len < FTOA_BUFFER_SIZE) {
     buf[len++] = (char)(48 + (whole % 10));
-    wlen++;
-  } while ((len < FTOA_BUFFER_SIZE) && (whole /= 10));
+    if (!(whole /= 10)) {
+      break;
+    }
+  }
 
   // pad leading zeros
   while (!(flags & FLAGS_LEFT) && (len < prec) && (len < FTOA_BUFFER_SIZE)) {
@@ -368,7 +368,7 @@ static size_t vsnprintf(char* buffer, size_t buffer_len, const char* format, va_
       width = _atoi(&format);
     }
     else if (*format == '*') {
-      const int w = (unsigned int)va_arg(va, int);
+      const int w = va_arg(va, int);
       if (w < 0) {
         flags |= FLAGS_LEFT;    // reverse padding
         width = (unsigned int)-w;
@@ -410,8 +410,6 @@ static size_t vsnprintf(char* buffer, size_t buffer_len, const char* format, va_
       case 'X' :
       case 'o' :
       case 'b' :
-        // no plus or space flag for the types above
-        flags &= ~(FLAGS_PLUS | FLAGS_SPACE);
       case 'd' :
       case 'i' : {
         // set the base
@@ -435,8 +433,13 @@ static size_t vsnprintf(char* buffer, size_t buffer_len, const char* format, va_
           flags |= FLAGS_UPPERCASE;
         }
 
+        // no plus or space flag for u, x, X, o, b
+        if ((*format != 'i') && (*format != 'd')) {
+          flags &= ~(FLAGS_PLUS | FLAGS_SPACE);
+        }
+
         // convert the integer
-        if (*format == 'i' || *format == 'd') {
+        if ((*format == 'i') || (*format == 'd')) {
           // signed
           if (flags & FLAGS_LONG_LONG) {
             idx += _ntoa<long long>(va_arg(va, long long), &buffer[idx], base, buffer_len - idx, precision, width, flags);
@@ -479,7 +482,7 @@ static size_t vsnprintf(char* buffer, size_t buffer_len, const char* format, va_
           }
         }
         // char output
-        buffer[idx++] = va_arg(va, char);
+        buffer[idx++] = (char)va_arg(va, int);
         // post padding
         if (flags & FLAGS_LEFT) {
           while ((idx < buffer_len) && (l++ < width)) {
@@ -537,6 +540,7 @@ static size_t vsnprintf(char* buffer, size_t buffer_len, const char* format, va_
 
       default :
         buffer[idx++] = *format;
+        format++;
         break;
     }
   }
