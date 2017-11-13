@@ -9,11 +9,11 @@
 
 This is a tiny but **fully loaded** printf, sprintf and snprintf implementation.  
 Primarily designed for usage in embedded systems, where printf is not available due to memory issues or in avoidance of linking against libc.  
-Using the standard libc printf may pull **a lot** of unwanted library stuff and can bloat code size about 20k. In this case the following implementation can be used.  
-Absolutely **NO dependencies** are required, printf.cpp brings all necessary routines, even its own fast `ftoa` conversion.
+Using the standard libc printf may pull **a lot** of unwanted library stuff and can bloat code size about 20k or is not 100% thread safe. In this cases the following implementation can be used.  
+Absolutely **NO dependencies** are required, *printf.c* brings all necessary routines, even its own fast `ftoa`, `ntoa` conversion.
 
-If memory footprint is really a critical issue, floating point support can be turned off via the `PRINTF_FLOAT_SUPPORT` compiler switch.
-When using printf (instead of sprintf) you have to provide your own `_putchar()` low level function as console output.
+If memory footprint is really a critical issue, floating point and 'long long' support and can be turned off via the `PRINTF_FLOAT_SUPPORT` and `PRINTF_LONG_LONG_SUPPORT` compiler switches.
+When using printf (instead of sprintf) you have to provide your own `_putchar()` low level function as console/serial output.
 
 
 ## Highligths and design goals
@@ -29,7 +29,7 @@ Therefore I decided to write an own implementation which meets the following ite
  - Reentrant and thread-safe, malloc free
  - LINT and compiler L4 warning free, coverity clean, automotive ready
  - Extensive test suite (> 280 test cases) passing
- - Simply the best printf around the net
+ - Simply the best *printf* around the net
  - MIT license
 
 
@@ -125,6 +125,7 @@ The length sub-specifier modifies the length of the data type.
 | NTOA_BUFFER_SIZE     | 32  | ntoa (integer) conversion buffer size. This must be big enough to hold one converted numeric number, normally 32 is a sufficient value. |
 | FTOA_BUFFER_SIZE     | 32  | ftoa (float) conversion buffer size. This must be big enough to hold one converted float number, normally 32 is a sufficient value. |
 | PRINTF_FLOAT_SUPPORT | defined | Define this to enable floating point (%f) support |
+| PRINTF_LONG_LONG_SUPPORT | defined | Define this to enable long long (%ll) support |
 
 
 ## Test suite
