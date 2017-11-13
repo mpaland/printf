@@ -46,9 +46,9 @@ void _putchar(char character)
 
 Usage is 1:1 like the according stdio.h library version:
 ```C
-`int printf(const char* format, ...);`  
-`int sprintf(char* buffer, const char* format, ...);`  
-`int snprintf(char* buffer, size_t count, const char* format, ...);`  
+int printf(const char* format, ...);
+int sprintf(char* buffer, const char* format, ...);
+int snprintf(char* buffer, size_t count, const char* format, ...);
 ```
 
 **Due to genaral security reasons it is highly recommended to use `snprintf` (with the max buffer size as `count` parameter) only.**  
