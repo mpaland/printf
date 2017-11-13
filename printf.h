@@ -35,13 +35,19 @@
 
 #include <stddef.h>
 
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+
 /**
  * Output a character to a custom device like UART.
  * This function is declared here only. You have to write your custom implementation somewhere.
  * \param character to output
  * \return On success, the character written is returned
  */
-int _putchar(char character);
+void _putchar(char character);
 
 
 /**
@@ -71,6 +77,11 @@ int sprintf(char* buffer, const char* format, ...);
  * \return The number of characters that are written into the array, not counting the terminating null character
  */
 int snprintf(char* buffer, size_t count, const char* format, ...);
+
+
+#ifdef __cplusplus
+}
+#endif
 
 
 #endif  // _PRINTF_H_
