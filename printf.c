@@ -177,12 +177,12 @@ static size_t _ntoa_long(char* buffer, unsigned long value, bool negative, unsig
   size_t len = 0U;
 
   // write if precision != 0 and value is != 0
-  if (!(flags & FLAGS_PRECISION) || (value != 0)) {
+  if (!(flags & FLAGS_PRECISION) || value) {
     do {
       char digit = (char)(value % base);
       buf[len++] = digit < 10 ? '0' + digit : (flags & FLAGS_UPPERCASE ? 'A' : 'a') + digit - 10;
       value /= base;
-    } while ((len < NTOA_BUFFER_SIZE) && (value > 0));
+    } while ((len < NTOA_BUFFER_SIZE) && value);
   }
 
   return _ntoa_format(buffer, buf, len, negative, (unsigned int)base, maxlen, prec, width, flags);
@@ -197,12 +197,12 @@ static size_t _ntoa_long_long(char* buffer, unsigned long long value, bool negat
   size_t len = 0U;
 
   // write if precision != 0 and value is != 0
-  if (!(flags & FLAGS_PRECISION) || (value != 0)) {
+  if (!(flags & FLAGS_PRECISION) || value) {
     do {
       char digit = (char)(value % base);
       buf[len++] = digit < 10 ? '0' + digit : (flags & FLAGS_UPPERCASE ? 'A' : 'a') + digit - 10;
       value /= base;
-    } while ((len < NTOA_BUFFER_SIZE) && (value > 0));
+    } while ((len < NTOA_BUFFER_SIZE) && value);
   }
 
   return _ntoa_format(buffer, buf, len, negative, (unsigned int)base, maxlen, prec, width, flags);
