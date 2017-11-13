@@ -28,18 +28,28 @@ Therefore I decided to write an own implementation which meets the following ite
  - Support of dec/float number representation (with an own fast itoa/ftoa)
  - Reentrant and thread-safe, malloc free
  - LINT and compiler L4 warning free, coverity clean, automotive ready
- - Extensive test suite (> 270 test cases) passing
+ - Extensive test suite (> 280 test cases) passing
+ - Simply the best printf around the net
  - MIT license
 
 
 ## Usage
 
-Add/link `printf.cpp` to your project and include `printf.h`. That's it.  
-Usage is 1:1 like the according stdio.h library version:  
+Add/link *printf.c* to your project and include *printf.h*. That's it.  
+Implement your low level output function needed for `printf()`:
+```C
+void _putchar(char character)
+{
+  // send char to console etc.
+}
+```
 
+Usage is 1:1 like the according stdio.h library version:
+```C
 `int printf(const char* format, ...);`  
 `int sprintf(char* buffer, const char* format, ...);`  
 `int snprintf(char* buffer, size_t count, const char* format, ...);`  
+```
 
 **Due to genaral security reasons it is highly recommended to use `snprintf` (with the max buffer size as `count` parameter) only.**  
 `sprintf` has no buffer limitation, so when necessary - use it with care!

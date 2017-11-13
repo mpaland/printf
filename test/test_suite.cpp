@@ -35,15 +35,13 @@
 namespace test {
   // use functions in own test namespace to avoid stdio conflicts
   #include "../printf.h"
-  #include "../printf.cpp"
+  #include "../printf.c"
 } // namespace test
 
 
 // dummy putchar
-int test::_putchar(char)
-{
-  return 0;
-}
+void test::_putchar(char)
+{ }
 
 
 
