@@ -214,7 +214,7 @@ static size_t _ntoa_long_long(char* buffer, unsigned long long value, bool negat
 static size_t _ftoa(double value, char* buffer, size_t maxlen, unsigned int prec, unsigned int width, unsigned int flags)
 {
   char buf[FTOA_BUFFER_SIZE];
-  size_t len = 0U;
+  size_t len  = 0U;
   double diff = 0.0;
 
   // if input is larger than thres_max, revert to exponential
@@ -223,10 +223,11 @@ static size_t _ftoa(double value, char* buffer, size_t maxlen, unsigned int prec
   // powers of 10
   static const double pow10[] = { 1, 10, 100, 1000, 10000, 100000, 1000000, 10000000, 100000000, 1000000000 };
 
-  // test for NaN
-  if (!(value == value) && (maxlen > 2U)) {
-    buffer[0] = 'n'; buffer[1] = 'a'; buffer[2] = 'n';
-    return (size_t)3U;
+  // test for negative
+  bool negative = false;
+  if (value < 0) {
+    negative = true;
+    value = 0 - value;
   }
 
   // limit precision
@@ -236,12 +237,6 @@ static size_t _ftoa(double value, char* buffer, size_t maxlen, unsigned int prec
   if (prec > 9U) {
     // precision of >= 10 can lead to overflow errors
     prec = 9U;
-  }
-
-  unsigned int negative = 0U;
-  if (value < 0) {
-    negative = 1U;
-    value = 0 - value;
   }
 
   int whole = (int)value;
