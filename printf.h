@@ -44,7 +44,6 @@ extern "C" {
  * Output a character to a custom device like UART.
  * This function is declared here only. You have to write your custom implementation somewhere.
  * \param character to output
- * \return On success, the character written is returned
  */
 void _putchar(char character);
 
