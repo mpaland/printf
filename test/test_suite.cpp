@@ -35,15 +35,13 @@
 namespace test {
   // use functions in own test namespace to avoid stdio conflicts
   #include "../printf.h"
-  #include "../printf.cpp"
+  #include "../printf.c"
 } // namespace test
 
 
 // dummy putchar
-int test::_putchar(char)
-{
-  return 0;
-}
+void test::_putchar(char)
+{ }
 
 
 
@@ -883,20 +881,47 @@ TEST_CASE("float", "[]" ) {
 TEST_CASE("types", "[]" ) {
   char buffer[100];
 
+  test::sprintf(buffer, "%i", 0);
+  REQUIRE(!strcmp(buffer, "0"));
+
   test::sprintf(buffer, "%i", 1234);
   REQUIRE(!strcmp(buffer, "1234"));
+
+  test::sprintf(buffer, "%i", 32767);
+  REQUIRE(!strcmp(buffer, "32767"));
+
+  test::sprintf(buffer, "%i", -32767);
+  REQUIRE(!strcmp(buffer, "-32767"));
 
   test::sprintf(buffer, "%li", 30L);
   REQUIRE(!strcmp(buffer, "30"));
 
+  test::sprintf(buffer, "%li", -2147483647L);
+  REQUIRE(!strcmp(buffer, "-2147483647"));
+
+  test::sprintf(buffer, "%li", 2147483647L);
+  REQUIRE(!strcmp(buffer, "2147483647"));
+
   test::sprintf(buffer, "%lli", 30LL);
   REQUIRE(!strcmp(buffer, "30"));
+
+  test::sprintf(buffer, "%lli", -9223372036854775807LL);
+  REQUIRE(!strcmp(buffer, "-9223372036854775807"));
+
+  test::sprintf(buffer, "%lli", 9223372036854775807LL);
+  REQUIRE(!strcmp(buffer, "9223372036854775807"));
 
   test::sprintf(buffer, "%lu", 100000L);
   REQUIRE(!strcmp(buffer, "100000"));
 
+  test::sprintf(buffer, "%lu", 0xFFFFFFFFL);
+  REQUIRE(!strcmp(buffer, "4294967295"));
+
   test::sprintf(buffer, "%llu", 281474976710656LLU);
   REQUIRE(!strcmp(buffer, "281474976710656"));
+
+  test::sprintf(buffer, "%llu", 18446744073709551615LLU);
+  REQUIRE(!strcmp(buffer, "18446744073709551615"));
 
   test::sprintf(buffer, "%b", 60000);
   REQUIRE(!strcmp(buffer, "1110101001100000"));
@@ -950,6 +975,14 @@ TEST_CASE("pointer", "[]" ) {
   }
   else {
     REQUIRE(!strcmp(buffer, "0000000012345678"));
+  }
+
+  test::sprintf(buffer, "%p", (void*)0xFFFFFFFFLU);
+  if (sizeof(void*) == 4U) {
+    REQUIRE(!strcmp(buffer, "FFFFFFFF"));
+  }
+  else {
+    REQUIRE(!strcmp(buffer, "00000000FFFFFFFF"));
   }
 }
 
