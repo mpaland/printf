@@ -65,11 +65,12 @@
 #define FLAGS_WIDTH     (1U << 9U)
 
 
-// internal strlen, returns the length of the string 
+// internal strlen
+// \return The length of the string (excluding the terminating 0)
 static inline size_t _strlen(const char* str)
 {
   size_t len = 0U;
-  while (str[len] != '\0') {
+  while (str[len] != (char)0) {
     len++;
   }
   return len;
@@ -260,10 +261,10 @@ static size_t _ftoa(double value, char* buffer, size_t maxlen, unsigned int prec
   // for very large numbers switch back to native sprintf for exponentials. anyone want to write code to replace this?
   // normal printf behavior is to print EVERY whole number digit which can be 100s of characters overflowing your buffers == bad
   if (value > thres_max) {
-    return 0;
+    return 0U;
   }
 
-  if (prec == 0) {
+  if (prec == 0U) {
     diff = value - whole;
     if (diff > 0.5) {
       // greater than 0.5, round up, e.g. 1.6 -> 2
@@ -346,15 +347,15 @@ static size_t _ftoa(double value, char* buffer, size_t maxlen, unsigned int prec
 
 
 // internal vsnprintf
-static size_t vsnprintf(char* buffer, size_t buffer_len, const char* format, va_list va)
+static size_t _vsnprintf(char* buffer, size_t buffer_len, const char* format, va_list va)
 {
   unsigned int flags, width, precision, n;
   size_t idx = 0U;
 
   while (idx < buffer_len) {
     // end reached?
-    if (*format == '\0') {
-      buffer[idx] = '\0';
+    if (*format == (char)0) {
+      buffer[idx] = (char)0;
       break;
     }
 
@@ -426,13 +427,13 @@ static size_t vsnprintf(char* buffer, size_t buffer_len, const char* format, va_
 
     // evaluate specifier
     switch (*format) {
+      case 'd' :
+      case 'i' :
       case 'u' :
       case 'x' :
       case 'X' :
       case 'o' :
-      case 'b' :
-      case 'd' :
-      case 'i' : {
+      case 'b' : {
         // set the base
         unsigned int base;
         if (*format == 'x' || *format == 'X') {
@@ -584,7 +585,7 @@ int printf(const char* format, ...)
   va_list va;
   va_start(va, format);
   char buffer[PRINTF_BUFFER_SIZE];
-  size_t ret = vsnprintf(buffer, PRINTF_BUFFER_SIZE, format, va);
+  size_t ret = _vsnprintf(buffer, PRINTF_BUFFER_SIZE, format, va);
   va_end(va);
   for (size_t i = 0U; i < ret; ++i) {
     _putchar(buffer[i]);
@@ -597,7 +598,7 @@ int sprintf(char* buffer, const char* format, ...)
 {
   va_list va;
   va_start(va, format);
-  size_t ret = vsnprintf(buffer, (size_t)-1, format, va);
+  size_t ret = _vsnprintf(buffer, (size_t)-1, format, va);
   va_end(va);
   return (int)ret;
 }
@@ -607,7 +608,7 @@ int snprintf(char* buffer, size_t count, const char* format, ...)
 {
   va_list va;
   va_start(va, format);
-  size_t ret = vsnprintf(buffer, count, format, va);
+  size_t ret = _vsnprintf(buffer, count, format, va);
   va_end(va);
   return (int)ret;
 }
