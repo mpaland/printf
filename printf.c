@@ -549,9 +549,8 @@ static size_t vsnprintf(char* buffer, size_t buffer_len, const char* format, va_
 
       case 'p' : {
         width = sizeof(void*) * 2U;
-        flags |= FLAGS_ZEROPAD;
-        size_t size_void = sizeof(void*);
-        if (size_void > sizeof(long)) {
+        flags |= FLAGS_ZEROPAD | FLAGS_UPPERCASE;
+        if (sizeof(void*) == sizeof(long long)) {
 #if defined(PRINTF_LONG_LONG_SUPPORT)
           idx += _ntoa_long_long(&buffer[idx], (unsigned long long)va_arg(va, void*), false, 16U, buffer_len - idx, precision, width, flags);
 #endif
