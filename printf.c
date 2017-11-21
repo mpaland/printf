@@ -35,13 +35,13 @@
 #include "printf.h"
 
 
-// buffer size used for printf
+// buffer size used for printf (created on stack)
 #define PRINTF_BUFFER_SIZE    128U
 
-// ntoa conversion buffer size, this must be big enough to hold one converted numeric number
+// ntoa conversion buffer size, this must be big enough to hold one converted numeric number (created on stack)
 #define NTOA_BUFFER_SIZE      32U
 
-// ftoa conversion buffer size, this must be big enough to hold one converted float number
+// ftoa conversion buffer size, this must be big enough to hold one converted float number (created on stack)
 #define FTOA_BUFFER_SIZE      32U
 
 // define this to support floating point (%f)
