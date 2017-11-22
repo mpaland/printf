@@ -977,11 +977,12 @@ TEST_CASE("pointer", "[]" ) {
     REQUIRE(!strcmp(buffer, "0000000012345678"));
   }
 
-  test::sprintf(buffer, "%p", (void*)0xFFFFFFFFLU);
-  if (sizeof(void*) == 4U) {
+  if (sizeof(void*) == sizeof(long)) {
+    test::sprintf(buffer, "%p", (void*)(long)0xFFFFFFFFU);
     REQUIRE(!strcmp(buffer, "FFFFFFFF"));
   }
   else {
+    test::sprintf(buffer, "%p", (void*)(unsigned long long)0xFFFFFFFFU);
     REQUIRE(!strcmp(buffer, "00000000FFFFFFFF"));
   }
 }

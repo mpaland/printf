@@ -32,6 +32,7 @@
 
 #include <stdarg.h>
 #include <stdbool.h>
+#include <stdint.h>
 #include "printf.h"
 
 
@@ -270,7 +271,7 @@ static size_t _ftoa(double value, char* buffer, size_t maxlen, unsigned int prec
       // greater than 0.5, round up, e.g. 1.6 -> 2
       ++whole;
     }
-    else if (diff == 0.5 && (whole & 1)) {
+    else if ((diff == 0.5) && (whole & 1)) {
       // exactly 0.5 and ODD, then round up
       // 1.5 -> 2, but 2.5 -> 2
       ++whole;
@@ -551,13 +552,13 @@ static size_t _vsnprintf(char* buffer, size_t buffer_len, const char* format, va
       case 'p' : {
         width = sizeof(void*) * 2U;
         flags |= FLAGS_ZEROPAD | FLAGS_UPPERCASE;
-        if (sizeof(void*) == sizeof(long long)) {
+        if (sizeof(uintptr_t) == sizeof(long long)) {
 #if defined(PRINTF_LONG_LONG_SUPPORT)
-          idx += _ntoa_long_long(&buffer[idx], (unsigned long long)va_arg(va, void*), false, 16U, buffer_len - idx, precision, width, flags);
+          idx += _ntoa_long_long(&buffer[idx], (uintptr_t)va_arg(va, void*), false, 16U, buffer_len - idx, precision, width, flags);
 #endif
         }
         else {
-          idx += _ntoa_long(&buffer[idx], (unsigned long)va_arg(va, void*), false, 16U, buffer_len - idx, precision, width, flags);
+          idx += _ntoa_long(&buffer[idx], (unsigned long)((uintptr_t)va_arg(va, void*)), false, 16U, buffer_len - idx, precision, width, flags);
         }
         format++;
         break;
