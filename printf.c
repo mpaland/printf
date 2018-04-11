@@ -70,22 +70,21 @@
 // \return The length of the string (excluding the terminating 0)
 static inline size_t _strlen(const char* str)
 {
-  size_t len = 0U;
-  while (str[len] != (char)0) {
-    len++;
-  }
-  return len;
+  const char* s;
+  for (s = str; *s; ++s);
+  return (size_t)(s - str);
 }
 
 
-// returns true if char is a digit
+// internal test if char is a digit (0-9)
+// \return true if char is a digit
 static inline bool _is_digit(char ch)
 {
   return (ch >= '0') && (ch <= '9');
 }
 
 
-// internal ASCII to unsigned int conversion
+// internal ASCII string to unsigned int conversion
 static inline unsigned int _atoi(const char** str)
 {
   unsigned int i = 0U;
