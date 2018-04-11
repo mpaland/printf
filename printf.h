@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////////////
 // \author (c) Marco Paland (info@paland.com)
-//             2014-2017, PALANDesign Hannover, Germany
+//             2014-2018, PALANDesign Hannover, Germany
 //
 // \license The MIT License (MIT)
 //
@@ -41,9 +41,9 @@ extern "C" {
 
 
 /**
- * Output a character to a custom device like UART.
- * This function is declared here only. You have to write your custom implementation somewhere.
- * \param character to output
+ * Output a character to a custom device like UART, used by the printf() function
+ * This function is declared here only. You have to write your custom implementation somewhere
+ * \param character Character to output
  */
 void _putchar(char character);
 
@@ -59,8 +59,8 @@ int printf(const char* format, ...);
 
 /**
  * Tiny sprintf implementation
- * Due to security reasons YOU SHOULD CONSIDER USING SNPRINTF INSTEAD!
- * \param buffer A pointer to the buffer where to store the formatted string
+ * Due to security reasons (buffer overflow) YOU SHOULD CONSIDER USING SNPRINTF INSTEAD!
+ * \param buffer A pointer to the buffer where to store the formatted string. MUST be big enough to store the output!
  * \param format A string that specifies the format of the output
  * \return The number of characters that are written into the array, not counting the terminating null character
  */
@@ -70,7 +70,7 @@ int sprintf(char* buffer, const char* format, ...);
 /**
  * Tiny snprintf implementation
  * \param buffer A pointer to the buffer where to store the formatted string
- * \param count The maximum number of characters to store in the buffer, including a terminating null character
+ * \param count The maximum number of characters to store in the buffer, INCLUDING the terminating null character
  * \param format A string that specifies the format of the output
  * \return The number of characters that are written into the array, not counting the terminating null character
  */
