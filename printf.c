@@ -346,9 +346,8 @@ static size_t _ftoa(double value, char* buffer, size_t maxlen, unsigned int prec
 }
 #endif  // PRINTF_FLOAT_SUPPORT
 
-
-// internal vsnprintf
-static size_t _vsnprintf(char* buffer, size_t buffer_len, const char* format, va_list va)
+///////////////////////////////////////////////////////////////////////////////
+size_t _vsnprintf(char* buffer, size_t buffer_len, const char* format, va_list va)
 {
   unsigned int flags, width, precision, n;
   size_t idx = 0U;
@@ -579,7 +578,6 @@ static size_t _vsnprintf(char* buffer, size_t buffer_len, const char* format, va
   return idx;
 }
 
-///////////////////////////////////////////////////////////////////////////////
 
 int printf(const char* format, ...)
 {
