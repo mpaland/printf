@@ -168,7 +168,7 @@ static size_t _ntoa_format(char* buffer, char* buf, size_t len, bool negative, u
     }
   }
 
-  return len;
+  return len > maxlen ? maxlen : len;
 }
 
 
@@ -342,7 +342,7 @@ static size_t _ftoa(double value, char* buffer, size_t maxlen, unsigned int prec
     }
   }
 
-  return len;
+  return len > maxlen ? maxlen : len;
 }
 #endif  // PRINTF_FLOAT_SUPPORT
 
