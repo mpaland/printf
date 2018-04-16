@@ -348,16 +348,17 @@ static size_t _ftoa(double value, char* buffer, size_t maxlen, unsigned int prec
 
 
 // internal vsnprintf
-static size_t _vsnprintf(char* buffer, size_t buffer_len, const char* format, va_list va)
+static size_t _vsnprintf(char* buffer, size_t bufsz, const char* format, va_list va)
 {
   unsigned int flags, width, precision, n;
   size_t idx = 0U;
+  size_t buffer_len = bufsz - 1;
 
   while (idx < buffer_len) {
     // end reached?
     if (*format == (char)0) {
       buffer[idx] = (char)0;
-      break;
+      return idx;
     }
 
     // format specifier?  %[flags][width][.precision][length]
@@ -575,6 +576,10 @@ static size_t _vsnprintf(char* buffer, size_t buffer_len, const char* format, va
         break;
     }
   }
+
+  // zero-terminate on overflow
+  if (idx == buffer_len)
+      buffer[buffer_len] = (char)0;
 
   return idx;
 }
