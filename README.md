@@ -115,6 +115,7 @@ The length sub-specifier modifies the length of the data type.
 | (none) | int  | unsigned int |
 | l      | long int | unsigned long int |
 | ll     | long long int | unsigned long long int |
+| z      | size_t int | unsigned size_t int |
 
 
 ## Compiler switches/defines

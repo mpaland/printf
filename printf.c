@@ -425,6 +425,10 @@ static size_t _vsnprintf(char* buffer, size_t buffer_len, const char* format, va
       flags |= FLAGS_LONG_LONG;
       format++;
     }
+    if (*format == 'z') {
+      flags |= (sizeof(size_t) == sizeof(long) ? FLAGS_LONG : FLAGS_LONG_LONG);
+      format++;
+    }
 
     // evaluate specifier
     switch (*format) {
