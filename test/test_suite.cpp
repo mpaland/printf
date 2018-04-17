@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////////////
 // \author (c) Marco Paland (info@paland.com)
-//             2017, PALANDesign Hannover, Germany
+//             2017-2018, PALANDesign Hannover, Germany
 //
 // \license The MIT License (MIT)
 //
@@ -922,6 +922,21 @@ TEST_CASE("types", "[]" ) {
 
   test::sprintf(buffer, "%llu", 18446744073709551615LLU);
   REQUIRE(!strcmp(buffer, "18446744073709551615"));
+
+  test::sprintf(buffer, "%zu", 2147483647UL);
+  REQUIRE(!strcmp(buffer, "2147483647"));
+
+  test::sprintf(buffer, "%zd", 2147483647UL);
+  REQUIRE(!strcmp(buffer, "2147483647"));
+
+  if (sizeof(size_t) == sizeof(long)) {
+    test::sprintf(buffer, "%zi", -2147483647L);
+    REQUIRE(!strcmp(buffer, "-2147483647"));
+  }
+  else {
+    test::sprintf(buffer, "%zi", -2147483647LL);
+    REQUIRE(!strcmp(buffer, "-2147483647"));
+  }
 
   test::sprintf(buffer, "%b", 60000);
   REQUIRE(!strcmp(buffer, "1110101001100000"));
