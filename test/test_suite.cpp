@@ -817,6 +817,12 @@ TEST_CASE("length", "[]" ) {
   test::sprintf(buffer, "%20.x", 305441741);
   REQUIRE(!strcmp(buffer, "            1234abcd"));
 
+  test::sprintf(buffer, "%50.x", 305441741);
+  REQUIRE(!strcmp(buffer, "                                          1234abcd"));
+
+  test::sprintf(buffer, "%50.x%10.u", 305441741, 12345);
+  REQUIRE(!strcmp(buffer, "                                          1234abcd     12345"));
+
   test::sprintf(buffer, "%20.0x", 3989525555U);
   REQUIRE(!strcmp(buffer, "            edcb5433"));
 
