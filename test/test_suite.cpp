@@ -817,6 +817,12 @@ TEST_CASE("length", "[]" ) {
   test::sprintf(buffer, "%20.x", 305441741);
   REQUIRE(!strcmp(buffer, "            1234abcd"));
 
+  test::sprintf(buffer, "%50.x", 305441741);
+  REQUIRE(!strcmp(buffer, "                                          1234abcd"));
+
+  test::sprintf(buffer, "%50.x%10.u", 305441741, 12345);
+  REQUIRE(!strcmp(buffer, "                                          1234abcd     12345"));
+
   test::sprintf(buffer, "%20.0x", 3989525555U);
   REQUIRE(!strcmp(buffer, "            edcb5433"));
 
@@ -1008,6 +1014,59 @@ TEST_CASE("unknown flag", "[]" ) {
 
   test::sprintf(buffer, "%kmarco", 42, 37);
   REQUIRE(!strcmp(buffer, "kmarco"));
+}
+
+
+TEST_CASE("buffer length", "[]" ) {
+  char buffer[100];
+  int ret;
+
+  // formatted length, this should return '4',
+  // but this feature is not implemented, returning 0
+  ret = test::snprintf(nullptr, 10, "%s", "Test");
+  REQUIRE(ret == 0);
+  ret = test::snprintf(nullptr, 0, "%s", "Test");
+  REQUIRE(ret == 0);
+
+  buffer[0] = (char)0xA5;
+  ret = test::snprintf(buffer, 0, "%s", "Test");
+  REQUIRE(buffer[0] == (char)0xA5);
+  REQUIRE(ret == 0);
+
+  buffer[0] = 0xCC;
+  test::snprintf(buffer, 1, "%s", "Test");
+  REQUIRE(buffer[0] == '\0');
+
+  test::snprintf(buffer, 2, "%s", "Hello");
+  REQUIRE(!strcmp(buffer, "H"));
+}
+
+
+TEST_CASE("ret value", "[]" ) {
+  char buffer[100] ;
+  int ret;
+
+  ret = test::snprintf(buffer, 6, "0%s", "1234");
+  REQUIRE(!strcmp(buffer, "01234"));
+  REQUIRE(ret == 5);
+
+  ret = test::snprintf(buffer, 6, "0%s", "12345");
+  REQUIRE(!strcmp(buffer, "01234"));
+  REQUIRE(ret == 6);  // '5' is truncated
+
+  ret = test::snprintf(buffer, 6, "0%s", "1234567");
+  REQUIRE(!strcmp(buffer, "01234"));
+  REQUIRE(ret == 6);  // '567' are truncated
+
+  ret = test::snprintf(buffer, 10, "hello, world");
+  REQUIRE(ret == 10);
+
+  ret = test::snprintf(buffer, 3, "%d", 10000);
+  REQUIRE(ret == 3);  // '000' are truncated
+  REQUIRE(strlen(buffer) == 2U);
+  REQUIRE(buffer[0] == '1');
+  REQUIRE(buffer[1] == '0');
+  REQUIRE(buffer[2] == '\0');
 }
 
 
