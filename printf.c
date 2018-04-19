@@ -30,19 +30,21 @@
 //
 ///////////////////////////////////////////////////////////////////////////////
 
-#include <stdarg.h>
 #include <stdbool.h>
+#include <stddef.h>
 #include <stdint.h>
 #include "printf.h"
 
 
-// buffer size used for printf (created on stack)
+// buffer size used omly for printf (created on stack)
 #define PRINTF_BUFFER_SIZE        128U
 
-// ntoa conversion buffer size, this must be big enough to hold one converted numeric number (created on stack)
+// ntoa conversion buffer size, this must be big enough to hold
+// one converted numeric number including padded zeros (created on stack)
 #define PRINTF_NTOA_BUFFER_SIZE    32U
 
-// ftoa conversion buffer size, this must be big enough to hold one converted float number (created on stack)
+// ftoa conversion buffer size, this must be big enough to hold
+// one converted float number including padded zeros (created on stack)
 #define PRINTF_FTOA_BUFFER_SIZE    32U
 
 // define this to support floating point (%f)
@@ -349,14 +351,14 @@ static size_t _ftoa(double value, char* buffer, size_t maxlen, unsigned int prec
 
 
 // internal vsnprintf
-static size_t _vsnprintf(char* buffer, size_t buffer_len, const char* format, va_list va)
+static int _vsnprintf(char* buffer, size_t buffer_len, const char* format, va_list va)
 {
   unsigned int flags, width, precision, n;
   size_t idx = 0U;
 
   // check if buffer is valid
   if (!buffer) {
-    return 0U;
+    return -1;
   }
 
   while ((idx < buffer_len) && *format)
@@ -587,7 +589,7 @@ static size_t _vsnprintf(char* buffer, size_t buffer_len, const char* format, va
   }
 
   // return written chars without terminating \0
-  return idx;
+  return (int)idx;
 }
 
 
@@ -598,12 +600,12 @@ int printf(const char* format, ...)
   va_list va;
   va_start(va, format);
   char buffer[PRINTF_BUFFER_SIZE];
-  size_t ret = _vsnprintf(buffer, PRINTF_BUFFER_SIZE, format, va);
+  int ret = _vsnprintf(buffer, PRINTF_BUFFER_SIZE, format, va);
   va_end(va);
   for (size_t i = 0U; i < ret; ++i) {
     _putchar(buffer[i]);
   }
-  return (int)ret;
+  return ret;
 }
 
 
@@ -611,9 +613,9 @@ int sprintf(char* buffer, const char* format, ...)
 {
   va_list va;
   va_start(va, format);
-  size_t ret = _vsnprintf(buffer, (size_t)-1, format, va);
+  int ret = _vsnprintf(buffer, (size_t)-1, format, va);
   va_end(va);
-  return (int)ret;
+  return ret;
 }
 
 
@@ -621,7 +623,14 @@ int snprintf(char* buffer, size_t count, const char* format, ...)
 {
   va_list va;
   va_start(va, format);
-  size_t ret = _vsnprintf(buffer, count, format, va);
+  int ret = _vsnprintf(buffer, count, format, va);
   va_end(va);
-  return (int)ret;
+  return ret;
 }
+
+
+inline int vsnprintf(char* buffer, size_t count, const char* format, va_list va)
+{
+  return _vsnprintf(buffer, count, format, va);
+}
+
