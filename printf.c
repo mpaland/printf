@@ -355,13 +355,13 @@ static size_t _vsnprintf(char* buffer, size_t buffer_len, const char* format, va
   unsigned int flags, width, precision, n;
   size_t idx = 0U;
 
-  while (idx < buffer_len) {
-    // end reached?
-    if (*format == (char)0) {
-      buffer[idx] = (char)0;
-      break;
-    }
+  // check if buffer is valid
+  if (!buffer) {
+    return 0U;
+  }
 
+  while ((idx < buffer_len) && *format)
+  {
     // format specifier?  %[flags][width][.precision][length]
     if (*format != '%') {
       // no
@@ -582,8 +582,15 @@ static size_t _vsnprintf(char* buffer, size_t buffer_len, const char* format, va
     }
   }
 
+  // termination
+  if (buffer_len > 0U) {
+    buffer[idx == buffer_len ? buffer_len - 1U : idx] = (char)0;
+  }
+
+  // return written chars without terminating \0
   return idx;
 }
+
 
 ///////////////////////////////////////////////////////////////////////////////
 
