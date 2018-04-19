@@ -998,12 +998,12 @@ TEST_CASE("pointer", "[]" ) {
     REQUIRE(!strcmp(buffer, "0000000012345678"));
   }
 
-  if (sizeof(uintptr_t) == sizeof(long long)) {
-    test::sprintf(buffer, "%p", (void*)(unsigned long long)0xFFFFFFFFU);
+  if (sizeof(uintptr_t) == sizeof(uint64_t)) {
+    test::sprintf(buffer, "%p", (void*)(uintptr_t)0xFFFFFFFFU);
     REQUIRE(!strcmp(buffer, "00000000FFFFFFFF"));
   }
   else {
-    test::sprintf(buffer, "%p", (void*)(unsigned long)0xFFFFFFFFU);
+    test::sprintf(buffer, "%p", (void*)(uintptr_t)0xFFFFFFFFU);
     REQUIRE(!strcmp(buffer, "FFFFFFFF"));
   }
 }
@@ -1024,9 +1024,9 @@ TEST_CASE("buffer length", "[]" ) {
   // formatted length, this should return '4',
   // but this feature is not implemented, returning 0
   ret = test::snprintf(nullptr, 10, "%s", "Test");
-  REQUIRE(ret == 0);
+  REQUIRE(ret == -1);
   ret = test::snprintf(nullptr, 0, "%s", "Test");
-  REQUIRE(ret == 0);
+  REQUIRE(ret == -1);
 
   buffer[0] = (char)0xA5;
   ret = test::snprintf(buffer, 0, "%s", "Test");
