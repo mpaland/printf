@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////////////
 // \author (c) Marco Paland (info@paland.com)
-//             2014-2017, PALANDesign Hannover, Germany
+//             2014-2018, PALANDesign Hannover, Germany
 //
 // \license The MIT License (MIT)
 //
@@ -22,7 +22,7 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 //
-// \brief Tiny printf, sprintf and snprintf implementation, optimized for speed on
+// \brief Tiny printf, sprintf and (v)snprintf implementation, optimized for speed on
 //        embedded systems with a very limited resources. These routines are thread
 //        safe and reentrant!
 //        Use this instead of the bloated standard/newlib printf cause these use
@@ -261,7 +261,7 @@ static size_t _ftoa(double value, char* buffer, size_t maxlen, unsigned int prec
     ++frac;
   }
 
-  // for very large numbers switch back to native sprintf for exponentials. anyone want to write code to replace this?
+  // TBD: for very large numbers switch back to native sprintf for exponentials. anyone want to write code to replace this?
   // normal printf behavior is to print EVERY whole number digit which can be 100s of characters overflowing your buffers == bad
   if (value > thres_max) {
     return 0U;
