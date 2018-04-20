@@ -79,6 +79,12 @@ TEST_CASE("space flag", "[]" ) {
   test::sprintf(buffer, "% 15d", -42);
   REQUIRE(!strcmp(buffer, "            -42"));
 
+  test::sprintf(buffer, "% 15.3f", -42.987);
+  REQUIRE(!strcmp(buffer, "        -42.987"));
+
+  test::sprintf(buffer, "% 15.3f", 42.987);
+  REQUIRE(!strcmp(buffer, "         42.987"));
+
   test::sprintf(buffer, "% s", "Hello testing");
   REQUIRE(!strcmp(buffer, "Hello testing"));
 
@@ -211,6 +217,15 @@ TEST_CASE("0 flag", "[]" ) {
 
   test::sprintf(buffer, "%015d", -42);
   REQUIRE(!strcmp(buffer, "-00000000000042"));
+
+  test::sprintf(buffer, "%015.2f", 42.1234);
+  REQUIRE(!strcmp(buffer, "000000000042.12"));
+
+  test::sprintf(buffer, "%015.3f", 42.9876);
+  REQUIRE(!strcmp(buffer, "00000000042.988"));
+
+  test::sprintf(buffer, "%015.5f", -42.9876);
+  REQUIRE(!strcmp(buffer, "-00000042.98760"));
 }
 
 
@@ -484,6 +499,9 @@ TEST_CASE("width -20", "[]" ) {
 
   test::sprintf(buffer, "%-20u", 1024);
   REQUIRE(!strcmp(buffer, "1024                "));
+
+  test::sprintf(buffer, "%-20.4f", 1024.1234);
+  REQUIRE(!strcmp(buffer, "1024.1234           "));
 
   test::sprintf(buffer, "%-20u", 4294966272U);
   REQUIRE(!strcmp(buffer, "4294966272          "));

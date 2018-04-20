@@ -303,16 +303,16 @@ static size_t _ftoa(double value, char* buffer, size_t maxlen, unsigned int prec
       break;
     }
   }
-  
+
   // pad leading zeros
-  while (!(flags & FLAGS_LEFT) && (len < prec) && (len < PRINTF_FTOA_BUFFER_SIZE)) {
-    buf[len++] = '0';
-  }
   while (!(flags & FLAGS_LEFT) && (flags & FLAGS_ZEROPAD) && (len < width) && (len < PRINTF_FTOA_BUFFER_SIZE)) {
     buf[len++] = '0';
   }
 
   // handle sign
+  if ((len == width) && (negative || (flags & FLAGS_PLUS) || (flags & FLAGS_SPACE))) {
+    len--;
+  }
   if (len < PRINTF_FTOA_BUFFER_SIZE) {
     if (negative) {
       buf[len++] = '-';
