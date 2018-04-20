@@ -63,3 +63,5 @@ script:
 after_success:
   # Report to coveralls
   - coveralls --build-root ${TRAVIS_BUILD_DIR} --include printf.cpp --gcov 'gcov-6' --gcov-options '\-lp'
+  ## Report to codecov
+  - bash <(curl -s https://codecov.io/bash)
