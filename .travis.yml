@@ -32,8 +32,6 @@ addons:
     branch_pattern: master
 
 before_install:
-  # install coveralls
-  - pip install --user cpp-coveralls
   # connect coverity
   - echo -n | openssl s_client -connect scan.coverity.com:443 | sed -ne '/-BEGIN CERTIFICATE-/,/-END CERTIFICATE-/p' | sudo tee -a /etc/ssl/certs/ca-
 
@@ -61,7 +59,5 @@ script:
   - tmp/cov/test_suite
 
 after_success:
-  # Report to coveralls
-  - coveralls --build-root ${TRAVIS_BUILD_DIR} --include printf.cpp --gcov 'gcov-6' --gcov-options '\-lp'
   ## Report to codecov
   - bash <(curl -s https://codecov.io/bash)
