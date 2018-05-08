@@ -70,9 +70,16 @@ typedef void (*out_fct_type)(char character, char* buffer, size_t idx, size_t ma
 // internal buffer output
 static inline void _out_buffer(char character, char* buffer, size_t idx, size_t maxlen)
 {
-  if (!!buffer && (idx < maxlen)) {
+  if (idx < maxlen) {
     buffer[idx] = character;
   }
+}
+
+
+// internal null output
+static inline void _out_null(char character, char* buffer, size_t idx, size_t maxlen)
+{
+  (void)character; (void)buffer; (void)idx; (void)maxlen;
 }
 
 
@@ -362,6 +369,11 @@ static int _vsnprintf(out_fct_type out, char* buffer, const size_t maxlen, const
 {
   unsigned int flags, width, precision, n;
   size_t idx = 0U;
+
+  if (!buffer) {
+    // use null output function
+    out = _out_null;
+  }
 
   while (*format)
   {
