@@ -293,12 +293,12 @@ static size_t _ftoa(out_fct_type out, char* buffer, size_t idx, size_t maxlen, d
   }
 
   if (prec == 0U) {
-    diff = value - whole;
+    diff = value - (double)whole;
     if (diff > 0.5) {
       // greater than 0.5, round up, e.g. 1.6 -> 2
       ++whole;
     }
-    else if ((diff == 0.5) && (whole & 1U)) {
+    else if ((diff == 0.5) && (whole & 1)) {
       // exactly 0.5 and ODD, then round up
       // 1.5 -> 2, but 2.5 -> 2
       ++whole;
@@ -528,7 +528,7 @@ static int _vsnprintf(out_fct_type out, char* buffer, const size_t maxlen, const
             idx = _ntoa_long(out, buffer, idx, maxlen, (unsigned long)(value > 0 ? value : 0 - value), value < 0, base, precision, width, flags);
           }
           else {
-            const int value = (flags & FLAGS_CHAR) ? va_arg(va, char) : (flags & FLAGS_SHORT) ? va_arg(va, short int) : va_arg(va, int);
+            const int value = (flags & FLAGS_CHAR) ? (char)va_arg(va, int) : (flags & FLAGS_SHORT) ? (short int)va_arg(va, int) : va_arg(va, int);
             idx = _ntoa_long(out, buffer, idx, maxlen, (unsigned int)(value > 0 ? value : 0 - value), value < 0, base, precision, width, flags);
           }
         }
@@ -543,7 +543,7 @@ static int _vsnprintf(out_fct_type out, char* buffer, const size_t maxlen, const
             idx = _ntoa_long(out, buffer, idx, maxlen, va_arg(va, unsigned long), false, base, precision, width, flags);
           }
           else {
-            const unsigned int value = (flags & FLAGS_CHAR) ? va_arg(va, unsigned char) : (flags & FLAGS_SHORT) ? va_arg(va, unsigned short int) : va_arg(va, unsigned int);
+            const unsigned int value = (flags & FLAGS_CHAR) ? (unsigned char)va_arg(va, unsigned int) : (flags & FLAGS_SHORT) ? (unsigned short int)va_arg(va, unsigned int) : va_arg(va, unsigned int);
             idx = _ntoa_long(out, buffer, idx, maxlen, value, false, base, precision, width, flags);
           }
         }

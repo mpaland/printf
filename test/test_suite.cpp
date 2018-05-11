@@ -894,7 +894,7 @@ TEST_CASE("float", "[]" ) {
   test::sprintf(buffer, "%.1f", 42.5);
   REQUIRE(!strcmp(buffer, "42.5"));
 
-  test::sprintf(buffer, "%f", (float)42167);
+  test::sprintf(buffer, "%f", 42167.0);
   REQUIRE(!strcmp(buffer, "42167.000000"));
 
   test::sprintf(buffer, "%.9f", -12345.987654321);
@@ -1069,7 +1069,7 @@ TEST_CASE("buffer length", "[]" ) {
   REQUIRE(buffer[0] == (char)0xA5);
   REQUIRE(ret == 4);
 
-  buffer[0] = 0xCC;
+  buffer[0] = (char)0xCC;
   test::snprintf(buffer, 1, "%s", "Test");
   REQUIRE(buffer[0] == '\0');
 
