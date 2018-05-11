@@ -26,7 +26,7 @@ Therefore I decided to write an own, final implementation which meets the follow
  - NO dependencies, no libs, just one module file
  - Support of all important flags, width and precision sub-specifiers (see below)
  - Support of decimal/floating number representation (with an own fast itoa/ftoa)
- - Reentrant and thread-safe, malloc free
+ - Reentrant and thread-safe, malloc free, no static vars/buffers
  - LINT and compiler L4 warning free, mature, coverity clean, automotive ready
  - Extensive test suite (> 310 test cases) passing
  - Simply the best *printf* around the net
@@ -119,24 +119,22 @@ The length sub-specifier modifies the length of the data type.
 
 
 ### Return value
-Upon successful return, all functions return the number of characters _written_, _excluding_ the null byte used to end the string.  
-Functions `snprintf()` and `vsnprintf()` don't write more than `count` bytes, _including_ the terminating null byte ('\0'). If the output was truncated 
-due to this limit, the return value is `count`, which indicates any truncation.  
-If an output error (invalid buffer etc.) is encountered, `-1` is returned.
 
-
-## Caveats
-Currently `snprintf()` and `vsnprintf()` don't support `(v)snprintf(nullptr, 0, "Some text")` to get the length of the formatted string only. An error value of `-1` is returned.
+Upon successful return, all functions return the number of characters written, _excluding_ the terminating null character used to end the string.  
+Functions `snprintf()` and `vsnprintf()` don't write more than `count` bytes, _including_ the terminating null byte ('\0').  
+Anyway, if the output was truncated due to this limit, the return value is the number of characters that _could_ have been written.  
+Notice that a value equal or larger than `count` indicates a truncation. Only when the returned value is non-negative and less than `count`,
+the string has been completely written.  
+If any error is encountered, `-1` is returned.
 
 
 ## Compiler switches/defines
 
 | Name | Default value | Description |
 |------|---------------|-------------|
-| PRINTF_BUFFER_SIZE   | 128 | The buffer size used for the printf() function (not for sprintf/snprintf). Set to 0 if the printf() function is unused (just using sprintf/snprintf) |
-| PRINTF_NTOA_BUFFER_SIZE | 32  | ntoa (integer) conversion buffer size. This must be big enough to hold one converted numeric number _including_ leading zeros, normally 32 is a sufficient value |
-| PRINTF_FTOA_BUFFER_SIZE | 32  | ftoa (float) conversion buffer size. This must be big enough to hold one converted float number _including_ leading zeros, normally 32 is a sufficient value |
-| PRINTF_FLOAT_SUPPORT | undefined | Define this to enable floating point (%f) support |
+| PRINTF_NTOA_BUFFER_SIZE  | 32        | ntoa (integer) conversion buffer size. This must be big enough to hold one converted numeric number _including_ leading zeros, normally 32 is a sufficient value. Created on the stack |
+| PRINTF_FTOA_BUFFER_SIZE  | 32        | ftoa (float) conversion buffer size. This must be big enough to hold one converted float number _including_ leading zeros, normally 32 is a sufficient value. Created on the stack |
+| PRINTF_FLOAT_SUPPORT     | undefined | Define this to enable floating point (%f) support |
 | PRINTF_LONG_LONG_SUPPORT | undefined | Define this to enable long long (%ll) support |
 
 

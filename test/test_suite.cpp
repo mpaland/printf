@@ -1016,6 +1016,14 @@ TEST_CASE("pointer", "[]" ) {
     REQUIRE(!strcmp(buffer, "0000000012345678"));
   }
 
+  test::sprintf(buffer, "%p-%p", (void*)0x12345678U, (void*)0x7EDCBA98U);
+  if (sizeof(void*) == 4U) {
+    REQUIRE(!strcmp(buffer, "12345678-7EDCBA98"));
+  }
+  else {
+    REQUIRE(!strcmp(buffer, "0000000012345678-000000007EDCBA98"));
+  }
+
   if (sizeof(uintptr_t) == sizeof(uint64_t)) {
     test::sprintf(buffer, "%p", (void*)(uintptr_t)0xFFFFFFFFU);
     REQUIRE(!strcmp(buffer, "00000000FFFFFFFF"));
@@ -1039,17 +1047,15 @@ TEST_CASE("buffer length", "[]" ) {
   char buffer[100];
   int ret;
 
-  // formatted length, this should return '4',
-  // but this feature is not implemented, returning 0
   ret = test::snprintf(nullptr, 10, "%s", "Test");
-  REQUIRE(ret == -1);
+  REQUIRE(ret == 4);
   ret = test::snprintf(nullptr, 0, "%s", "Test");
-  REQUIRE(ret == -1);
+  REQUIRE(ret == 4);
 
   buffer[0] = (char)0xA5;
   ret = test::snprintf(buffer, 0, "%s", "Test");
   REQUIRE(buffer[0] == (char)0xA5);
-  REQUIRE(ret == 0);
+  REQUIRE(ret == 4);
 
   buffer[0] = 0xCC;
   test::snprintf(buffer, 1, "%s", "Test");
@@ -1074,13 +1080,13 @@ TEST_CASE("ret value", "[]" ) {
 
   ret = test::snprintf(buffer, 6, "0%s", "1234567");
   REQUIRE(!strcmp(buffer, "01234"));
-  REQUIRE(ret == 6);  // '567' are truncated
+  REQUIRE(ret == 8);  // '567' are truncated
 
   ret = test::snprintf(buffer, 10, "hello, world");
-  REQUIRE(ret == 10);
+  REQUIRE(ret == 12);
 
   ret = test::snprintf(buffer, 3, "%d", 10000);
-  REQUIRE(ret == 3);  // '000' are truncated
+  REQUIRE(ret == 5);
   REQUIRE(strlen(buffer) == 2U);
   REQUIRE(buffer[0] == '1');
   REQUIRE(buffer[1] == '0');
