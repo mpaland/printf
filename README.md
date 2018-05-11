@@ -52,10 +52,6 @@ int snprintf(char* buffer, size_t count, const char* format, ...);
 int vsnprintf(char* buffer, size_t count, const char* format, va_list va);
 ```
 
-If `buffer` is set to `nullptr` nothing is written and just the formatted length is returned.
-```C
-int length = sprintf(nullptr, "Hello, world"); // length is set to 12
-```
 
 **Due to genaral security reasons it is highly recommended to prefer and use `snprintf` (with the max buffer size as `count` parameter) instead of `sprintf`.**  
 `sprintf` has no buffer limitation, so when needed - use it really with care!
@@ -135,6 +131,11 @@ Anyway, if the output was truncated due to this limit, the return value is the n
 Notice that a value equal or larger than `count` indicates a truncation. Only when the returned value is non-negative and less than `count`,
 the string has been completely written.  
 If any error is encountered, `-1` is returned.
+
+If `buffer` is set to `NULL` (`nullptr`) nothing is written and just the formatted length is returned.
+```C
+int length = sprintf(NULL, "Hello, world"); // length is set to 12
+```
 
 
 ## Compiler switches/defines
