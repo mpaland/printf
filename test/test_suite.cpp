@@ -899,6 +899,22 @@ TEST_CASE("float", "[]" ) {
 
   test::sprintf(buffer, "%.9f", -12345.987654321);
   REQUIRE(!strcmp(buffer, "-12345.987654321"));
+
+  test::sprintf(buffer, "%.1f", 3.999);
+  REQUIRE(!strcmp(buffer, "4.0"));
+
+  test::sprintf(buffer, "%.0f", 3.5);
+  REQUIRE(!strcmp(buffer, "4"));
+
+  test::sprintf(buffer, "%.0f", 3.49);
+  REQUIRE(!strcmp(buffer, "3"));
+
+  test::sprintf(buffer, "%.1f", 3.49);
+  REQUIRE(!strcmp(buffer, "3.5"));
+
+  // out of range in the moment, need to be fixed by someone
+  test::sprintf(buffer, "%.1f", 1E20);
+  REQUIRE(!strcmp(buffer, ""));
 }
 
 
@@ -1006,6 +1022,17 @@ TEST_CASE("types", "[]" ) {
 
   test::sprintf(buffer, "%tx", &buffer[10] - &buffer[0]);
   REQUIRE(!strcmp(buffer, "a"));
+
+// TBD
+  if (sizeof(intmax_t) == sizeof(long)) {
+    test::sprintf(buffer, "%ji", -2147483647L);
+    REQUIRE(!strcmp(buffer, "-2147483647"));
+  }
+  else {
+    test::sprintf(buffer, "%ji", -2147483647LL);
+    REQUIRE(!strcmp(buffer, "-2147483647"));
+  }
+
 }
 
 
