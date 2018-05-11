@@ -12,7 +12,7 @@ Primarily designed for usage in embedded systems, where printf is not available 
 Using the standard libc printf may pull **a lot** of unwanted library stuff and can bloat code size about 20k or is not 100% thread safe. In this cases the following implementation can be used.  
 Absolutely **NO dependencies** are required, *printf.c* brings all necessary routines, even its own fast `ftoa` (float), `ntoa` (decimal) conversion.
 
-If memory footprint is really a critical issue, floating point and 'long long' support and can be turned off via the `PRINTF_FLOAT_SUPPORT` and `PRINTF_LONG_LONG_SUPPORT` compiler switches.
+If memory footprint is really a critical issue, floating point and 'long long' support and can be turned off via the `PRINTF_SUPPORT_FLOAT` and `PRINTF_SUPPORT_LONG_LONG` compiler switches.
 When using printf (instead of sprintf/snprintf) you have to provide your own `_putchar()` low level function as console/serial output.
 
 
@@ -52,7 +52,12 @@ int snprintf(char* buffer, size_t count, const char* format, ...);
 int vsnprintf(char* buffer, size_t count, const char* format, va_list va);
 ```
 
-**Due to genaral security reasons it is highly recommended to use `snprintf` (with the max buffer size as `count` parameter) instead of `sprintf`.**  
+If `buffer` is set to `nullptr` nothing is written and just the formatted length is returned.
+```C
+int length = sprintf(nullptr, "Hello, world"); // length is set to 12
+```
+
+**Due to genaral security reasons it is highly recommended to prefer and use `snprintf` (with the max buffer size as `count` parameter) instead of `sprintf`.**  
 `sprintf` has no buffer limitation, so when needed - use it really with care!
 
 
@@ -113,9 +118,13 @@ The length sub-specifier modifies the length of the data type.
 | Length | d i  | u o x X |
 |--------|------|---------|
 | (none) | int  | unsigned int |
+| hh     | char | unsigned char |
+| h      | short int | unsigned short int |
 | l      | long int | unsigned long int |
-| ll     | long long int | unsigned long long int (if PRINTF_LONG_LONG_SUPPORT is defined) |
-| z      | size_t int | unsigned size_t int |
+| ll     | long long int | unsigned long long int (if PRINTF_SUPPORT_LONG_LONG is defined) |
+| j      | intmax_t | uintmax_t |
+| z      | size_t | size_t |
+| t      | ptrdiff_t | ptrdiff_t (if PRINTF_SUPPORT_PTRDIFF_T is defined) |
 
 
 ### Return value
@@ -134,8 +143,9 @@ If any error is encountered, `-1` is returned.
 |------|---------------|-------------|
 | PRINTF_NTOA_BUFFER_SIZE  | 32        | ntoa (integer) conversion buffer size. This must be big enough to hold one converted numeric number _including_ leading zeros, normally 32 is a sufficient value. Created on the stack |
 | PRINTF_FTOA_BUFFER_SIZE  | 32        | ftoa (float) conversion buffer size. This must be big enough to hold one converted float number _including_ leading zeros, normally 32 is a sufficient value. Created on the stack |
-| PRINTF_FLOAT_SUPPORT     | undefined | Define this to enable floating point (%f) support |
-| PRINTF_LONG_LONG_SUPPORT | undefined | Define this to enable long long (%ll) support |
+| PRINTF_SUPPORT_FLOAT     | defined   | Define this to enable floating point (%f) support |
+| PRINTF_SUPPORT_LONG_LONG | defined   | Define this to enable long long (%ll) support |
+| PRINTF_SUPPORT_PTRDIFF_T | defined   | Define this to enable ptrdiff_t (%t) support |
 
 
 ## Test suite

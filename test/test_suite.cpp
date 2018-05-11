@@ -994,6 +994,18 @@ TEST_CASE("types", "[]" ) {
 
   test::sprintf(buffer, "%s", "A Test");
   REQUIRE(!strcmp(buffer, "A Test"));
+
+  test::sprintf(buffer, "%hhu", 0xFFFFUL);
+  REQUIRE(!strcmp(buffer, "255"));
+
+  test::sprintf(buffer, "%hu", 0x123456UL);
+  REQUIRE(!strcmp(buffer, "13398"));
+
+  test::sprintf(buffer, "%s%hhi %hu", "Test", 10000, 0xFFFFFFFF);
+  REQUIRE(!strcmp(buffer, "Test16 65535"));
+
+  test::sprintf(buffer, "%tx", &buffer[10] - &buffer[0]);
+  REQUIRE(!strcmp(buffer, "a"));
 }
 
 
