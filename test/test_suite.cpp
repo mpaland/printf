@@ -40,23 +40,38 @@ namespace test {
 
 
 // dummy putchar
-void test::_putchar(char)
-{ }
+static char   printf_buffer[100];
+static size_t printf_idx = 0U;
+void test::_putchar(char character)
+{
+  printf_buffer[printf_idx++] = character;
+}
 
 
 
 TEST_CASE("printf", "[]" ) {
-  char buffer[100] ;
+  char buffer[100];
 
+  printf_idx = 0U;
+  memset(printf_buffer, 0xCC, 100U);
   REQUIRE(test::printf("% d", 4232) == 5);
+  REQUIRE(!strcmp(printf_buffer, " 4232"));
+}
+
+
+TEST_CASE("snprintf", "[]" ) {
+  char buffer[100];
 
   test::snprintf(buffer, 100U, "%d", -1000);
   REQUIRE(!strcmp(buffer, "-1000"));
+
+  test::snprintf(buffer, 3U, "%d", -1000);
+  REQUIRE(!strcmp(buffer, "-1"));
 }
 
 
 TEST_CASE("space flag", "[]" ) {
-  char buffer[100] ;
+  char buffer[100];
 
   test::sprintf(buffer, "% d", 42);
   REQUIRE(!strcmp(buffer, " 42"));
@@ -130,7 +145,7 @@ TEST_CASE("space flag", "[]" ) {
 
 
 TEST_CASE("+ flag", "[]" ) {
-  char buffer[100] ;
+  char buffer[100];
 
   test::sprintf(buffer, "%+d", 42);
   REQUIRE(!strcmp(buffer, "+42"));
@@ -195,7 +210,7 @@ TEST_CASE("+ flag", "[]" ) {
 
 
 TEST_CASE("0 flag", "[]" ) {
-  char buffer[100] ;
+  char buffer[100];
 
   test::sprintf(buffer, "%0d", 42);
   REQUIRE(!strcmp(buffer, "42"));
