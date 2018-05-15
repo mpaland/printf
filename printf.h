@@ -60,7 +60,7 @@ int printf(const char* format, ...);
 
 /**
  * Tiny sprintf implementation
- * Due to security reasons (buffer overflow) YOU SHOULD CONSIDER USING SNPRINTF INSTEAD!
+ * Due to security reasons (buffer overflow) YOU SHOULD CONSIDER USING (V)SNPRINTF INSTEAD!
  * \param buffer A pointer to the buffer where to store the formatted string. MUST be big enough to store the output!
  * \param format A string that specifies the format of the output
  * \return The number of characters that are WRITTEN into the buffer, not counting the terminating null character
@@ -78,6 +78,16 @@ int sprintf(char* buffer, const char* format, ...);
  */
 int  snprintf(char* buffer, size_t count, const char* format, ...);
 int vsnprintf(char* buffer, size_t count, const char* format, va_list va);
+
+
+/**
+ * printf with output function
+ * You may use this as dynamic alternative to printf() with its fixed _putchar() output
+ * \param out An output function which takes one character
+ * \param format A string that specifies the format of the output
+ * \return The number of characters that are sent to the output function, not counting the terminating null character
+ */
+int oprintf(void (*out)(char character), const char* format, ...);
 
 
 #ifdef __cplusplus

@@ -101,6 +101,14 @@ static inline void _out_char(char character, char* buffer, size_t idx, size_t ma
 }
 
 
+// internal output function wrapper
+static inline void _out_fct(char character, char* buffer, size_t idx, size_t maxlen)
+{
+  (void)idx; (void)maxlen;
+  ((void (*)(char character))buffer)(character);  // buffer is the output fct pointer
+}
+
+
 // internal strlen
 // \return The length of the string (excluding the terminating 0)
 static inline unsigned int _strlen(const char* str)
@@ -674,7 +682,17 @@ int snprintf(char* buffer, size_t count, const char* format, ...)
 }
 
 
-inline int vsnprintf(char* buffer, size_t count, const char* format, va_list va)
+int vsnprintf(char* buffer, size_t count, const char* format, va_list va)
 {
   return _vsnprintf(_out_buffer, buffer, count, format, va);
+}
+
+
+int oprintf(void (*out)(char character), const char* format, ...)
+{
+  va_list va;
+  va_start(va, format);
+  const int ret = _vsnprintf(_out_fct, (char*)out, (size_t)-1, format, va);
+  va_end(va);
+  return ret;
 }
