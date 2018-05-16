@@ -105,7 +105,10 @@ static inline void _out_char(char character, char* buffer, size_t idx, size_t ma
 static inline void _out_fct(char character, char* buffer, size_t idx, size_t maxlen)
 {
   (void)idx; (void)maxlen;
-  ((void (*)(char character))buffer)(character);  // buffer is the output fct pointer
+  typedef struct tag_out_fct_wrap_type {
+    void (*fct)(char character);
+  } out_fct_wrap_type;
+  ((out_fct_wrap_type*)buffer)->fct(character);  // buffer is the output fct pointer
 }
 
 
@@ -692,7 +695,10 @@ int oprintf(void (*out)(char character), const char* format, ...)
 {
   va_list va;
   va_start(va, format);
-  const int ret = _vsnprintf(_out_fct, (char*)out, (size_t)-1, format, va);
+  const struct tag_out_fct_wrap {
+    void (*fct)(char character);
+  } out_fct_wrap = { out };
+  const int ret = _vsnprintf(_out_fct, (char*)&out_fct_wrap, (size_t)-1, format, va);
   va_end(va);
   return ret;
 }
