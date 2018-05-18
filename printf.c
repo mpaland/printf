@@ -691,7 +691,7 @@ int vsnprintf(char* buffer, size_t count, const char* format, va_list va)
 }
 
 
-int oprintf(void (*out)(char character), const char* format, ...)
+int fctprintf(void (*out)(char character), const char* format, ...)
 {
   va_list va;
   va_start(va, format);

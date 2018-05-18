@@ -51,8 +51,8 @@ int sprintf(char* buffer, const char* format, ...);
 int snprintf(char* buffer, size_t count, const char* format, ...);
 int vsnprintf(char* buffer, size_t count, const char* format, va_list va);
 
-// write to output function (instead of buffer)
-int oprintf(void (*out)(char character), const char* format, ...);
+// call output function (instead of buffer)
+int fctprintf(void (*out)(char character), const char* format, ...);
 ```
 
 
