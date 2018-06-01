@@ -84,10 +84,11 @@ int vsnprintf(char* buffer, size_t count, const char* format, va_list va);
  * printf with output function
  * You may use this as dynamic alternative to printf() with its fixed _putchar() output
  * \param out An output function which takes one character
+ * \param user A pointer to user data passed to output function
  * \param format A string that specifies the format of the output
  * \return The number of characters that are sent to the output function, not counting the terminating null character
  */
-int fctprintf(void (*out)(char character), const char* format, ...);
+int fctprintf(void (*out)(char character, void* user), void* user, const char* format, ...);
 
 
 #ifdef __cplusplus
