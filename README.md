@@ -51,8 +51,8 @@ int sprintf(char* buffer, const char* format, ...);
 int snprintf(char* buffer, size_t count, const char* format, ...);
 int vsnprintf(char* buffer, size_t count, const char* format, va_list va);
 
-// call output function (instead of buffer)
-int fctprintf(void (*out)(char character, void* user), void* user, const char* format, ...);
+// use output function (instead of buffer) for streamlike interface
+int fctprintf(void (*out)(char character, void* arg), void* arg, const char* format, ...);
 ```
 
 

@@ -42,8 +42,15 @@ namespace test {
 // dummy putchar
 static char   printf_buffer[100];
 static size_t printf_idx = 0U;
+
 void test::_putchar(char character)
 {
+  printf_buffer[printf_idx++] = character;
+}
+
+void _out_fct(char character, void* arg)
+{
+  (void)arg;
   printf_buffer[printf_idx++] = character;
 }
 
@@ -60,7 +67,7 @@ TEST_CASE("printf", "[]" ) {
 TEST_CASE("fctprintf", "[]" ) {
   printf_idx = 0U;
   memset(printf_buffer, 0xCC, 100U);
-  test::fctprintf(&test::_putchar, "This is a test of %X", 0x12EFU);
+  test::fctprintf(&_out_fct, nullptr, "This is a test of %X", 0x12EFU);
   REQUIRE(!strcmp(printf_buffer, "This is a test of 12EF"));
 }
 
