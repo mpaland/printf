@@ -77,6 +77,13 @@
 typedef void (*out_fct_type)(char character, char* buffer, size_t idx, size_t maxlen);
 
 
+// wrapper used as buffer
+typedef struct {
+  void (*fct)(char character, void* user);
+  void* user;
+} out_fct_wrap_type;
+
+
 // internal buffer output
 static inline void _out_buffer(char character, char* buffer, size_t idx, size_t maxlen)
 {
@@ -105,10 +112,8 @@ static inline void _out_char(char character, char* buffer, size_t idx, size_t ma
 static inline void _out_fct(char character, char* buffer, size_t idx, size_t maxlen)
 {
   (void)idx; (void)maxlen;
-  typedef struct tag_out_fct_wrap_type {
-    void (*fct)(char character);
-  } out_fct_wrap_type;
-  ((out_fct_wrap_type*)buffer)->fct(character);  // buffer is the output fct pointer
+  // buffer is the output fct pointer
+  ((out_fct_wrap_type*)buffer)->fct(character, ((out_fct_wrap_type*)buffer)->user);
 }
 
 
@@ -691,13 +696,11 @@ int vsnprintf(char* buffer, size_t count, const char* format, va_list va)
 }
 
 
-int fctprintf(void (*out)(char character), const char* format, ...)
+int fctprintf(void (*out)(char character, void* user), void* user, const char* format, ...)
 {
   va_list va;
   va_start(va, format);
-  const struct tag_out_fct_wrap {
-    void (*fct)(char character);
-  } out_fct_wrap = { out };
+  const out_fct_wrap_type out_fct_wrap = { out, user };
   const int ret = _vsnprintf(_out_fct, (char*)&out_fct_wrap, (size_t)-1, format, va);
   va_end(va);
   return ret;

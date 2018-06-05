@@ -52,7 +52,7 @@ int snprintf(char* buffer, size_t count, const char* format, ...);
 int vsnprintf(char* buffer, size_t count, const char* format, va_list va);
 
 // call output function (instead of buffer)
-int fctprintf(void (*out)(char character), const char* format, ...);
+int fctprintf(void (*out)(char character, void* user), void* user, const char* format, ...);
 ```
 
 
