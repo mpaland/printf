@@ -113,7 +113,7 @@ static inline void _out_fct(char character, char* buffer, size_t idx, size_t max
 {
   (void)idx; (void)maxlen;
   // buffer is the output fct pointer
-  ((out_fct_wrap_type*)buffer)->fct(character, ((out_fct_wrap_type*)buffer)->user);
+  ((out_fct_wrap_type*)buffer)->fct(character, ((out_fct_wrap_type*)buffer)->arg);
 }
 
 
