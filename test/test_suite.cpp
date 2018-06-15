@@ -88,9 +88,9 @@ TEST_CASE("vsnprintf", "[]" ) {
 
   // mock argument list
   const struct tag_args {
-    int   a;
-    int   b;
-    char* s;
+    intptr_t a;
+    intptr_t b;
+    char*    s;
   } args = { -1, -1000, "test" };
 
   test::vsnprintf(buffer, 100U, "%d %d %s", (char*)&args);
