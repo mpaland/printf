@@ -84,21 +84,30 @@ TEST_CASE("snprintf", "[]" ) {
 }
 
 
+static void vsnprintf_builder_1(char* buffer, ...)
+{
+  va_list args;
+  va_start(args, buffer);
+  test::vsnprintf(buffer, 100U, "%d", args);
+  va_end(args);
+}
+
+static void vsnprintf_builder_3(char* buffer, ...)
+{
+  va_list args;
+  va_start(args, buffer);
+  test::vsnprintf(buffer, 100U, "%d %d %s", args);
+  va_end(args);
+}
+
 TEST_CASE("vsnprintf", "[]" ) {
   char buffer[100];
 
-  // mock argument list
-  const struct tag_args {
-    intptr_t a;
-    intptr_t b;
-    char*    s;
-  } args = { -1, -1000, "test" };
-
-  test::vsnprintf(buffer, 100U, "%d %d %s", (char*)&args);
-  REQUIRE(!strcmp(buffer, "-1 -1000 test"));
-
-  test::vsnprintf(buffer, 3U, "%d", (char*)&args);
+  vsnprintf_builder_1(buffer, -1);
   REQUIRE(!strcmp(buffer, "-1"));
+
+  vsnprintf_builder_3(buffer, 3, -1000, "test");
+  REQUIRE(!strcmp(buffer, "3 -1000 test"));
 }
 
 
