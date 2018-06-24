@@ -104,7 +104,9 @@ static inline void _out_null(char character, char* buffer, size_t idx, size_t ma
 static inline void _out_char(char character, char* buffer, size_t idx, size_t maxlen)
 {
   (void)buffer; (void)idx; (void)maxlen;
-  _putchar(character);
+  if (character) {
+    _putchar(character);
+  }
 }
 
 

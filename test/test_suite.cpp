@@ -55,11 +55,12 @@ void _out_fct(char character, void* arg)
 }
 
 
-
 TEST_CASE("printf", "[]" ) {
   printf_idx = 0U;
   memset(printf_buffer, 0xCC, 100U);
   REQUIRE(test::printf("% d", 4232) == 5);
+  REQUIRE(printf_buffer[5] == (char)0xCC);
+  printf_buffer[5] = 0;
   REQUIRE(!strcmp(printf_buffer, " 4232"));
 }
 
