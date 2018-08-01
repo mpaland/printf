@@ -74,7 +74,7 @@
 
 
 // output function type
-typedef void (*out_fct_type)(char character, char* buffer, size_t idx, size_t maxlen);
+typedef void (*out_fct_type)(char character, void* buffer, size_t idx, size_t maxlen);
 
 
 // wrapper (used as buffer) for output function type
@@ -85,23 +85,23 @@ typedef struct {
 
 
 // internal buffer output
-static inline void _out_buffer(char character, char* buffer, size_t idx, size_t maxlen)
+static inline void _out_buffer(char character, void* buffer, size_t idx, size_t maxlen)
 {
   if (idx < maxlen) {
-    buffer[idx] = character;
+    ((char*)buffer)[idx] = character;
   }
 }
 
 
 // internal null output
-static inline void _out_null(char character, char* buffer, size_t idx, size_t maxlen)
+static inline void _out_null(char character, void* buffer, size_t idx, size_t maxlen)
 {
   (void)character; (void)buffer; (void)idx; (void)maxlen;
 }
 
 
 // internal _putchar wrapper
-static inline void _out_char(char character, char* buffer, size_t idx, size_t maxlen)
+static inline void _out_char(char character, void* buffer, size_t idx, size_t maxlen)
 {
   (void)buffer; (void)idx; (void)maxlen;
   if (character) {
@@ -111,7 +111,7 @@ static inline void _out_char(char character, char* buffer, size_t idx, size_t ma
 
 
 // internal output function wrapper
-static inline void _out_fct(char character, char* buffer, size_t idx, size_t maxlen)
+static inline void _out_fct(char character, void* buffer, size_t idx, size_t maxlen)
 {
   (void)idx; (void)maxlen;
   // buffer is the output fct pointer
