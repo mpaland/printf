@@ -28,7 +28,7 @@ Therefore I decided to write an own, final implementation which meets the follow
  - Support of decimal/floating number representation (with an own fast itoa/ftoa)
  - Reentrant and thread-safe, malloc free, no static vars/buffers
  - LINT and compiler L4 warning free, mature, coverity clean, automotive ready
- - Extensive test suite (> 320 test cases) passing
+ - Extensive test suite (> 330 test cases) passing
  - Simply the best *printf* around the net
  - MIT license
 
@@ -165,6 +165,12 @@ int length = sprintf(NULL, "Hello, world"); // length is set to 12
 | PRINTF_SUPPORT_FLOAT     | defined   | Define this to enable floating point (%f) support |
 | PRINTF_SUPPORT_LONG_LONG | defined   | Define this to enable long long (%ll) support |
 | PRINTF_SUPPORT_PTRDIFF_T | defined   | Define this to enable ptrdiff_t (%t) support |
+
+
+## Caveats
+- The internal floating point conversion has a maximum precision of 9 digits. Any higher precision is truncated after the 9th digit and zeros are returned.  
+  So `printf("%.12f", 42.89522312345678)` gives `42.895223123000`.
+- Exponential floating point format (e.g. `"%.10e"` to get `1.167e+65`) for large numbers is not supported yet. Sorry.
 
 
 ## Test suite

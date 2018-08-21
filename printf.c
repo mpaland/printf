@@ -277,13 +277,14 @@ static size_t _ftoa(out_fct_type out, char* buffer, size_t idx, size_t maxlen, d
     value = 0 - value;
   }
 
-  // limit precision
+  // set default precision to 6, if not set explicitly
   if (!(flags & FLAGS_PRECISION)) {
-    prec = 6U;  // by default, precesion is 6
+    prec = 6U;
   }
-  if (prec > 9U) {
-    // precision of >= 10 can lead to overflow errors
-    prec = 9U;
+  // limit precision to 9, cause a prec >= 10 can lead to overflow errors
+  while ((len < PRINTF_FTOA_BUFFER_SIZE) && (prec > 9U)) {
+    buf[len++] = '0';
+    prec--;
   }
 
   int whole = (int)value;
@@ -325,10 +326,13 @@ static size_t _ftoa(out_fct_type out, char* buffer, size_t idx, size_t maxlen, d
   else {
     unsigned int count = prec;
     // now do fractional part, as an unsigned number
-    do {
+    while (len < PRINTF_FTOA_BUFFER_SIZE) {
       --count;
       buf[len++] = (char)(48U + (frac % 10U));
-    } while ((len < PRINTF_FTOA_BUFFER_SIZE) && (frac /= 10U));
+      if (!(frac /= 10U)) {
+        break;
+      }
+    }
     // add extra 0s
     while ((len < PRINTF_FTOA_BUFFER_SIZE) && (count-- > 0U)) {
       buf[len++] = '0';

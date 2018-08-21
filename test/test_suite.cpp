@@ -933,7 +933,17 @@ TEST_CASE("float", "[]" ) {
   REQUIRE(!strcmp(buffer, "42.895200000"));
 
   test::sprintf(buffer, "%.10f", 42.895223);
-  REQUIRE(!strcmp(buffer, "42.895223000"));
+  REQUIRE(!strcmp(buffer, "42.8952230000"));
+
+  // this testcase checks, that the precision is truncated to 9 digits.
+  // a perfect working float should return the whole number
+  test::sprintf(buffer, "%.12f", 42.89522312345678);
+  REQUIRE(!strcmp(buffer, "42.895223123000"));
+
+  // this testcase checks, that the precision is truncated AND rounded to 9 digits.
+  // a perfect working float should return the whole number
+  test::sprintf(buffer, "%.12f", 42.89522387654321);
+  REQUIRE(!strcmp(buffer, "42.895223877000"));
 
   test::sprintf(buffer, "%6.2f", 42.8952);
   REQUIRE(!strcmp(buffer, " 42.90"));
