@@ -582,6 +582,18 @@ TEST_CASE("width -20", "[]" ) {
 
   test::sprintf(buffer, "%-20c", 'x');
   REQUIRE(!strcmp(buffer, "x                   "));
+
+  test::sprintf(buffer, "|%5d| |%-2d| |%5d|", 9, 9, 9);
+  REQUIRE(!strcmp(buffer, "|    9| |9 | |    9|"));
+
+  test::sprintf(buffer, "|%5d| |%-2d| |%5d|", 10, 10, 10);
+  REQUIRE(!strcmp(buffer, "|   10| |10| |   10|"));
+
+  test::sprintf(buffer, "|%5d| |%-12d| |%5d|", 9, 9, 9);
+  REQUIRE(!strcmp(buffer, "|    9| |9           | |    9|"));
+
+  test::sprintf(buffer, "|%5d| |%-12d| |%5d|", 10, 10, 10);
+  REQUIRE(!strcmp(buffer, "|   10| |10          | |   10|"));
 }
 
 

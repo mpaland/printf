@@ -151,6 +151,8 @@ static inline unsigned int _atoi(const char** str)
 // internal itoa format
 static size_t _ntoa_format(out_fct_type out, char* buffer, size_t idx, size_t maxlen, char* buf, size_t len, bool negative, unsigned int base, unsigned int prec, unsigned int width, unsigned int flags)
 {
+  const size_t start_idx = idx;
+
   // pad leading zeros
   while (!(flags & FLAGS_LEFT) && (len < prec) && (len < PRINTF_NTOA_BUFFER_SIZE)) {
     buf[len++] = '0';
@@ -208,7 +210,7 @@ static size_t _ntoa_format(out_fct_type out, char* buffer, size_t idx, size_t ma
 
   // append pad spaces up to given width
   if (flags & FLAGS_LEFT) {
-    while (idx < width) {
+    while (idx - start_idx < width) {
       out(' ', buffer, idx++, maxlen);
     }
   }
