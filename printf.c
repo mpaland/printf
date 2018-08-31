@@ -34,7 +34,7 @@
 #include <stdint.h>
 #include "printf.h"
 
-
+#ifndef PRINTF_CONFIG
 // ntoa conversion buffer size, this must be big enough to hold
 // one converted numeric number including padded zeros (dynamically created on stack)
 // 32 byte is a good default
@@ -54,7 +54,9 @@
 // define this to support the ptrdiff_t type (%t)
 // ptrdiff_t is normally defined in <stddef.h> as long or long long type
 #define PRINTF_SUPPORT_PTRDIFF_T
-
+#else
+#include "printf_config.h"
+#endif
 
 ///////////////////////////////////////////////////////////////////////////////
 
