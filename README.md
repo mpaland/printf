@@ -22,13 +22,13 @@ There is a boatload of so called 'tiny' printf implementations around. So why th
 I've tested many implementations, but most of them have very limited flag/specifier support, a lot of other dependencies or are just not standard compliant and failing most of the test suite.
 Therefore I decided to write an own, final implementation which meets the following items:
 
- - Very small implementation (around 500 code lines)
+ - Very small implementation (around 600 code lines)
  - NO dependencies, no libs, just one module file
  - Support of all important flags, width and precision sub-specifiers (see below)
  - Support of decimal/floating number representation (with an own fast itoa/ftoa)
  - Reentrant and thread-safe, malloc free, no static vars/buffers
  - LINT and compiler L4 warning free, mature, coverity clean, automotive ready
- - Extensive test suite (> 330 test cases) passing
+ - Extensive test suite (> 340 test cases) passing
  - Simply the best *printf* around the net
  - MIT license
 
