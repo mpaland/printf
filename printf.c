@@ -163,9 +163,9 @@ static size_t _ntoa_format(out_fct_type out, char* buffer, size_t idx, size_t ma
 
   // handle hash
   if (flags & FLAGS_HASH) {
-    if (((len == prec) || (len == width)) && (len > 0U)) {
+    if (len && ((len == prec) || (len == width))) {
       len--;
-      if ((base == 16U) && (len > 0U)) {
+      if (len && (base == 16U)) {
         len--;
       }
     }
@@ -181,7 +181,7 @@ static size_t _ntoa_format(out_fct_type out, char* buffer, size_t idx, size_t ma
   }
 
   // handle sign
-  if ((len == width) && (negative || (flags & FLAGS_PLUS) || (flags & FLAGS_SPACE))) {
+  if (len && (len == width) && (negative || (flags & FLAGS_PLUS) || (flags & FLAGS_SPACE))) {
     len--;
   }
   if (len < PRINTF_NTOA_BUFFER_SIZE) {
@@ -225,6 +225,11 @@ static size_t _ntoa_long(out_fct_type out, char* buffer, size_t idx, size_t maxl
   char buf[PRINTF_NTOA_BUFFER_SIZE];
   size_t len = 0U;
 
+  // no hash for 0 values
+  if (!value) {
+    flags &= ~FLAGS_HASH;
+  }
+
   // write if precision != 0 and value is != 0
   if (!(flags & FLAGS_PRECISION) || value) {
     do {
@@ -244,6 +249,11 @@ static size_t _ntoa_long_long(out_fct_type out, char* buffer, size_t idx, size_t
 {
   char buf[PRINTF_NTOA_BUFFER_SIZE];
   size_t len = 0U;
+
+  // no hash for 0 values
+  if (!value) {
+    flags &= ~FLAGS_HASH;
+  }
 
   // write if precision != 0 and value is != 0
   if (!(flags & FLAGS_PRECISION) || value) {

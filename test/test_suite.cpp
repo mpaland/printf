@@ -247,6 +247,9 @@ TEST_CASE("+ flag", "[]" ) {
 
   test::sprintf(buffer, "%+c", 'x');
   REQUIRE(!strcmp(buffer, "x"));
+
+  test::sprintf(buffer, "%+.0d", 0);
+  REQUIRE(!strcmp(buffer, "+"));
 }
 
 
@@ -341,6 +344,14 @@ TEST_CASE("- flag", "[]" ) {
 
   test::sprintf(buffer, "%0-15d", -42);
   REQUIRE(!strcmp(buffer, "-42            "));
+}
+
+
+TEST_CASE("# flag", "[]" ) {
+  char buffer[100];
+
+  test::sprintf(buffer, "%#.0x", 0);
+  REQUIRE(!strcmp(buffer, ""));
 }
 
 
@@ -1231,6 +1242,9 @@ TEST_CASE("misc", "[]" ) {
 
   test::sprintf(buffer, "%.3s", "foobar");
   REQUIRE(!strcmp(buffer, "foo"));
+
+  test::sprintf(buffer, "% .0d", 0);
+  REQUIRE(!strcmp(buffer, " "));
 
   test::sprintf(buffer, "%10.5d", 4);
   REQUIRE(!strcmp(buffer, "     00004"));
