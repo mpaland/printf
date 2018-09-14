@@ -990,6 +990,12 @@ TEST_CASE("float", "[]" ) {
   test::sprintf(buffer, "%.1f", 3.49);
   REQUIRE(!strcmp(buffer, "3.5"));
 
+  test::sprintf(buffer, "a%-5.1f", 0.5);
+  REQUIRE(!strcmp(buffer, "a0.5  "));
+
+  test::sprintf(buffer, "a%-5.1fend", 0.5);
+  REQUIRE(!strcmp(buffer, "a0.5  end"));
+
   // out of range in the moment, need to be fixed by someone
   test::sprintf(buffer, "%.1f", 1E20);
   REQUIRE(!strcmp(buffer, ""));

@@ -262,6 +262,8 @@ static size_t _ntoa_long_long(out_fct_type out, char* buffer, size_t idx, size_t
 #if defined(PRINTF_SUPPORT_FLOAT)
 static size_t _ftoa(out_fct_type out, char* buffer, size_t idx, size_t maxlen, double value, unsigned int prec, unsigned int width, unsigned int flags)
 {
+  const size_t start_idx = idx;
+
   char buf[PRINTF_FTOA_BUFFER_SIZE];
   size_t len  = 0U;
   double diff = 0.0;
@@ -388,7 +390,7 @@ static size_t _ftoa(out_fct_type out, char* buffer, size_t idx, size_t maxlen, d
 
   // append pad spaces up to given width
   if (flags & FLAGS_LEFT) {
-    while (idx < width) {
+    while (idx - start_idx < width) {
       out(' ', buffer, idx++, maxlen);
     }
   }
