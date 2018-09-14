@@ -551,6 +551,11 @@ static int _vsnprintf(out_fct_type out, char* buffer, const size_t maxlen, const
           flags &= ~(FLAGS_PLUS | FLAGS_SPACE);
         }
 
+        // ignore '0' flag when precision is given
+        if (flags & FLAGS_PRECISION) {
+          flags &= ~FLAGS_ZEROPAD;
+        }
+
         // convert the integer
         if ((*format == 'i') || (*format == 'd')) {
           // signed

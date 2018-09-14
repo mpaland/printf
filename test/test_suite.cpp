@@ -934,6 +934,12 @@ TEST_CASE("length", "[]" ) {
 
   test::sprintf(buffer, "%20.X", 0U);
   REQUIRE(!strcmp(buffer, "                    "));
+
+  test::sprintf(buffer, "%02.0u", 0U);
+  REQUIRE(!strcmp(buffer, "  "));
+
+  test::sprintf(buffer, "%02.0d", 0);
+  REQUIRE(!strcmp(buffer, "  "));
 }
 
 
