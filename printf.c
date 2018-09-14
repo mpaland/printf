@@ -464,7 +464,8 @@ static int _vsnprintf(out_fct_type out, char* buffer, const size_t maxlen, const
         precision = _atoi(&format);
       }
       else if (*format == '*') {
-        precision = (unsigned int)va_arg(va, int);
+        const int prec = (int)va_arg(va, int);
+        precision = prec > 0 ? (unsigned int)prec : 0U;
         format++;
       }
     }

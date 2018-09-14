@@ -1226,6 +1226,9 @@ TEST_CASE("misc", "[]" ) {
   test::sprintf(buffer, "%.*f", 2, 0.33333333);
   REQUIRE(!strcmp(buffer, "0.33"));
 
+  test::sprintf(buffer, "%.*d", -1, 1);
+  REQUIRE(!strcmp(buffer, "1"));
+
   test::sprintf(buffer, "%.3s", "foobar");
   REQUIRE(!strcmp(buffer, "foo"));
 
