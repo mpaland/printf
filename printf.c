@@ -163,7 +163,7 @@ static size_t _ntoa_format(out_fct_type out, char* buffer, size_t idx, size_t ma
 
   // handle hash
   if (flags & FLAGS_HASH) {
-    if (len && ((len == prec) || (len == width))) {
+    if (!(flags & FLAGS_PRECISION) && len && ((len == prec) || (len == width))) {
       len--;
       if (len && (base == 16U)) {
         len--;
