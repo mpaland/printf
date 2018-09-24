@@ -138,7 +138,7 @@ static inline bool _is_digit(char ch)
 
 
 // internal ASCII string to unsigned int conversion
-static inline unsigned int _atoi(const char** str)
+static unsigned int _atoi(const char** str)
 {
   unsigned int i = 0U;
   while (_is_digit(**str)) {
@@ -172,10 +172,10 @@ static size_t _ntoa_format(out_fct_type out, char* buffer, size_t idx, size_t ma
     if ((base == 16U) && !(flags & FLAGS_UPPERCASE) && (len < PRINTF_NTOA_BUFFER_SIZE)) {
       buf[len++] = 'x';
     }
-    if ((base == 16U) &&  (flags & FLAGS_UPPERCASE) && (len < PRINTF_NTOA_BUFFER_SIZE)) {
+    else if ((base == 16U) && (flags & FLAGS_UPPERCASE) && (len < PRINTF_NTOA_BUFFER_SIZE)) {
       buf[len++] = 'X';
     }
-    if ((base == 2U) && (len < PRINTF_NTOA_BUFFER_SIZE)) {
+    else if ((base == 2U) && (len < PRINTF_NTOA_BUFFER_SIZE)) {
       buf[len++] = 'b';
     }
     if (len < PRINTF_NTOA_BUFFER_SIZE) {
