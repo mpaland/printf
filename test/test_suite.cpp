@@ -352,6 +352,10 @@ TEST_CASE("# flag", "[]" ) {
 
   test::sprintf(buffer, "%#.0x", 0);
   REQUIRE(!strcmp(buffer, ""));
+  test::sprintf(buffer, "%#.8x", 0x614e);
+  REQUIRE(!strcmp(buffer, "0x0000614e"));
+  test::sprintf(buffer,"%#b", 6);
+  REQUIRE(!strcmp(buffer, "0b110"));
 }
 
 

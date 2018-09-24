@@ -175,6 +175,9 @@ static size_t _ntoa_format(out_fct_type out, char* buffer, size_t idx, size_t ma
     if ((base == 16U) &&  (flags & FLAGS_UPPERCASE) && (len < PRINTF_NTOA_BUFFER_SIZE)) {
       buf[len++] = 'X';
     }
+    if ((base == 2U) && (len < PRINTF_NTOA_BUFFER_SIZE)) {
+      buf[len++] = 'b';
+    }
     if (len < PRINTF_NTOA_BUFFER_SIZE) {
       buf[len++] = '0';
     }
@@ -535,7 +538,6 @@ static int _vsnprintf(out_fct_type out, char* buffer, const size_t maxlen, const
         }
         else if (*format == 'b') {
           base =  2U;
-          flags &= ~FLAGS_HASH;   // no hash for bin format
         }
         else {
           base = 10U;
