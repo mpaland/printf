@@ -70,7 +70,6 @@
 #define FLAGS_LONG      (1U <<  8U)
 #define FLAGS_LONG_LONG (1U <<  9U)
 #define FLAGS_PRECISION (1U << 10U)
-#define FLAGS_WIDTH     (1U << 11U)
 
 
 // output function type
