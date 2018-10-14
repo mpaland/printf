@@ -10,10 +10,10 @@
 // to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
 // copies of the Software, and to permit persons to whom the Software is
 // furnished to do so, subject to the following conditions:
-// 
+//
 // The above copyright notice and this permission notice shall be included in
 // all copies or substantial portions of the Software.
-// 
+//
 // THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
 // IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
 // FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -32,29 +32,47 @@
 
 #include <stdbool.h>
 #include <stdint.h>
+
 #include "printf.h"
 
+// define this globally (e.g. gcc -DPRINTF_INCLUDE_CONFIG_H ...) to include the
+// printf_config.h header file
+#ifdef PRINTF_INCLUDE_CONFIG_H
+  #include "printf_config.h"
+#endif
 
-// ntoa conversion buffer size, this must be big enough to hold
-// one converted numeric number including padded zeros (dynamically created on stack)
-// 32 byte is a good default
-#define PRINTF_NTOA_BUFFER_SIZE    32U
+// 'ntoa' conversion buffer size, this must be big enough to hold one converted
+// numeric number including padded zeros (dynamically created on stack)
+// default: 32 byte
+#ifndef PRINTF_NTOA_BUFFER_SIZE
+  #define PRINTF_NTOA_BUFFER_SIZE    32U
+#endif
 
-// ftoa conversion buffer size, this must be big enough to hold
-// one converted float number including padded zeros (dynamically created on stack)
-// 32 byte is a good default
-#define PRINTF_FTOA_BUFFER_SIZE    32U
+// 'ftoa' conversion buffer size, this must be big enough to hold one converted
+// float number including padded zeros (dynamically created on stack)
+// default: 32 byte
+#ifndef PRINTF_FTOA_BUFFER_SIZE
+  #define PRINTF_FTOA_BUFFER_SIZE    32U
+#endif
 
-// define this to support floating point (%f)
-#define PRINTF_SUPPORT_FLOAT
+// support for the floating point type (%f)
+// default: activated
+#ifndef PRINTF_DISABLE_SUPPORT_FLOAT
+  #define PRINTF_SUPPORT_FLOAT
+#endif
 
-// define this to support long long types (%llu or %p)
-#define PRINTF_SUPPORT_LONG_LONG
+// support for the long long types (%llu or %p)
+// default: activated
+#ifndef PRINTF_DISABLE_SUPPORT_LONG_LONG
+  #define PRINTF_SUPPORT_LONG_LONG
+#endif
 
-// define this to support the ptrdiff_t type (%t)
+// support for the ptrdiff_t type (%t)
 // ptrdiff_t is normally defined in <stddef.h> as long or long long type
-#define PRINTF_SUPPORT_PTRDIFF_T
-
+// default: activated
+#ifndef PRINTF_DISABLE_SUPPORT_PTRDIFF_T
+  #define PRINTF_SUPPORT_PTRDIFF_T
+#endif
 
 ///////////////////////////////////////////////////////////////////////////////
 
