@@ -1,4 +1,4 @@
-# printf / sprintf for embedded systems
+# A printf / sprintf Implementation for Embedded Systems
 
 [![Build Status](https://travis-ci.org/mpaland/printf.svg?branch=master)](https://travis-ci.org/mpaland/printf)
 [![codecov](https://codecov.io/gh/mpaland/printf/branch/master/graph/badge.svg)](https://codecov.io/gh/mpaland/printf)
@@ -7,18 +7,18 @@
 [![Github Releases](https://img.shields.io/github/release/mpaland/printf.svg)](https://github.com/mpaland/printf/releases)
 [![GitHub license](https://img.shields.io/badge/license-MIT-blue.svg)](https://raw.githubusercontent.com/mpaland/avl_array/master/LICENSE)
 
-This is a tiny but **fully loaded** printf, sprintf and (v)snprintf implementation.  
-Primarily designed for usage in embedded systems, where printf is not available due to memory issues or in avoidance of linking against libc.  
-Using the standard libc printf may pull **a lot** of unwanted library stuff and can bloat code size about 20k or is not 100% thread safe. In this cases the following implementation can be used.  
+This is a tiny but **fully loaded** printf, sprintf and (v)snprintf implementation.
+Primarily designed for usage in embedded systems, where printf is not available due to memory issues or in avoidance of linking against libc.
+Using the standard libc printf may pull **a lot** of unwanted library stuff and can bloat code size about 20k or is not 100% thread safe. In this cases the following implementation can be used.
 Absolutely **NO dependencies** are required, *printf.c* brings all necessary routines, even its own fast `ftoa` (float), `ntoa` (decimal) conversion.
 
 If memory footprint is really a critical issue, floating point and 'long long' support and can be turned off via the `PRINTF_SUPPORT_FLOAT` and `PRINTF_SUPPORT_LONG_LONG` compiler switches.
 When using printf (instead of sprintf/snprintf) you have to provide your own `_putchar()` low level function as console/serial output.
 
 
-## Highligths and design goals
+## Highlights and Design Goals
 
-There is a boatload of so called 'tiny' printf implementations around. So why this one?  
+There is a boatload of so called 'tiny' printf implementations around. So why this one?
 I've tested many implementations, but most of them have very limited flag/specifier support, a lot of other dependencies or are just not standard compliant and failing most of the test suite.
 Therefore I decided to write an own, final implementation which meets the following items:
 
@@ -35,7 +35,7 @@ Therefore I decided to write an own, final implementation which meets the follow
 
 ## Usage
 
-Add/link *printf.c* to your project and include *printf.h*. That's it.  
+Add/link *printf.c* to your project and include *printf.h*. That's it.
 Implement your low level output function needed for `printf()`:
 ```C
 void _putchar(char character)
@@ -55,10 +55,10 @@ int vsnprintf(char* buffer, size_t count, const char* format, va_list va);
 int fctprintf(void (*out)(char character, void* arg), void* arg, const char* format, ...);
 ```
 
-**Due to genaral security reasons it is highly recommended to prefer and use `snprintf` (with the max buffer size as `count` parameter) instead of `sprintf`.**  
+**Due to general security reasons it is highly recommended to prefer and use `snprintf` (with the max buffer size as `count` parameter) instead of `sprintf`.**
 `sprintf` has no buffer limitation, so when needed - use it really with care!
 
-### Streamlike usage
+### Streamlike Usage
 Besides the regular standard `printf()` functions, this module also provides `fctprintf()`, which takes an output function as first parameter to build a streamlike output like `fprintf()`:
 ```C
 // define the output function
@@ -75,13 +75,13 @@ void my_stream_output(char character, void* arg)
 }
 ```
 
-## Format specifiers
+## Format Specifiers
 
-A format specifier follows this prototype: `%[flags][width][.precision][length]type`  
+A format specifier follows this prototype: `%[flags][width][.precision][length]type`
 The following format specifiers are supported:
 
 
-### Supported types
+### Supported Types
 
 | Type   | Output |
 |--------|--------|
@@ -98,18 +98,18 @@ The following format specifiers are supported:
 | %      | A % followed by another % character will write a single % |
 
 
-### Supported flags
+### Supported Flags
 
 | Flags | Description |
 |-------|-------------|
 | -     | Left-justify within the given field width; Right justification is the default. |
-| +     | Forces to preceed the result with a plus or minus sign (+ or -) even for positive numbers.<br>By default, only negative numbers are preceded with a - sign. |
+| +     | Forces to precede the result with a plus or minus sign (+ or -) even for positive numbers.<br>By default, only negative numbers are preceded with a - sign. |
 | (space) | If no sign is going to be written, a blank space is inserted before the value. |
-| #     | Used with o, b, x or X specifiers the value is preceeded with 0, 0b, 0x or 0X respectively for values different than zero.<br>Used with f, F it forces the written output to contain a decimal point even if no more digits follow. By default, if no digits follow, no decimal point is written. |
-| 0     | Left-pads the number with zeroes (0) instead of spaces when padding is specified (see width sub-specifier). |
+| #     | Used with o, b, x or X specifiers the value is preceded with 0, 0b, 0x or 0X respectively for values different than zero.<br>Used with f, F it forces the written output to contain a decimal point even if no more digits follow. By default, if no digits follow, no decimal point is written. |
+| 0     | Left-pads the number with zeros (0) instead of spaces when padding is specified (see width sub-specifier). |
 
 
-### Supported width
+### Supported Width
 
 | Width    | Description |
 |----------|-------------|
@@ -117,7 +117,7 @@ The following format specifiers are supported:
 | *        | The width is not specified in the format string, but as an additional integer value argument preceding the argument that has to be formatted. |
 
 
-### Supported precision
+### Supported Precision
 
 | Precision	| Description |
 |-----------|-------------|
@@ -125,7 +125,7 @@ The following format specifiers are supported:
 | .*        | The precision is not specified in the format string, but as an additional integer value argument preceding the argument that has to be formatted. |
 
 
-### Supported length
+### Supported Length
 
 The length sub-specifier modifies the length of the data type.
 
@@ -141,13 +141,13 @@ The length sub-specifier modifies the length of the data type.
 | t      | ptrdiff_t | ptrdiff_t (if PRINTF_SUPPORT_PTRDIFF_T is defined) |
 
 
-### Return value
+### Return Value
 
-Upon successful return, all functions return the number of characters written, _excluding_ the terminating null character used to end the string.  
-Functions `snprintf()` and `vsnprintf()` don't write more than `count` bytes, _including_ the terminating null byte ('\0').  
-Anyway, if the output was truncated due to this limit, the return value is the number of characters that _could_ have been written.  
+Upon successful return, all functions return the number of characters written, _excluding_ the terminating null character used to end the string.
+Functions `snprintf()` and `vsnprintf()` don't write more than `count` bytes, _including_ the terminating null byte ('\0').
+Anyway, if the output was truncated due to this limit, the return value is the number of characters that _could_ have been written.
 Notice that a value equal or larger than `count` indicates a truncation. Only when the returned value is non-negative and less than `count`,
-the string has been completely written.  
+the string has been completely written.
 If any error is encountered, `-1` is returned.
 
 If `buffer` is set to `NULL` (`nullptr`) nothing is written and just the formatted length is returned.
@@ -156,7 +156,7 @@ int length = sprintf(NULL, "Hello, world"); // length is set to 12
 ```
 
 
-## Compiler switches/defines
+## Compiler Switches/Defines
 
 | Name | Default value | Description |
 |------|---------------|-------------|
@@ -168,19 +168,19 @@ int length = sprintf(NULL, "Hello, world"); // length is set to 12
 
 
 ## Caveats
-- The internal floating point conversion has a maximum precision of 9 digits. Any higher precision is truncated after the 9th digit and zeros are returned.  
+- The internal floating point conversion has a maximum precision of 9 digits. Any higher precision is truncated after the 9th digit and zeros are returned.
   So `printf("%.12f", 42.89522312345678)` gives `42.895223123000`.
 - Exponential floating point format (e.g. `"%.10e"` to get `1.167e+65`) for large numbers is not supported yet. Sorry.
 - `double` type is not supported in the moment, downcast to `float` might by required.
 
 
-## Test suite
-For testing just compile, build and run the test suite located in `test/test_suite.cpp`. This uses the [catch](https://github.com/catchorg/Catch2) framework for unit-tests, which is auto-adding main().  
+## Test Suite
+For testing just compile, build and run the test suite located in `test/test_suite.cpp`. This uses the [catch](https://github.com/catchorg/Catch2) framework for unit-tests, which is auto-adding main().
 Running with the `--wait-for-keypress exit` option waits for the enter key after test end.
 
 
-## Projects using printf
-- [turnkey-board](https://github.com/mpaland/turnkey-board) uses printf as log and generic display formatting/output.  
+## Projects Using printf
+- [turnkey-board](https://github.com/mpaland/turnkey-board) uses printf as log and generic display formatting/output.
 (Just send me a mail/issue to get your project listed here)
 
 
