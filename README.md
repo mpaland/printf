@@ -160,6 +160,8 @@ int length = sprintf(NULL, "Hello, world"); // length is set to 12
 
 | Name | Default value | Description |
 |------|---------------|-------------|
+| PRINTF_INCLUDE_CONFIG_H  | undefined | Define this as compiler switch (e.g. `gcc -DPRINTF_INCLUDE_CONFIG_H`) to include a "printf_config.h" definition file |
+| PRINTF_OVERRIDE_LIBC     | undefined | Define this to override the LIBC function declarations by using `printf_()` instead of `printf()` directly |
 | PRINTF_NTOA_BUFFER_SIZE  | 32        | ntoa (integer) conversion buffer size. This must be big enough to hold one converted numeric number _including_ leading zeros, normally 32 is a sufficient value. Created on the stack |
 | PRINTF_FTOA_BUFFER_SIZE  | 32        | ftoa (float) conversion buffer size. This must be big enough to hold one converted float number _including_ leading zeros, normally 32 is a sufficient value. Created on the stack |
 | PRINTF_SUPPORT_FLOAT     | defined   | Define this to enable floating point (%f) support |

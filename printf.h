@@ -25,7 +25,7 @@
 // \brief Tiny printf, sprintf and snprintf implementation, optimized for speed on
 //        embedded systems with a very limited resources.
 //        Use this instead of bloated standard/newlib printf.
-//        These routines are thread safe and reentrant!
+//        These routines are thread safe and reentrant.
 //
 ///////////////////////////////////////////////////////////////////////////////
 
@@ -55,6 +55,12 @@ extern "C" {
  */
 void _putchar(char character);
 
+
+// if PRINTF_OVERRIDE_LIBC is is defined, the regular printf() API is overridden by macro defines
+// and internal underscore-appended functions like printf_() are used to avoid conflicts with
+// LIBC defined printf() functions.
+// default: undefined
+#ifndef PRINTF_OVERRIDE_LIBC
 
 /**
  * Tiny printf implementation
@@ -96,6 +102,23 @@ int vsnprintf(char* buffer, size_t count, const char* format, va_list va);
  * \return The number of characters that are sent to the output function, not counting the terminating null character
  */
 int fctprintf(void (*out)(char character, void* arg), void* arg, const char* format, ...);
+
+#else   // PRINTF_OVERRIDE_LIBC
+
+// override the LIBC defined function names
+#define printf    printf_
+#define sprintf   sprintf_
+#define snprintf  snprintf_
+#define vsnprintf vsnprintf_
+#define fctprintf fctprintf_
+
+int printf_(const char* format, ...);
+int sprintf_(char* buffer, const char* format, ...);
+int snprintf_(char* buffer, size_t count, const char* format, ...);
+int vsnprintf_(char* buffer, size_t count, const char* format, va_list va);
+int fctprintf_(void (*out)(char character, void* arg), void* arg, const char* format, ...);
+
+#endif  // PRINTF_OVERRIDE_LIBC
 
 
 #ifdef __cplusplus
