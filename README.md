@@ -12,7 +12,7 @@ Primarily designed for usage in embedded systems, where printf is not available 
 Using the standard libc printf may pull **a lot** of unwanted library stuff and can bloat code size about 20k or is not 100% thread safe. In this cases the following implementation can be used.
 Absolutely **NO dependencies** are required, *printf.c* brings all necessary routines, even its own fast `ftoa` (float), `ntoa` (decimal) conversion.
 
-If memory footprint is really a critical issue, floating point and 'long long' support and can be turned off via the `PRINTF_SUPPORT_FLOAT` and `PRINTF_SUPPORT_LONG_LONG` compiler switches.
+If memory footprint is really a critical issue, floating point and 'long long' support and can be turned off via the `PRINTF_DISABLE_SUPPORT_FLOAT` and `PRINTF_DISABLE_SUPPORT_LONG_LONG` compiler switches.
 When using printf (instead of sprintf/snprintf) you have to provide your own `_putchar()` low level function as console/serial output.
 
 
