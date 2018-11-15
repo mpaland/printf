@@ -10,7 +10,7 @@
 This is a tiny but **fully loaded** printf, sprintf and (v)snprintf implementation.
 Primarily designed for usage in embedded systems, where printf is not available due to memory issues or in avoidance of linking against libc.
 Using the standard libc printf may pull **a lot** of unwanted library stuff and can bloat code size about 20k or is not 100% thread safe. In this cases the following implementation can be used.
-Absolutely **NO dependencies** are required, *printf.c* brings all necessary routines, even its own fast `ftoa` (float), `ntoa` (decimal) conversion.
+Absolutely **NO dependencies** are required, *printf.c* brings all necessary routines, even its own fast `ftoa` (floating point), `ntoa` (decimal) conversion.
 
 If memory footprint is really a critical issue, floating point and 'long long' support and can be turned off via the `PRINTF_SUPPORT_FLOAT` and `PRINTF_SUPPORT_LONG_LONG` compiler switches.
 When using printf (instead of sprintf/snprintf) you have to provide your own `_putchar()` low level function as console/serial output.
@@ -161,7 +161,6 @@ int length = sprintf(NULL, "Hello, world"); // length is set to 12
 | Name | Default value | Description |
 |------|---------------|-------------|
 | PRINTF_INCLUDE_CONFIG_H          | undefined | Define this as compiler switch (e.g. `gcc -DPRINTF_INCLUDE_CONFIG_H`) to include a "printf_config.h" definition file |
-| PRINTF_OVERRIDE_LIBC             | undefined | Define this to override the LIBC function declarations by using `printf_()` instead of `printf()` directly |
 | PRINTF_NTOA_BUFFER_SIZE          | 32        | ntoa (integer) conversion buffer size. This must be big enough to hold one converted numeric number _including_ leading zeros, normally 32 is a sufficient value. Created on the stack |
 | PRINTF_FTOA_BUFFER_SIZE          | 32        | ftoa (float) conversion buffer size. This must be big enough to hold one converted float number _including_ leading zeros, normally 32 is a sufficient value. Created on the stack |
 | PRINTF_DISABLE_SUPPORT_FLOAT     | undefined | Define this to enable floating point (%f) support |
@@ -173,7 +172,6 @@ int length = sprintf(NULL, "Hello, world"); // length is set to 12
 - The internal floating point conversion has a maximum precision of 9 digits. Any higher precision is truncated after the 9th digit and zeros are returned.
   So `printf("%.12f", 42.89522312345678)` gives `42.895223123000`.
 - Exponential floating point format (e.g. `"%.10e"` to get `1.167e+65`) for large numbers is not supported yet. Sorry.
-- `double` type is not supported in the moment, downcast to `float` might by required.
 
 
 ## Test Suite
