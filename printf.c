@@ -174,11 +174,13 @@ static size_t _ntoa_format(out_fct_type out, char* buffer, size_t idx, size_t ma
   const size_t start_idx = idx;
 
   // pad leading zeros
-  while (!(flags & FLAGS_LEFT) && (len < prec) && (len < PRINTF_NTOA_BUFFER_SIZE)) {
-    buf[len++] = '0';
-  }
-  while (!(flags & FLAGS_LEFT) && (flags & FLAGS_ZEROPAD) && (len < width) && (len < PRINTF_NTOA_BUFFER_SIZE)) {
-    buf[len++] = '0';
+  if (!(flags & FLAGS_LEFT)) {
+    while ((len < prec) && (len < PRINTF_NTOA_BUFFER_SIZE)) {
+      buf[len++] = '0';
+    }
+    while ((flags & FLAGS_ZEROPAD) && (len < width) && (len < PRINTF_NTOA_BUFFER_SIZE)) {
+      buf[len++] = '0';
+    }
   }
 
   // handle hash
@@ -389,8 +391,10 @@ static size_t _ftoa(out_fct_type out, char* buffer, size_t idx, size_t maxlen, d
   }
 
   // pad leading zeros
-  while (!(flags & FLAGS_LEFT) && (flags & FLAGS_ZEROPAD) && (len < width) && (len < PRINTF_FTOA_BUFFER_SIZE)) {
-    buf[len++] = '0';
+  if (!(flags & FLAGS_LEFT) && (flags & FLAGS_ZEROPAD)) {
+    while ((len < width) && (len < PRINTF_FTOA_BUFFER_SIZE)) {
+      buf[len++] = '0';
+    }
   }
 
   // handle sign
