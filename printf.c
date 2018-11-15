@@ -36,6 +36,14 @@
 #include "printf.h"
 
 
+// define this globally (e.g. gcc -DPRINTF_INCLUDE_CONFIG_H ...) to include the
+// printf_config.h header file
+// default: undefined
+#ifdef PRINTF_INCLUDE_CONFIG_H
+#include "printf_config.h"
+#endif
+
+
 // 'ntoa' conversion buffer size, this must be big enough to hold one converted
 // numeric number including padded zeros (dynamically created on stack)
 // default: 32 byte
@@ -699,11 +707,7 @@ static int _vsnprintf(out_fct_type out, char* buffer, const size_t maxlen, const
 
 ///////////////////////////////////////////////////////////////////////////////
 
-#ifndef PRINTF_OVERRIDE_LIBC
-int printf(const char* format, ...)
-#else
 int printf_(const char* format, ...)
-#endif
 {
   va_list va;
   va_start(va, format);
@@ -714,11 +718,7 @@ int printf_(const char* format, ...)
 }
 
 
-#ifndef PRINTF_OVERRIDE_LIBC
-int sprintf(char* buffer, const char* format, ...)
-#else
 int sprintf_(char* buffer, const char* format, ...)
-#endif
 {
   va_list va;
   va_start(va, format);
@@ -728,11 +728,7 @@ int sprintf_(char* buffer, const char* format, ...)
 }
 
 
-#ifndef PRINTF_OVERRIDE_LIBC
-int snprintf(char* buffer, size_t count, const char* format, ...)
-#else
 int snprintf_(char* buffer, size_t count, const char* format, ...)
-#endif
 {
   va_list va;
   va_start(va, format);
@@ -742,21 +738,13 @@ int snprintf_(char* buffer, size_t count, const char* format, ...)
 }
 
 
-#ifndef PRINTF_OVERRIDE_LIBC
-int vsnprintf(char* buffer, size_t count, const char* format, va_list va)
-#else
 int vsnprintf_(char* buffer, size_t count, const char* format, va_list va)
-#endif
 {
   return _vsnprintf(_out_buffer, buffer, count, format, va);
 }
 
 
-#ifndef PRINTF_OVERRIDE_LIBC
 int fctprintf(void (*out)(char character, void* arg), void* arg, const char* format, ...)
-#else
-int fctprintf_(void (*out)(char character, void* arg), void* arg, const char* format, ...)
-#endif
 {
   va_list va;
   va_start(va, format);

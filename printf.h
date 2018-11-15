@@ -35,13 +35,6 @@
 #include <stdarg.h>
 #include <stddef.h>
 
-// define this globally (e.g. gcc -DPRINTF_INCLUDE_CONFIG_H ...) to include the
-// printf_config.h header file
-// default: undefined
-#ifdef PRINTF_INCLUDE_CONFIG_H
-#include "printf_config.h"
-#endif
-
 
 #ifdef __cplusplus
 extern "C" {
@@ -56,19 +49,16 @@ extern "C" {
 void _putchar(char character);
 
 
-// if PRINTF_OVERRIDE_LIBC is is defined, the regular printf() API is overridden by macro defines
-// and internal underscore-appended functions like printf_() are used to avoid conflicts with
-// LIBC defined printf() functions.
-// default: undefined
-#ifndef PRINTF_OVERRIDE_LIBC
-
 /**
  * Tiny printf implementation
  * You have to implement _putchar if you use printf()
+ * To avoid conflicts with the regular printf() API it is overridden by macro defines
+ * and internal underscore-appended functions like printf_() are used
  * \param format A string that specifies the format of the output
  * \return The number of characters that are written into the array, not counting the terminating null character
  */
-int printf(const char* format, ...);
+#define printf printf_
+int printf_(const char* format, ...);
 
 
 /**
@@ -78,7 +68,8 @@ int printf(const char* format, ...);
  * \param format A string that specifies the format of the output
  * \return The number of characters that are WRITTEN into the buffer, not counting the terminating null character
  */
-int sprintf(char* buffer, const char* format, ...);
+#define sprintf sprintf_
+int sprintf_(char* buffer, const char* format, ...);
 
 
 /**
@@ -89,8 +80,10 @@ int sprintf(char* buffer, const char* format, ...);
  * \return The number of characters that are WRITTEN into the buffer, not counting the terminating null character
  *         If the formatted string is truncated the buffer size (count) is returned
  */
-int  snprintf(char* buffer, size_t count, const char* format, ...);
-int vsnprintf(char* buffer, size_t count, const char* format, va_list va);
+#define snprintf  snprintf_
+#define vsnprintf vsnprintf_
+int  snprintf_(char* buffer, size_t count, const char* format, ...);
+int vsnprintf_(char* buffer, size_t count, const char* format, va_list va);
 
 
 /**
@@ -102,23 +95,6 @@ int vsnprintf(char* buffer, size_t count, const char* format, va_list va);
  * \return The number of characters that are sent to the output function, not counting the terminating null character
  */
 int fctprintf(void (*out)(char character, void* arg), void* arg, const char* format, ...);
-
-#else   // PRINTF_OVERRIDE_LIBC
-
-// override the LIBC defined function names
-#define printf    printf_
-#define sprintf   sprintf_
-#define snprintf  snprintf_
-#define vsnprintf vsnprintf_
-#define fctprintf fctprintf_
-
-int printf_(const char* format, ...);
-int sprintf_(char* buffer, const char* format, ...);
-int snprintf_(char* buffer, size_t count, const char* format, ...);
-int vsnprintf_(char* buffer, size_t count, const char* format, va_list va);
-int fctprintf_(void (*out)(char character, void* arg), void* arg, const char* format, ...);
-
-#endif  // PRINTF_OVERRIDE_LIBC
 
 
 #ifdef __cplusplus
