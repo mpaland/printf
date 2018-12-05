@@ -1187,6 +1187,32 @@ TEST_CASE("unknown flag", "[]" ) {
 }
 
 
+TEST_CASE("string length", "[]" ) {
+  char buffer[100];
+
+  test::sprintf(buffer, "%.4s", "This is a test");
+  REQUIRE(!strcmp(buffer, "This"));
+
+  test::sprintf(buffer, "%.4s", "test");
+  REQUIRE(!strcmp(buffer, "test"));
+
+  test::sprintf(buffer, "%.7s", "123");
+  REQUIRE(!strcmp(buffer, "123"));
+
+  test::sprintf(buffer, "%.7s", "");
+  REQUIRE(!strcmp(buffer, ""));
+
+  test::sprintf(buffer, "%.4s%.2s", "123456", "abcdef");
+  REQUIRE(!strcmp(buffer, "1234ab"));
+
+  test::sprintf(buffer, "%.4.2s", "123456");
+  REQUIRE(!strcmp(buffer, ".2s"));
+
+  test::sprintf(buffer, "%.*s", 3, "123456");
+  REQUIRE(!strcmp(buffer, "123"));
+}
+
+
 TEST_CASE("buffer length", "[]" ) {
   char buffer[100];
   int ret;
