@@ -649,7 +649,7 @@ static int _vsnprintf(out_fct_type out, char* buffer, const size_t maxlen, const
 
       case 's' : {
         char* p = va_arg(va, char*);
-        unsigned int l = _strlen(p);
+        unsigned int l = _strlen(p, precision);
         // pre padding
         if (flags & FLAGS_PRECISION) {
           l = (l < precision ? l : precision);
