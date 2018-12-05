@@ -141,10 +141,12 @@ static inline void _out_fct(char character, void* buffer, size_t idx, size_t max
 
 // internal strlen
 // \return The length of the string (excluding the terminating 0)
-static inline unsigned int _strlen(const char* str)
+//         limited by 'max' size if non-zero
+static inline unsigned int _strlen(const char* str, size_t max)
 {
   const char* s;
-  for (s = str; *s; ++s);
+  size_t n = max;
+  for (s = str; *s && (max?n--:1); ++s);
   return (unsigned int)(s - str);
 }
 
