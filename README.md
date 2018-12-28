@@ -180,8 +180,10 @@ Running with the `--wait-for-keypress exit` option waits for the enter key after
 
 
 ## Projects Using printf
-- [turnkey-board](https://github.com/mpaland/turnkey-board) uses printf as log and generic display formatting/output.
-(Just send me a mail/issue to get your project listed here)
+- [turnkeyboard](https://github.com/mpaland/turnkeyboard) uses printf as log and generic tty (formatting) output.
+- printf is part of [embeddedartistry/libc](https://github.com/embeddedartistry/libc), a libc targeted for embedded systems usage.
+
+(Just send me a mail/issue/PR to get *your* project listed here)
 
 
 ## Contributing
