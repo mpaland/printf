@@ -163,9 +163,9 @@ int length = sprintf(NULL, "Hello, world"); // length is set to 12
 | PRINTF_INCLUDE_CONFIG_H          | undefined | Define this as compiler switch (e.g. `gcc -DPRINTF_INCLUDE_CONFIG_H`) to include a "printf_config.h" definition file |
 | PRINTF_NTOA_BUFFER_SIZE          | 32        | ntoa (integer) conversion buffer size. This must be big enough to hold one converted numeric number _including_ leading zeros, normally 32 is a sufficient value. Created on the stack |
 | PRINTF_FTOA_BUFFER_SIZE          | 32        | ftoa (float) conversion buffer size. This must be big enough to hold one converted float number _including_ leading zeros, normally 32 is a sufficient value. Created on the stack |
-| PRINTF_DISABLE_SUPPORT_FLOAT     | undefined | Define this to enable floating point (%f) support |
-| PRINTF_DISABLE_SUPPORT_LONG_LONG | undefined | Define this to enable long long (%ll) support |
-| PRINTF_DISABLE_SUPPORT_PTRDIFF_T | undefined | Define this to enable ptrdiff_t (%t) support |
+| PRINTF_DISABLE_SUPPORT_FLOAT     | undefined | Define this to disable floating point (%f) support |
+| PRINTF_DISABLE_SUPPORT_LONG_LONG | undefined | Define this to disable long long (%ll) support |
+| PRINTF_DISABLE_SUPPORT_PTRDIFF_T | undefined | Define this to disable ptrdiff_t (%t) support |
 
 
 ## Caveats
