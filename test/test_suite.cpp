@@ -69,7 +69,8 @@ TEST_CASE("fctprintf", "[]" ) {
   printf_idx = 0U;
   memset(printf_buffer, 0xCC, 100U);
   test::fctprintf(&_out_fct, nullptr, "This is a test of %X", 0x12EFU);
-  REQUIRE(!strcmp(printf_buffer, "This is a test of 12EF"));
+  REQUIRE(!strncmp(printf_buffer, "This is a test of 12EF", 22U));
+  REQUIRE(printf_buffer[22] == (char)0xCC);
 }
 
 

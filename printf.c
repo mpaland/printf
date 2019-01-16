@@ -134,8 +134,10 @@ static inline void _out_char(char character, void* buffer, size_t idx, size_t ma
 static inline void _out_fct(char character, void* buffer, size_t idx, size_t maxlen)
 {
   (void)idx; (void)maxlen;
-  // buffer is the output fct pointer
-  ((out_fct_wrap_type*)buffer)->fct(character, ((out_fct_wrap_type*)buffer)->arg);
+  if (character) {
+    // buffer is the output fct pointer
+    ((out_fct_wrap_type*)buffer)->fct(character, ((out_fct_wrap_type*)buffer)->arg);
+  }
 }
 
 
