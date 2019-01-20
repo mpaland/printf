@@ -864,6 +864,74 @@ TEST_CASE("padding 20.5", "[]" ) {
   REQUIRE(!strcmp(buffer, "          00EDCB5433"));
 }
 
+TEST_CASE("padding neg numbers", "[]" ) {
+  char buffer[100];
+  
+  // space padding
+  
+  test::sprintf(buffer, "% 1d", -5);
+  REQUIRE(!strcmp(buffer, "-5"));
+  
+  test::sprintf(buffer, "% 2d", -5);
+  REQUIRE(!strcmp(buffer, "-5"));
+  
+  test::sprintf(buffer, "% 3d", -5);
+  REQUIRE(!strcmp(buffer, " -5"));
+  
+  test::sprintf(buffer, "% 4d", -5);
+  REQUIRE(!strcmp(buffer, "  -5"));
+  
+  // zero padding
+  
+  test::sprintf(buffer, "%01d", -5);
+  REQUIRE(!strcmp(buffer, "-5"));
+  
+  test::sprintf(buffer, "%02d", -5);
+  REQUIRE(!strcmp(buffer, "-5"));
+  
+  test::sprintf(buffer, "%03d", -5);
+  REQUIRE(!strcmp(buffer, "-05"));
+  
+  test::sprintf(buffer, "%04d", -5);
+  REQUIRE(!strcmp(buffer, "-005"));
+}
+
+TEST_CASE("float padding neg numbers", "[]" ) {
+  char buffer[100];
+
+  // space padding
+  
+  test::sprintf(buffer, "% 3.1f", -5.);
+  REQUIRE(!strcmp(buffer, "-5.0"));
+  
+  test::sprintf(buffer, "% 4.1f", -5.);
+  REQUIRE(!strcmp(buffer, "-5.0"));
+  
+  test::sprintf(buffer, "% 5.1f", -5.);
+  REQUIRE(!strcmp(buffer, " -5.0"));
+  
+  // zero padding
+  
+  test::sprintf(buffer, "%03.1f", -5.);
+  REQUIRE(!strcmp(buffer, "-5.0"));
+  
+  test::sprintf(buffer, "%04.1f", -5.);
+  REQUIRE(!strcmp(buffer, "-5.0"));
+  
+  test::sprintf(buffer, "%05.1f", -5.);
+  REQUIRE(!strcmp(buffer, "-05.0"));
+      
+  // zero padding no decimal point
+  
+  test::sprintf(buffer, "%01.0f", -5.);
+  REQUIRE(!strcmp(buffer, "-5"));
+  
+  test::sprintf(buffer, "%02.0f", -5.);
+  REQUIRE(!strcmp(buffer, "-5"));
+  
+  test::sprintf(buffer, "%03.0f", -5.);
+  REQUIRE(!strcmp(buffer, "-05"));
+}
 
 TEST_CASE("length", "[]" ) {
   char buffer[100];

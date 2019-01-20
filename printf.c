@@ -178,6 +178,9 @@ static size_t _ntoa_format(out_fct_type out, char* buffer, size_t idx, size_t ma
 
   // pad leading zeros
   if (!(flags & FLAGS_LEFT)) {
+    if (width && (flags & FLAGS_ZEROPAD) && (negative || (flags & (FLAGS_PLUS | FLAGS_SPACE)))) {
+      width--;
+    }
     while ((len < prec) && (len < PRINTF_NTOA_BUFFER_SIZE)) {
       buf[len++] = '0';
     }
@@ -208,10 +211,6 @@ static size_t _ntoa_format(out_fct_type out, char* buffer, size_t idx, size_t ma
     }
   }
 
-  // handle sign
-  if (len && (len == width) && (negative || (flags & FLAGS_PLUS) || (flags & FLAGS_SPACE))) {
-    len--;
-  }
   if (len < PRINTF_NTOA_BUFFER_SIZE) {
     if (negative) {
       buf[len++] = '-';
@@ -395,15 +394,14 @@ static size_t _ftoa(out_fct_type out, char* buffer, size_t idx, size_t maxlen, d
 
   // pad leading zeros
   if (!(flags & FLAGS_LEFT) && (flags & FLAGS_ZEROPAD)) {
+    if (width && (negative || (flags & (FLAGS_PLUS | FLAGS_SPACE)))) {
+      width--;
+    }
     while ((len < width) && (len < PRINTF_FTOA_BUFFER_SIZE)) {
       buf[len++] = '0';
     }
   }
 
-  // handle sign
-  if ((len == width) && (negative || (flags & FLAGS_PLUS) || (flags & FLAGS_SPACE))) {
-    len--;
-  }
   if (len < PRINTF_FTOA_BUFFER_SIZE) {
     if (negative) {
       buf[len++] = '-';
