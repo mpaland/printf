@@ -28,7 +28,7 @@ Therefore I decided to write an own, final implementation which meets the follow
  - Support of decimal/floating number representation (with an own fast itoa/ftoa)
  - Reentrant and thread-safe, malloc free, no static vars/buffers
  - LINT and compiler L4 warning free, mature, coverity clean, automotive ready
- - Extensive test suite (> 350 test cases) passing
+ - Extensive test suite (> 370 test cases) passing
  - Simply the best *printf* around the net
  - MIT license
 

@@ -311,6 +311,14 @@ static size_t _ftoa(out_fct_type out, char* buffer, size_t idx, size_t maxlen, d
   // powers of 10
   static const double pow10[] = { 1, 10, 100, 1000, 10000, 100000, 1000000, 10000000, 100000000, 1000000000 };
 
+  // test for NaN
+  if (value != value) {
+    out('n', buffer, idx++, maxlen);
+    out('a', buffer, idx++, maxlen);
+    out('n', buffer, idx++, maxlen);
+    return idx;
+  }
+
   // test for negative
   bool negative = false;
   if (value < 0) {
@@ -341,8 +349,10 @@ static size_t _ftoa(out_fct_type out, char* buffer, size_t idx, size_t maxlen, d
       ++whole;
     }
   }
-  else if ((diff == 0.5) && ((frac == 0U) || (frac & 1U))) {
-    // if halfway, round up if odd, OR if last digit is 0
+  else if (diff < 0.5) {
+  }
+  else if ((frac == 0U) || (frac & 1U)) {
+    // if halfway, round up if odd OR if last digit is 0
     ++frac;
   }
 

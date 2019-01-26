@@ -31,6 +31,7 @@
 #include "catch.hpp"
 
 #include <string.h>
+#include <math.h>
 
 namespace test {
   // use functions in own test namespace to avoid stdio conflicts
@@ -1018,6 +1019,9 @@ TEST_CASE("length", "[]" ) {
 
 TEST_CASE("float", "[]" ) {
   char buffer[100];
+
+  test::sprintf(buffer, "%.4f", NAN);   // using the NAN macro of math.h
+  REQUIRE(!strcmp(buffer, "nan"));
 
   test::sprintf(buffer, "%.4f", 3.1415354);
   REQUIRE(!strcmp(buffer, "3.1415"));
