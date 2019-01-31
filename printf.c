@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////////////
 // \author (c) Marco Paland (info@paland.com)
-//             2014-2018, PALANDesign Hannover, Germany
+//             2014-2019, PALANDesign Hannover, Germany
 //
 // \license The MIT License (MIT)
 //
@@ -142,8 +142,7 @@ static inline void _out_fct(char character, void* buffer, size_t idx, size_t max
 
 
 // internal secure strlen
-// \return The length of the string (excluding the terminating 0)
-//         limited by 'max' size if non-zero
+// \return The length of the string (excluding the terminating 0) limited by 'maxsize'
 static inline unsigned int _strnlen_s(const char* str, size_t maxsize)
 {
   const char* s;
@@ -657,7 +656,7 @@ static int _vsnprintf(out_fct_type out, char* buffer, const size_t maxlen, const
       }
 
       case 's' : {
-        char* p = va_arg(va, char*);
+        const char* p = va_arg(va, char*);
         unsigned int l = _strnlen_s(p, precision ? precision : (size_t)-1);
         // pre padding
         if (flags & FLAGS_PRECISION) {
