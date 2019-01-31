@@ -1036,6 +1036,15 @@ TEST_CASE("float", "[]" ) {
   test::sprintf(buffer, "%.0f", 34.1415354);
   REQUIRE(!strcmp(buffer, "34"));
 
+  test::sprintf(buffer, "%.0f", 1.3);
+  REQUIRE(!strcmp(buffer, "1"));
+
+  test::sprintf(buffer, "%.0f", 1.55);
+  REQUIRE(!strcmp(buffer, "2"));
+
+  test::sprintf(buffer, "%.1f", 1.64);
+  REQUIRE(!strcmp(buffer, "1.6"));
+
   test::sprintf(buffer, "%.2f", 42.8952);
   REQUIRE(!strcmp(buffer, "42.90"));
 
@@ -1080,6 +1089,9 @@ TEST_CASE("float", "[]" ) {
   REQUIRE(!strcmp(buffer, "4.0"));
 
   test::sprintf(buffer, "%.0f", 3.5);
+  REQUIRE(!strcmp(buffer, "4"));
+
+  test::sprintf(buffer, "%.0f", 4.5);
   REQUIRE(!strcmp(buffer, "4"));
 
   test::sprintf(buffer, "%.0f", 3.49);
