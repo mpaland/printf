@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////////////
 // \author (c) Marco Paland (info@paland.com)
-//             2017-2018, PALANDesign Hannover, Germany
+//             2017-2019, PALANDesign Hannover, Germany
 //
 // \license The MIT License (MIT)
 //
@@ -353,6 +353,10 @@ TEST_CASE("# flag", "[]" ) {
   char buffer[100];
 
   test::sprintf(buffer, "%#.0x", 0);
+  REQUIRE(!strcmp(buffer, ""));
+  test::sprintf(buffer, "%#.1x", 0);
+  REQUIRE(!strcmp(buffer, "0"));
+  test::sprintf(buffer, "%#.0llx", (long long)0);
   REQUIRE(!strcmp(buffer, ""));
   test::sprintf(buffer, "%#.8x", 0x614e);
   REQUIRE(!strcmp(buffer, "0x0000614e"));
