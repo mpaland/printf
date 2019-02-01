@@ -186,11 +186,34 @@ static unsigned int _atoi(const char** str)
   return i;
 }
 
+// output the specified string in reverse, taking care of any zero-padding
+static size_t _out_rev(out_fct_type out, char* buffer, size_t idx, size_t maxlen, const char* buf, size_t len, unsigned int width, unsigned int flags)
+{
+  const size_t start_idx = idx;
+  
+  // pad spaces up to given width
+  if (!(flags & FLAGS_LEFT) && !(flags & FLAGS_ZEROPAD)) {
+    for (size_t i = len; i < width; i++) {
+      out(' ', buffer, idx++, maxlen);
+    }
+  }
+
+  // reverse string
+  while (len) out(buf[--len], buffer, idx++, maxlen);
+
+  // append pad spaces up to given width
+  if (flags & FLAGS_LEFT) {
+    while (idx - start_idx < width) {
+      out(' ', buffer, idx++, maxlen);
+    }
+  }
+  
+  return idx;
+}
+
 // internal itoa format
 static size_t _ntoa_format(out_fct_type out, char* buffer, size_t idx, size_t maxlen, char* buf, size_t len, bool negative, unsigned int base, unsigned int prec, unsigned int width, unsigned int flags)
 {
-  const size_t start_idx = idx;
-
   // pad leading zeros
   if (!(flags & FLAGS_LEFT)) {
     if (width && (flags & FLAGS_ZEROPAD) && (negative || (flags & (FLAGS_PLUS | FLAGS_SPACE)))) {
@@ -238,26 +261,7 @@ static size_t _ntoa_format(out_fct_type out, char* buffer, size_t idx, size_t ma
     }
   }
 
-  // pad spaces up to given width
-  if (!(flags & FLAGS_LEFT) && !(flags & FLAGS_ZEROPAD)) {
-    for (size_t i = len; i < width; i++) {
-      out(' ', buffer, idx++, maxlen);
-    }
-  }
-
-  // reverse string
-  for (size_t i = 0U; i < len; i++) {
-    out(buf[len - i - 1U], buffer, idx++, maxlen);
-  }
-
-  // append pad spaces up to given width
-  if (flags & FLAGS_LEFT) {
-    while (idx - start_idx < width) {
-      out(' ', buffer, idx++, maxlen);
-    }
-  }
-
-  return idx;
+  return _out_rev(out, buffer, idx, maxlen, buf, len, width, flags);
 }
 
 
@@ -319,8 +323,6 @@ static size_t _etoa(out_fct_type out, char* buffer, size_t idx, size_t maxlen, d
 
 static size_t _ftoa(out_fct_type out, char* buffer, size_t idx, size_t maxlen, double value, unsigned int prec, unsigned int width, unsigned int flags)
 {
-  const size_t start_idx = idx;
-
   char buf[PRINTF_FTOA_BUFFER_SIZE];
   size_t len  = 0U;
   double diff = 0.0;
@@ -330,10 +332,7 @@ static size_t _ftoa(out_fct_type out, char* buffer, size_t idx, size_t maxlen, d
 
   // test for NaN
   if (value != value) {
-    out('n', buffer, idx++, maxlen);
-    out('a', buffer, idx++, maxlen);
-    out('n', buffer, idx++, maxlen);
-    return idx;
+    return _out_rev(out, buffer, idx, maxlen, "nan", 3, width, flags);	// ensure value is padded as required
   }
 
   // test for very large values
@@ -445,26 +444,7 @@ static size_t _ftoa(out_fct_type out, char* buffer, size_t idx, size_t maxlen, d
     }
   }
 
-  // pad spaces up to given width
-  if (!(flags & FLAGS_LEFT) && !(flags & FLAGS_ZEROPAD)) {
-    for (size_t i = len; i < width; i++) {
-      out(' ', buffer, idx++, maxlen);
-    }
-  }
-
-  // reverse string
-  for (size_t i = 0U; i < len; i++) {
-    out(buf[len - i - 1U], buffer, idx++, maxlen);
-  }
-
-  // append pad spaces up to given width
-  if (flags & FLAGS_LEFT) {
-    while (idx - start_idx < width) {
-      out(' ', buffer, idx++, maxlen);
-    }
-  }
-
-  return idx;
+  return _out_rev(out, buffer, idx, maxlen, buf, len, width, flags);
 }
 
 #if defined(PRINTF_SUPPORT_EXPONENTIAL)
