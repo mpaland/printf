@@ -487,19 +487,25 @@ static size_t _etoa(out_fct_type out, char* buffer, size_t idx, size_t maxlen, d
 	}
   }
   // will everything fit?
+  unsigned int fwidth = width;
   if (width > minwidth) {
     // we didn't fall-back so subtract the characters required for the exponent
-    width -= minwidth;
+    fwidth -= minwidth;
   } else {
 	// not enough characters, so go back to default sizing
-	width = 0;
+	fwidth = 0;
+  }
+  if ((flags & FLAGS_LEFT) && minwidth) {
+	// if we're padding on the right, DON'T pad the floating part
+	fwidth = 0;
   }
 
   // rescale the float value
   if (expval) value *= pow(10.0, -expval);
 
   // output the floating part
-  idx = _ftoa(out, buffer, idx, maxlen, negative ? -value : value, prec, width, flags & ~FLAGS_ADAPT_EXP);
+  const size_t start_idx = idx;
+  idx = _ftoa(out, buffer, idx, maxlen, negative ? -value : value, prec, fwidth, flags & ~FLAGS_ADAPT_EXP);
 
   // output the exponent part
   if (minwidth) {
@@ -507,6 +513,10 @@ static size_t _etoa(out_fct_type out, char* buffer, size_t idx, size_t maxlen, d
 	out((flags & FLAGS_UPPERCASE) ? 'E' : 'e', buffer, idx++, maxlen);
 	// output the exponent value
 	idx = _ntoa_long(out, buffer, idx, maxlen, (expval < 0) ? -expval : expval, expval < 0, 10, 0, minwidth-1, FLAGS_ZEROPAD | FLAGS_PLUS);
+	// might need to right-pad spaces
+	if (flags & FLAGS_LEFT) {
+		while (idx - start_idx < width) out(' ', buffer, idx++, maxlen);
+	}
   }
   return idx;
 }

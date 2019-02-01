@@ -346,6 +346,13 @@ TEST_CASE("- flag", "[]" ) {
 
   test::sprintf(buffer, "%0-15d", -42);
   REQUIRE(!strcmp(buffer, "-42            "));
+  
+  test::sprintf(buffer, "%0-15.3e", -42.);
+  REQUIRE(!strcmp(buffer, "-4.200e+01     "));
+  
+  test::sprintf(buffer, "%0-15.3g", -42.);
+  REQUIRE(!strcmp(buffer, "-42.0          "));
+  
 }
 
 
@@ -911,6 +918,15 @@ TEST_CASE("float padding neg numbers", "[]" ) {
   test::sprintf(buffer, "% 5.1f", -5.);
   REQUIRE(!strcmp(buffer, " -5.0"));
   
+  test::sprintf(buffer, "% 6.1g", -5.);
+  REQUIRE(!strcmp(buffer, "    -5"));
+  
+  test::sprintf(buffer, "% 6.1e", -5.);
+  REQUIRE(!strcmp(buffer, "-5.0e+00"));
+  
+  test::sprintf(buffer, "% 10.1e", -5.);
+  REQUIRE(!strcmp(buffer, "  -5.0e+00"));
+  
   // zero padding
   
   test::sprintf(buffer, "%03.1f", -5.);
@@ -921,6 +937,9 @@ TEST_CASE("float padding neg numbers", "[]" ) {
   
   test::sprintf(buffer, "%05.1f", -5.);
   REQUIRE(!strcmp(buffer, "-05.0"));
+  
+  test::sprintf(buffer, "%010.1e", -5.);
+  REQUIRE(!strcmp(buffer, "-005.0e+00"));
       
   // zero padding no decimal point
   
@@ -931,6 +950,12 @@ TEST_CASE("float padding neg numbers", "[]" ) {
   REQUIRE(!strcmp(buffer, "-5"));
   
   test::sprintf(buffer, "%03.0f", -5.);
+  REQUIRE(!strcmp(buffer, "-05"));
+  
+  test::sprintf(buffer, "%07.0E", -5.);
+  REQUIRE(!strcmp(buffer, "-05E+00"));
+  
+  test::sprintf(buffer, "%03.0g", -5.);
   REQUIRE(!strcmp(buffer, "-05"));
 }
 
@@ -1020,8 +1045,8 @@ TEST_CASE("length", "[]" ) {
 TEST_CASE("float", "[]" ) {
   char buffer[100];
 
-  test::sprintf(buffer, "%.4f", NAN);   // using the NAN macro of math.h
-  REQUIRE(!strcmp(buffer, "nan"));
+  test::sprintf(buffer, "%8f", NAN);   // using the NAN macro of math.h
+  REQUIRE(!strcmp(buffer, "     nan"));
 
   test::sprintf(buffer, "%.4f", 3.1415354);
   REQUIRE(!strcmp(buffer, "3.1415"));
@@ -1090,9 +1115,39 @@ TEST_CASE("float", "[]" ) {
   test::sprintf(buffer, "a%-5.1fend", 0.5);
   REQUIRE(!strcmp(buffer, "a0.5  end"));
 
-  // out of range in the moment, need to be fixed by someone
+  test::sprintf(buffer, "%G", 12345.678);
+  REQUIRE(!strcmp(buffer, "12345.7"));
+  
+  test::sprintf(buffer, "%.7G", 12345.678);
+  REQUIRE(!strcmp(buffer, "12345.68"));
+  
+  test::sprintf(buffer, "%.5G", 123456789.);
+  REQUIRE(!strcmp(buffer, "1.2346E+08"));
+  
+  test::sprintf(buffer, "%.6G", 12345.);
+  REQUIRE(!strcmp(buffer, "12345.0"));
+  
+  test::sprintf(buffer, "%+12.4g", 123456789.);
+  REQUIRE(!strcmp(buffer, "  +1.235e+08"));
+  
+  test::sprintf(buffer, "%.2G", 0.001234);
+  REQUIRE(!strcmp(buffer, "0.0012"));
+  
+  test::sprintf(buffer, "%+10.4G", 0.001234);
+  REQUIRE(!strcmp(buffer, " +0.001234"));
+  
+  test::sprintf(buffer, "%+012.4g", 0.00001234);
+  REQUIRE(!strcmp(buffer, "+001.234e-05"));
+  
+  test::sprintf(buffer, "%.3g", -1.2345e-308);
+  REQUIRE(!strcmp(buffer, "-1.23e-308"));
+  
+  test::sprintf(buffer, "%+.3E", 1.23e+308);
+  REQUIRE(!strcmp(buffer, "+1.230E+308"));
+  
+  // out of range for float: should switch to exp notation
   test::sprintf(buffer, "%.1f", 1E20);
-  REQUIRE(!strcmp(buffer, ""));
+  REQUIRE(!strcmp(buffer, "1.0e+20"));
 }
 
 
@@ -1346,6 +1401,12 @@ TEST_CASE("misc", "[]" ) {
   test::sprintf(buffer, "%.*f", 2, 0.33333333);
   REQUIRE(!strcmp(buffer, "0.33"));
 
+  test::sprintf(buffer, "%.*g", 2, 0.33333333);
+  REQUIRE(!strcmp(buffer, "0.33"));
+  
+  test::sprintf(buffer, "%.*e", 2, 0.33333333);
+  REQUIRE(!strcmp(buffer, "3.33e-01"));
+  
   test::sprintf(buffer, "%.*d", -1, 1);
   REQUIRE(!strcmp(buffer, "1"));
 
