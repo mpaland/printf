@@ -106,7 +106,7 @@
 #define FLAGS_LONG      (1U <<  8U)
 #define FLAGS_LONG_LONG (1U <<  9U)
 #define FLAGS_PRECISION (1U << 10U)
-#define FLAGS_ADAPT_EXP	(1U << 11U)
+#define FLAGS_ADAPT_EXP (1U << 11U)
 
 
 // output function type
@@ -337,7 +337,7 @@ static size_t _ftoa(out_fct_type out, char* buffer, size_t idx, size_t maxlen, d
   if (value < -DBL_MAX)
     return _out_rev(out, buffer, idx, maxlen, "fni-", 4, width, flags);
   if (value > DBL_MAX)
-	return _out_rev(out, buffer, idx, maxlen, (flags & FLAGS_PLUS) ? "fni+" : "fni", (flags & FLAGS_PLUS) ? 4 : 3, width, flags);
+    return _out_rev(out, buffer, idx, maxlen, (flags & FLAGS_PLUS) ? "fni+" : "fni", (flags & FLAGS_PLUS) ? 4 : 3, width, flags);
 
   // test for very large values
   // standard printf behavior is to print EVERY whole number digit -- which could be 100s of characters overflowing your buffers == bad
@@ -456,14 +456,14 @@ static size_t _etoa(out_fct_type out, char* buffer, size_t idx, size_t maxlen, d
 {
   // check for special values
   if ((value != value)||(value > DBL_MAX)||(value < -DBL_MAX))
-	return _ftoa(out, buffer, idx, maxlen, value, prec, width, flags);
+    return _ftoa(out, buffer, idx, maxlen, value, prec, width, flags);
   
   // determine the sign
   bool negative = value < 0;
   if (negative) value = -value;
 
   // determine the decimal exponent
-  int expval = (int)floor(log10(value));	// "value" must be +ve
+  int expval = (int)floor(log10(value));    // "value" must be +ve
 
   // the exponent format is "%+03d" and largest value is "307", so set aside 4-5 characters
   unsigned int minwidth = ((expval < 100)&&(expval > -100)) ? 4 : 5;
@@ -475,23 +475,23 @@ static size_t _etoa(out_fct_type out, char* buffer, size_t idx, size_t maxlen, d
   
   // in "%g" mode, "prec" is the number of *significant figures* not decimals
   if (flags & FLAGS_ADAPT_EXP) {
-	// do we want to fall-back to "%f" mode for small number?
-	if ((expval > -5)&&(expval < 6)) {
-	  if ((int)prec > expval) {
-		prec = (unsigned)((int)prec - expval - 1);
+    // do we want to fall-back to "%f" mode for small number?
+    if ((expval > -5)&&(expval < 6)) {
+      if ((int)prec > expval) {
+        prec = (unsigned)((int)prec - expval - 1);
       } else {
-		prec = 0;
-	  }
-	  // TODO: there's also a special case where we're supposed to ELIMINATE digits from the whole part
-	  flags |= FLAGS_PRECISION; // make sure _ftoa respects precision
-	  
-	  // no characters in exponent
-	  minwidth = 0;
-	  expval = 0;
-	} else {
-	  // we use one sigfig for the whole part
-	  if ((prec > 0)&&(flags & FLAGS_PRECISION)) --prec;
-	}
+        prec = 0;
+      }
+      // TODO: there's also a special case where we're supposed to ELIMINATE digits from the whole part
+      flags |= FLAGS_PRECISION; // make sure _ftoa respects precision
+      
+      // no characters in exponent
+      minwidth = 0;
+      expval = 0;
+    } else {
+      // we use one sigfig for the whole part
+      if ((prec > 0)&&(flags & FLAGS_PRECISION)) --prec;
+    }
   }
   // will everything fit?
   unsigned int fwidth = width;
@@ -499,12 +499,12 @@ static size_t _etoa(out_fct_type out, char* buffer, size_t idx, size_t maxlen, d
     // we didn't fall-back so subtract the characters required for the exponent
     fwidth -= minwidth;
   } else {
-	// not enough characters, so go back to default sizing
-	fwidth = 0;
+    // not enough characters, so go back to default sizing
+    fwidth = 0;
   }
   if ((flags & FLAGS_LEFT) && minwidth) {
-	// if we're padding on the right, DON'T pad the floating part
-	fwidth = 0;
+    // if we're padding on the right, DON'T pad the floating part
+    fwidth = 0;
   }
 
   // rescale the float value
@@ -516,14 +516,14 @@ static size_t _etoa(out_fct_type out, char* buffer, size_t idx, size_t maxlen, d
 
   // output the exponent part
   if (minwidth) {
-	// output the exponential symbol
-	out((flags & FLAGS_UPPERCASE) ? 'E' : 'e', buffer, idx++, maxlen);
-	// output the exponent value
-	idx = _ntoa_long(out, buffer, idx, maxlen, (expval < 0) ? -expval : expval, expval < 0, 10, 0, minwidth-1, FLAGS_ZEROPAD | FLAGS_PLUS);
-	// might need to right-pad spaces
-	if (flags & FLAGS_LEFT) {
-		while (idx - start_idx < width) out(' ', buffer, idx++, maxlen);
-	}
+    // output the exponential symbol
+    out((flags & FLAGS_UPPERCASE) ? 'E' : 'e', buffer, idx++, maxlen);
+    // output the exponent value
+    idx = _ntoa_long(out, buffer, idx, maxlen, (expval < 0) ? -expval : expval, expval < 0, 10, 0, minwidth-1, FLAGS_ZEROPAD | FLAGS_PLUS);
+    // might need to right-pad spaces
+    if (flags & FLAGS_LEFT) {
+      while (idx - start_idx < width) out(' ', buffer, idx++, maxlen);
+    }
   }
   return idx;
 }
@@ -716,20 +716,20 @@ static int _vsnprintf(out_fct_type out, char* buffer, const size_t maxlen, const
 #if defined(PRINTF_SUPPORT_FLOAT)
       case 'f' :
       case 'F' :
-	    if (*format == 'F') flags |= FLAGS_UPPERCASE;
+        if (*format == 'F') flags |= FLAGS_UPPERCASE;
         idx = _ftoa(out, buffer, idx, maxlen, va_arg(va, double), precision, width, flags);
         format++;
         break;
 #if defined(PRINTF_SUPPORT_EXPONENTIAL)
       case 'e':
-	  case 'E':
+      case 'E':
       case 'g':
-	  case 'G':
-	    if ((*format == 'g')||(*format == 'G')) flags |= FLAGS_ADAPT_EXP;
-		if ((*format == 'E')||(*format == 'G')) flags |= FLAGS_UPPERCASE;
-	    idx = _etoa(out, buffer, idx, maxlen, va_arg(va, double), precision, width, flags);
-		format++;
-		break;
+      case 'G':
+        if ((*format == 'g')||(*format == 'G')) flags |= FLAGS_ADAPT_EXP;
+        if ((*format == 'E')||(*format == 'G')) flags |= FLAGS_UPPERCASE;
+        idx = _etoa(out, buffer, idx, maxlen, va_arg(va, double), precision, width, flags);
+        format++;
+        break;
 #endif  // PRINTF_SUPPORT_EXPONENTIAL
 #endif  // PRINTF_SUPPORT_FLOAT
       case 'c' : {
