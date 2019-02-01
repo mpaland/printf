@@ -1045,9 +1045,19 @@ TEST_CASE("length", "[]" ) {
 TEST_CASE("float", "[]" ) {
   char buffer[100];
 
-  test::sprintf(buffer, "%8f", NAN);   // using the NAN macro of math.h
+  // test special-case floats using math.h macros
+  test::sprintf(buffer, "%8f", NAN);
   REQUIRE(!strcmp(buffer, "     nan"));
 
+  test::sprintf(buffer, "%8f", INFINITY);
+  REQUIRE(!strcmp(buffer, "     inf"));
+
+  test::sprintf(buffer, "%-8f", -INFINITY);
+  REQUIRE(!strcmp(buffer, "-inf    "));
+
+  test::sprintf(buffer, "%+8e", INFINITY);
+  REQUIRE(!strcmp(buffer, "    +inf"));
+  
   test::sprintf(buffer, "%.4f", 3.1415354);
   REQUIRE(!strcmp(buffer, "3.1415"));
 

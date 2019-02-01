@@ -316,6 +316,7 @@ static size_t _ntoa_long_long(out_fct_type out, char* buffer, size_t idx, size_t
 
 
 #if defined(PRINTF_SUPPORT_FLOAT)
+#include <math.h>
 #if defined(PRINTF_SUPPORT_EXPONENTIAL)
 // forward declaration so that _ftoa can switch to exp notation for values > PRINTF_MAX_FLOAT
 static size_t _etoa(out_fct_type out, char* buffer, size_t idx, size_t maxlen, double value, unsigned int prec, unsigned int width, unsigned int flags);
@@ -330,10 +331,13 @@ static size_t _ftoa(out_fct_type out, char* buffer, size_t idx, size_t maxlen, d
   // powers of 10
   static const double pow10[] = { 1, 10, 100, 1000, 10000, 100000, 1000000, 10000000, 100000000, 1000000000 };
 
-  // test for NaN
-  if (value != value) {
-    return _out_rev(out, buffer, idx, maxlen, "nan", 3, width, flags);	// ensure value is padded as required
-  }
+  // test for special values
+  if (value != value)
+    return _out_rev(out, buffer, idx, maxlen, "nan", 3, width, flags);
+  if (value < -DBL_MAX)
+    return _out_rev(out, buffer, idx, maxlen, "fni-", 4, width, flags);
+  if (value > DBL_MAX)
+	return _out_rev(out, buffer, idx, maxlen, (flags & FLAGS_PLUS) ? "fni+" : "fni", (flags & FLAGS_PLUS) ? 4 : 3, width, flags);
 
   // test for very large values
   // standard printf behavior is to print EVERY whole number digit -- which could be 100s of characters overflowing your buffers == bad
@@ -448,9 +452,12 @@ static size_t _ftoa(out_fct_type out, char* buffer, size_t idx, size_t maxlen, d
 }
 
 #if defined(PRINTF_SUPPORT_EXPONENTIAL)
-#include <math.h>
 static size_t _etoa(out_fct_type out, char* buffer, size_t idx, size_t maxlen, double value, unsigned int prec, unsigned int width, unsigned int flags)
 {
+  // check for special values
+  if ((value != value)||(value > DBL_MAX)||(value < -DBL_MAX))
+	return _ftoa(out, buffer, idx, maxlen, value, prec, width, flags);
+  
   // determine the sign
   bool negative = value < 0;
   if (negative) value = -value;
