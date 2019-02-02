@@ -316,12 +316,13 @@ static size_t _ntoa_long_long(out_fct_type out, char* buffer, size_t idx, size_t
 
 
 #if defined(PRINTF_SUPPORT_FLOAT)
-#include <math.h>
+#include <float.h>
 #if defined(PRINTF_SUPPORT_EXPONENTIAL)
 // forward declaration so that _ftoa can switch to exp notation for values > PRINTF_MAX_FLOAT
 static size_t _etoa(out_fct_type out, char* buffer, size_t idx, size_t maxlen, double value, unsigned int prec, unsigned int width, unsigned int flags);
 #endif
 
+// internal ftoa for fixed decimal floating point
 static size_t _ftoa(out_fct_type out, char* buffer, size_t idx, size_t maxlen, double value, unsigned int prec, unsigned int width, unsigned int flags)
 {
   char buf[PRINTF_FTOA_BUFFER_SIZE];
@@ -452,6 +453,8 @@ static size_t _ftoa(out_fct_type out, char* buffer, size_t idx, size_t maxlen, d
 }
 
 #if defined(PRINTF_SUPPORT_EXPONENTIAL)
+// internal ftoa variant for exponential floating-point type
+// contributed by Martijn Jasperse <m.jasperse@gmail.com>
 static size_t _etoa(out_fct_type out, char* buffer, size_t idx, size_t maxlen, double value, unsigned int prec, unsigned int width, unsigned int flags)
 {
   // check for special values
@@ -462,29 +465,49 @@ static size_t _etoa(out_fct_type out, char* buffer, size_t idx, size_t maxlen, d
   bool negative = value < 0;
   if (negative) value = -value;
 
-  // determine the decimal exponent
-  int expval = (int)floor(log10(value));    // "value" must be +ve
-
-  // the exponent format is "%+03d" and largest value is "307", so set aside 4-5 characters
-  unsigned int minwidth = ((expval < 100)&&(expval > -100)) ? 4 : 5;
-
   // default precision
   if (!(flags & FLAGS_PRECISION)) {
     prec = PRINTF_DEFAULT_FLOAT_PRECISION;
   }
   
+  // determine the decimal exponent
+  // based on the algorithm by David Gay (https://www.ampl.com/netlib/fp/dtoa.c)
+  union {
+    uint64_t U;
+    double F;
+  } conv;
+  conv.F = value;
+  int exp2 = (int)((conv.U >> 52) & 0x07FF) - 1023;         // effectively log2
+  conv.U = (conv.U & ((1ULL << 52) - 1)) | (1023ULL << 52); // drop the exponent so conv.F is now in [1,2)
+  // now approximate log10 from the log2 integer part and an expansion of ln around 1.5
+  int expval = (int)(0.1760912590558 + exp2*0.301029995663981 + (conv.F - 1.5)*0.289529654602168);
+  // now we want to compute 10^expval but we want to be sure it won't overflow
+  exp2 = (int)(expval*3.321928094887362 + 0.5);
+  double z = expval*2.302585092994046 - exp2*0.6931471805599453;
+  double z2 = z*z;
+  conv.U = (uint64_t)(exp2 + 1023) << 52;
+  // compute exp(z) using continued fractions
+  // https://en.wikipedia.org/wiki/Exponential_function#Continued_fractions_for_ex
+  conv.F *= 1 + 2*z/(2 - z + (z2/(6 + (z2/(10 + z2/14)))));
+  // correct for rounding errors
+  if (value < conv.F) {
+      expval--;
+      conv.F /= 10;
+  }
+  
+  // the exponent format is "%+03d" and largest value is "307", so set aside 4-5 characters
+  unsigned int minwidth = ((expval < 100)&&(expval > -100)) ? 4 : 5;
+  
   // in "%g" mode, "prec" is the number of *significant figures* not decimals
   if (flags & FLAGS_ADAPT_EXP) {
-    // do we want to fall-back to "%f" mode for small number?
-    if ((expval > -5)&&(expval < 6)) {
+    // do we want to fall-back to "%f" mode?
+    if ((value >= 1e-4)&&(value < 1e6)) {
       if ((int)prec > expval) {
         prec = (unsigned)((int)prec - expval - 1);
       } else {
         prec = 0;
       }
-      // TODO: there's also a special case where we're supposed to ELIMINATE digits from the whole part
-      flags |= FLAGS_PRECISION; // make sure _ftoa respects precision
-      
+      flags |= FLAGS_PRECISION; // make sure _ftoa respects precision      
       // no characters in exponent
       minwidth = 0;
       expval = 0;
@@ -508,7 +531,7 @@ static size_t _etoa(out_fct_type out, char* buffer, size_t idx, size_t maxlen, d
   }
 
   // rescale the float value
-  if (expval) value *= pow(10.0, -expval);
+  if (expval) value /= conv.F;
 
   // output the floating part
   const size_t start_idx = idx;
