@@ -28,7 +28,7 @@ Therefore I decided to write an own, final implementation which meets the follow
  - Support of decimal/floating number representation (with an own fast itoa/ftoa)
  - Reentrant and thread-safe, malloc free, no static vars/buffers
  - LINT and compiler L4 warning free, mature, coverity clean, automotive ready
- - Extensive test suite (> 370 test cases) passing
+ - Extensive test suite (> 390 test cases) passing
  - Simply the best *printf* around the net
  - MIT license
 
@@ -92,6 +92,8 @@ The following format specifiers are supported:
 | x      | Unsigned hexadecimal integer (lowercase) |
 | X      | Unsigned hexadecimal integer (uppercase) |
 | f or F | Decimal floating point |
+| e or E | Scientific-notation (exponential) floating point |
+| g or G | Scientific or decimal floating point |
 | c      | Single character |
 | s      | String of characters |
 | p      | Pointer address |
@@ -164,6 +166,7 @@ int length = sprintf(NULL, "Hello, world"); // length is set to 12
 | PRINTF_NTOA_BUFFER_SIZE          | 32        | ntoa (integer) conversion buffer size. This must be big enough to hold one converted numeric number _including_ leading zeros, normally 32 is a sufficient value. Created on the stack |
 | PRINTF_FTOA_BUFFER_SIZE          | 32        | ftoa (float) conversion buffer size. This must be big enough to hold one converted float number _including_ leading zeros, normally 32 is a sufficient value. Created on the stack |
 | PRINTF_DISABLE_SUPPORT_FLOAT     | undefined | Define this to disable floating point (%f) support |
+| PRINTF_DISABLE_SUPPORT_EXPONENTIAL | undefined | Define this to disable exponential floating point (%e) support |
 | PRINTF_DISABLE_SUPPORT_LONG_LONG | undefined | Define this to disable long long (%ll) support |
 | PRINTF_DISABLE_SUPPORT_PTRDIFF_T | undefined | Define this to disable ptrdiff_t (%t) support |
 
