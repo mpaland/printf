@@ -884,6 +884,13 @@ int snprintf_(char* buffer, size_t count, const char* format, ...)
 }
 
 
+int vprintf_(const char* format, va_list va)
+{
+  char buffer[1];
+  return _vsnprintf(_out_char, buffer, (size_t)-1, format, va);
+}
+
+
 int vsnprintf_(char* buffer, size_t count, const char* format, va_list va)
 {
   return _vsnprintf(_out_buffer, buffer, count, format, va);

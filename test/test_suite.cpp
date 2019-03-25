@@ -85,6 +85,13 @@ TEST_CASE("snprintf", "[]" ) {
   REQUIRE(!strcmp(buffer, "-1"));
 }
 
+static void vprintf_builder_1(char* buffer, ...)
+{
+  va_list args;
+  va_start(args, buffer);
+  test::vprintf("%d", args);
+  va_end(args);
+}
 
 static void vsnprintf_builder_1(char* buffer, ...)
 {
@@ -100,6 +107,17 @@ static void vsnprintf_builder_3(char* buffer, ...)
   va_start(args, buffer);
   test::vsnprintf(buffer, 100U, "%d %d %s", args);
   va_end(args);
+}
+
+
+TEST_CASE("vprintf", "[]" ) {
+  char buffer[100];
+  printf_idx = 0U;
+  memset(printf_buffer, 0xCC, 100U);
+  vprintf_builder_1(buffer, 2345);
+  REQUIRE(printf_buffer[4] == (char)0xCC);
+  printf_buffer[4] = 0;
+  REQUIRE(!strcmp(printf_buffer, "2345"));
 }
 
 

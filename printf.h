@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////////////
 // \author (c) Marco Paland (info@paland.com)
-//             2014-2018, PALANDesign Hannover, Germany
+//             2014-2019, PALANDesign Hannover, Germany
 //
 // \license The MIT License (MIT)
 //
@@ -77,6 +77,7 @@ int sprintf_(char* buffer, const char* format, ...);
  * \param buffer A pointer to the buffer where to store the formatted string
  * \param count The maximum number of characters to store in the buffer, including a terminating null character
  * \param format A string that specifies the format of the output
+ * \param va A value identifying a variable arguments list
  * \return The number of characters that are WRITTEN into the buffer, not counting the terminating null character
  *         If the formatted string is truncated the buffer size (count) is returned
  */
@@ -84,6 +85,16 @@ int sprintf_(char* buffer, const char* format, ...);
 #define vsnprintf vsnprintf_
 int  snprintf_(char* buffer, size_t count, const char* format, ...);
 int vsnprintf_(char* buffer, size_t count, const char* format, va_list va);
+
+
+/**
+ * Tiny vprintf implementation
+ * \param format A string that specifies the format of the output
+ * \param va A value identifying a variable arguments list
+ * \return The number of characters that are WRITTEN into the buffer, not counting the terminating null character
+ */
+#define vprintf vprintf_
+int vprintf_(const char* format, va_list va);
 
 
 /**
