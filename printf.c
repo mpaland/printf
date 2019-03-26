@@ -112,6 +112,12 @@
 #define FLAGS_ADAPT_EXP (1U << 11U)
 
 
+// import float.h for DBL_MAX
+#if defined(PRINTF_SUPPORT_FLOAT)
+#include <float.h>
+#endif
+
+
 // output function type
 typedef void (*out_fct_type)(char character, void* buffer, size_t idx, size_t maxlen);
 
@@ -322,7 +328,7 @@ static size_t _ntoa_long_long(out_fct_type out, char* buffer, size_t idx, size_t
 
 
 #if defined(PRINTF_SUPPORT_FLOAT)
-#include <float.h>
+
 #if defined(PRINTF_SUPPORT_EXPONENTIAL)
 // forward declaration so that _ftoa can switch to exp notation for values > PRINTF_MAX_FLOAT
 static size_t _etoa(out_fct_type out, char* buffer, size_t idx, size_t maxlen, double value, unsigned int prec, unsigned int width, unsigned int flags);
@@ -345,7 +351,7 @@ static size_t _ftoa(out_fct_type out, char* buffer, size_t idx, size_t maxlen, d
   if (value < -DBL_MAX)
     return _out_rev(out, buffer, idx, maxlen, "fni-", 4, width, flags);
   if (value > DBL_MAX)
-    return _out_rev(out, buffer, idx, maxlen, (flags & FLAGS_PLUS) ? "fni+" : "fni", (flags & FLAGS_PLUS) ? 4 : 3, width, flags);
+    return _out_rev(out, buffer, idx, maxlen, (flags & FLAGS_PLUS) ? "fni+" : "fni", (flags & FLAGS_PLUS) ? 4U : 3U, width, flags);
 
   // test for very large values
   // standard printf behavior is to print EVERY whole number digit -- which could be 100s of characters overflowing your buffers == bad
@@ -497,12 +503,12 @@ static size_t _etoa(out_fct_type out, char* buffer, size_t idx, size_t maxlen, d
   conv.F *= 1 + 2 * z / (2 - z + (z2 / (6 + (z2 / (10 + z2 / 14)))));
   // correct for rounding errors
   if (value < conv.F) {
-      expval--;
-      conv.F /= 10;
+    expval--;
+    conv.F /= 10;
   }
 
   // the exponent format is "%+03d" and largest value is "307", so set aside 4-5 characters
-  unsigned int minwidth = ((expval < 100)&&(expval > -100)) ? 4 : 5;
+  unsigned int minwidth = ((expval < 100) && (expval > -100)) ? 4U : 5U;
 
   // in "%g" mode, "prec" is the number of *significant figures* not decimals
   if (flags & FLAGS_ADAPT_EXP) {
@@ -516,8 +522,8 @@ static size_t _etoa(out_fct_type out, char* buffer, size_t idx, size_t maxlen, d
       }
       flags |= FLAGS_PRECISION;   // make sure _ftoa respects precision
       // no characters in exponent
-      minwidth = 0;
-      expval = 0;
+      minwidth = 0U;
+      expval   = 0;
     }
     else {
       // we use one sigfig for the whole part
@@ -534,11 +540,11 @@ static size_t _etoa(out_fct_type out, char* buffer, size_t idx, size_t maxlen, d
     fwidth -= minwidth;
   } else {
     // not enough characters, so go back to default sizing
-    fwidth = 0;
+    fwidth = 0U;
   }
   if ((flags & FLAGS_LEFT) && minwidth) {
     // if we're padding on the right, DON'T pad the floating part
-    fwidth = 0;
+    fwidth = 0U;
   }
 
   // rescale the float value
