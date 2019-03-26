@@ -34,6 +34,7 @@
 #include <sstream>
 #include <math.h>
 
+
 namespace test {
   // use functions in own test namespace to avoid stdio conflicts
   #include "../printf.h"
@@ -368,10 +369,18 @@ TEST_CASE("- flag", "[]" ) {
   REQUIRE(!strcmp(buffer, "-42            "));
 
   test::sprintf(buffer, "%0-15.3e", -42.);
+#ifndef PRINTF_DISABLE_SUPPORT_EXPONENTIAL
   REQUIRE(!strcmp(buffer, "-4.200e+01     "));
+#else
+  REQUIRE(!strcmp(buffer, "e"));
+#endif
 
   test::sprintf(buffer, "%0-15.3g", -42.);
+#ifndef PRINTF_DISABLE_SUPPORT_EXPONENTIAL
   REQUIRE(!strcmp(buffer, "-42.0          "));
+#else
+  REQUIRE(!strcmp(buffer, "g"));
+#endif
 }
 
 
@@ -940,6 +949,7 @@ TEST_CASE("float padding neg numbers", "[]" ) {
   test::sprintf(buffer, "% 5.1f", -5.);
   REQUIRE(!strcmp(buffer, " -5.0"));
 
+#ifndef PRINTF_DISABLE_SUPPORT_EXPONENTIAL
   test::sprintf(buffer, "% 6.1g", -5.);
   REQUIRE(!strcmp(buffer, "    -5"));
 
@@ -948,6 +958,7 @@ TEST_CASE("float padding neg numbers", "[]" ) {
 
   test::sprintf(buffer, "% 10.1e", -5.);
   REQUIRE(!strcmp(buffer, "  -5.0e+00"));
+#endif
 
   // zero padding
   test::sprintf(buffer, "%03.1f", -5.);
@@ -959,9 +970,6 @@ TEST_CASE("float padding neg numbers", "[]" ) {
   test::sprintf(buffer, "%05.1f", -5.);
   REQUIRE(!strcmp(buffer, "-05.0"));
 
-  test::sprintf(buffer, "%010.1e", -5.);
-  REQUIRE(!strcmp(buffer, "-005.0e+00"));
-
   // zero padding no decimal point
   test::sprintf(buffer, "%01.0f", -5.);
   REQUIRE(!strcmp(buffer, "-5"));
@@ -972,11 +980,16 @@ TEST_CASE("float padding neg numbers", "[]" ) {
   test::sprintf(buffer, "%03.0f", -5.);
   REQUIRE(!strcmp(buffer, "-05"));
 
+#ifndef PRINTF_DISABLE_SUPPORT_EXPONENTIAL
+  test::sprintf(buffer, "%010.1e", -5.);
+  REQUIRE(!strcmp(buffer, "-005.0e+00"));
+
   test::sprintf(buffer, "%07.0E", -5.);
   REQUIRE(!strcmp(buffer, "-05E+00"));
 
   test::sprintf(buffer, "%03.0g", -5.);
   REQUIRE(!strcmp(buffer, "-05"));
+#endif
 }
 
 TEST_CASE("length", "[]" ) {
@@ -1075,8 +1088,10 @@ TEST_CASE("float", "[]" ) {
   test::sprintf(buffer, "%-8f", -INFINITY);
   REQUIRE(!strcmp(buffer, "-inf    "));
 
+#ifndef PRINTF_DISABLE_SUPPORT_EXPONENTIAL
   test::sprintf(buffer, "%+8e", INFINITY);
   REQUIRE(!strcmp(buffer, "    +inf"));
+#endif
 
   test::sprintf(buffer, "%.4f", 3.1415354);
   REQUIRE(!strcmp(buffer, "3.1415"));
@@ -1157,6 +1172,7 @@ TEST_CASE("float", "[]" ) {
   test::sprintf(buffer, "a%-5.1fend", 0.5);
   REQUIRE(!strcmp(buffer, "a0.5  end"));
 
+#ifndef PRINTF_DISABLE_SUPPORT_EXPONENTIAL
   test::sprintf(buffer, "%G", 12345.678);
   REQUIRE(!strcmp(buffer, "12345.7"));
 
@@ -1186,10 +1202,15 @@ TEST_CASE("float", "[]" ) {
 
   test::sprintf(buffer, "%+.3E", 1.23e+308);
   REQUIRE(!strcmp(buffer, "+1.230E+308"));
+#endif
 
-  // out of range for float: should switch to exp notation
+  // out of range for float: should switch to exp notation if supported, else empty
   test::sprintf(buffer, "%.1f", 1E20);
+#ifndef PRINTF_DISABLE_SUPPORT_EXPONENTIAL
   REQUIRE(!strcmp(buffer, "1.0e+20"));
+#else
+  REQUIRE(!strcmp(buffer, ""));
+#endif
 
   // brute force float
   bool fail = false;
@@ -1203,6 +1224,8 @@ TEST_CASE("float", "[]" ) {
   }
   REQUIRE(!fail);
 
+
+#ifndef PRINTF_DISABLE_SUPPORT_EXPONENTIAL
   // brute force exp
   str.setf(std::ios::scientific, std::ios::floatfield);
   for (float i = -1e20; i < 1e20; i += 1e15) {
@@ -1212,6 +1235,7 @@ TEST_CASE("float", "[]" ) {
     fail = fail || !!strcmp(buffer, str.str().c_str());
   }
   REQUIRE(!fail);
+#endif
 }
 
 
@@ -1464,12 +1488,6 @@ TEST_CASE("misc", "[]" ) {
   test::sprintf(buffer, "%.*f", 2, 0.33333333);
   REQUIRE(!strcmp(buffer, "0.33"));
 
-  test::sprintf(buffer, "%.*g", 2, 0.33333333);
-  REQUIRE(!strcmp(buffer, "0.33"));
-
-  test::sprintf(buffer, "%.*e", 2, 0.33333333);
-  REQUIRE(!strcmp(buffer, "3.33e-01"));
-
   test::sprintf(buffer, "%.*d", -1, 1);
   REQUIRE(!strcmp(buffer, "1"));
 
@@ -1484,4 +1502,12 @@ TEST_CASE("misc", "[]" ) {
 
   test::sprintf(buffer, "%*sx", -3, "hi");
   REQUIRE(!strcmp(buffer, "hi x"));
+
+#ifndef PRINTF_DISABLE_SUPPORT_EXPONENTIAL
+  test::sprintf(buffer, "%.*g", 2, 0.33333333);
+  REQUIRE(!strcmp(buffer, "0.33"));
+
+  test::sprintf(buffer, "%.*e", 2, 0.33333333);
+  REQUIRE(!strcmp(buffer, "3.33e-01"));
+#endif
 }
