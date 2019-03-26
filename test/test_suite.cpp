@@ -31,6 +31,7 @@
 #include "catch.hpp"
 
 #include <string.h>
+#include <sstream>
 #include <math.h>
 
 namespace test {
@@ -1189,6 +1190,28 @@ TEST_CASE("float", "[]" ) {
   // out of range for float: should switch to exp notation
   test::sprintf(buffer, "%.1f", 1E20);
   REQUIRE(!strcmp(buffer, "1.0e+20"));
+
+  // brute force float
+  bool fail = false;
+  std::stringstream str;
+  str.precision(5);
+  for (float i = -100000; i < 100000; i += 1) {
+    test::sprintf(buffer, "%.5f", i / 10000);
+    str.str("");
+    str << std::fixed << i / 10000;
+    fail = fail || !!strcmp(buffer, str.str().c_str());
+  }
+  REQUIRE(!fail);
+
+  // brute force exp
+  str.setf(std::ios::scientific, std::ios::floatfield);
+  for (float i = -1e20; i < 1e20; i += 1e15) {
+    test::sprintf(buffer, "%.5f", i);
+    str.str("");
+    str << i;
+    fail = fail || !!strcmp(buffer, str.str().c_str());
+  }
+  REQUIRE(!fail);
 }
 
 
