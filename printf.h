@@ -78,8 +78,9 @@ int sprintf_(char* buffer, const char* format, ...);
  * \param count The maximum number of characters to store in the buffer, including a terminating null character
  * \param format A string that specifies the format of the output
  * \param va A value identifying a variable arguments list
- * \return The number of characters that are WRITTEN into the buffer, not counting the terminating null character
- *         If the formatted string is truncated the buffer size (count) is returned
+ * \return The number of characters that COULD have been written into the buffer, not counting the terminating
+ *         null character. A value equal or larger than count indicates truncation. Only when the returned value
+ *         is non-negative and less than count, the string has been completely written.
  */
 #define snprintf  snprintf_
 #define vsnprintf vsnprintf_
