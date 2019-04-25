@@ -39,7 +39,7 @@ APP = test_suite
 #              bar/file3
 # -----------------------------------------------------------------------------
 
-FILES_PRJ  = test/test_suite
+FILES_PRJ  = test/test_suite printf
 
 
 # ------------------------------------------------------------------------------
@@ -50,9 +50,9 @@ FILES_PRJ  = test/test_suite
 #              -Iinclude_path3                 \
 # ------------------------------------------------------------------------------
 
-C_INCLUDES = 
+C_INCLUDES =
 
-C_DEFINES  = 
+C_DEFINES  =
 
 
 # ------------------------------------------------------------------------------
@@ -65,7 +65,7 @@ TRG = $(PATH_BIN)/$(APP)
 # object files
 # ------------------------------------------------------------------------------
 FILES_TMP   = $(FILES_PRJ)
-FILES_O     = $(addsuffix .o, $(FILES_TMP))
+FILES_O     = $(addprefix $(PATH_OBJ)/, $(addsuffix .o, $(notdir $(FILES_TMP))))
 
 
 # ------------------------------------------------------------------------------
@@ -85,7 +85,7 @@ VPATH := $(sort $(dir $(FILES_TMP)))
 # ------------------------------------------------------------------------------
 AR        = $(PATH_TOOLS_CC)ar
 AS        = $(PATH_TOOLS_CC)g++
-CC        = $(PATH_TOOLS_CC)g++
+CC        = $(PATH_TOOLS_CC)gcc
 CL        = $(PATH_TOOLS_CC)g++
 NM        = $(PATH_TOOLS_CC)nm
 GCOV      = $(PATH_TOOLS_CC)gcov
@@ -107,7 +107,6 @@ SED       = $(PATH_TOOLS_UTIL)sed
 
 GCCFLAGS      = $(C_INCLUDES)                     \
                 $(C_DEFINES)                      \
-                -std=c++11                        \
                 -g                                \
                 -Wall                             \
                 -pedantic                         \
@@ -124,10 +123,8 @@ GCCFLAGS      = $(C_INCLUDES)                     \
                 -Winit-self                       \
                 -Wdouble-promotion                \
                 -gdwarf-2                         \
-                -fno-exceptions                   \
-                -O2                               \
+                -Og                               \
                 -ffunction-sections               \
-                -ffat-lto-objects                 \
                 -fdata-sections                   \
                 -fverbose-asm                     \
                 -Wextra                           \
@@ -135,12 +132,12 @@ GCCFLAGS      = $(C_INCLUDES)                     \
                 -Wfloat-equal
 
 CFLAGS        = $(GCCFLAGS)                       \
-                -Wunsuffixed-float-constants      \
                 -x c                              \
                 -std=c99
 
 CPPFLAGS      = $(GCCFLAGS)                       \
                 -x c++                            \
+                -std=c++11                        \
                 -fno-rtti                         \
                 -fstrict-enums                    \
                 -fno-use-cxa-atexit               \
@@ -225,11 +222,11 @@ version:
 # ------------------------------------------------------------------------------
 # Link/locate application
 # ------------------------------------------------------------------------------
-$(TRG) : $(FILES_O)
+$(TRG) : $(FILES_O) Makefile
 	@-$(ECHO) +++ linkink application to generate: $(TRG)
-	@-$(CL) $(LFLAGS) -L. -lc $(PATH_OBJ)/*.o -Wl,-Map,$(TRG).map -o $(TRG)
+	-$(CL) $(LFLAGS) -L. -lc $(FILES_O) -Wl,-Map,$(TRG).map -o $(TRG)
   # profiling
-	@-$(CL) $(LFLAGS) -L. -lc $(PATH_COV)/*.o --coverage -o $(PATH_COV)/$(APP)
+#	@-$(CL) $(LFLAGS) -L. -lc $(PATH_COV)/*.o --coverage -o $(PATH_COV)/$(APP)
 
 
 # ------------------------------------------------------------------------------
@@ -244,28 +241,32 @@ $(TRG)_nm.txt : $(TRG)
 	@-$(SIZE) -A -t $(TRG) > $(TRG)_size.txt
 
 
-%.o : %.cpp
+
+$(PATH_OBJ)/%.o : %.cpp
 	@$(ECHO) +++ compile: $<
   # Compile the source file
   # ...and Reformat (using sed) any possible error/warning messages for the VisualStudio(R) output window
   # ...and Create an assembly listing using objdump
   # ...and Generate a dependency file (using the -MM flag)
 	@-$(CL) $(CPPFLAGS) $< -E -o $(PATH_PRE)/$(basename $(@F)).pre
-	@-$(CL) $(CPPFLAGS) $< -c -o $(PATH_OBJ)/$(basename $(@F)).o 2> $(PATH_ERR)/$(basename $(@F)).err
-	@-$(SED) -e 's|.h:\([0-9]*\),|.h(\1) :|' -e 's|:\([0-9]*\):|(\1) :|' $(PATH_ERR)/$(basename $(@F)).err
-	@-$(OBJDUMP) --disassemble --line-numbers -S $(PATH_OBJ)/$(basename $(@F)).o > $(PATH_LST)/$(basename $(@F)).lst
+	@-$(CL) $(CPPFLAGS) $< -c -o $(PATH_OBJ)/$(basename $(@F)).o
+#	@-cat $(PATH_ERR)/$(basename $(@F)).err
+#	@-$(OBJDUMP) --disassemble --line-numbers -S $(PATH_OBJ)/$(basename $(@F)).o > $(PATH_LST)/$(basename $(@F)).lst
 	@-$(CL) $(CPPFLAGS) $< -MM > $(PATH_OBJ)/$(basename $(@F)).d
   # profiling
-	@-$(CL) $(CPPFLAGS) -O0 --coverage $< -c -o $(PATH_COV)/$(basename $(@F)).o 2> $(PATH_NUL)
+#	@-$(CL) $(CPPFLAGS) -O0 --coverage $< -c -o $(PATH_COV)/$(basename $(@F)).o 2> $(PATH_NUL)
 
-%.o : %.c
+$(PATH_OBJ)/%.o : %.c
 	@$(ECHO) +++ compile: $<
   # Compile the source file
   # ...and Reformat (using sed) any possible error/warning messages for the VisualStudio(R) output window
   # ...and Create an assembly listing using objdump
   # ...and Generate a dependency file (using the -MM flag)
-	@-$(CL) $(CFLAGS) $< -E -o $(PATH_PRE)/$(basename $(@F)).pre
-	@-$(CC) $(CFLAGS) $< -c -o $(PATH_OBJ)/$(basename $(@F)).o 2> $(PATH_ERR)/$(basename $(@F)).err
-	@-$(SED) -e 's|.h:\([0-9]*\),|.h(\1) :|' -e 's|:\([0-9]*\):|(\1) :|' $(PATH_ERR)/$(basename $(@F)).err
+#	@-$(CL) $(CFLAGS) $< -E -o $(PATH_PRE)/$(basename $(@F)).pre
+	@-$(CC) $(CFLAGS) $< -c -o $(PATH_OBJ)/$(basename $(@F)).o
 	@-$(OBJDUMP) -S $(PATH_OBJ)/$(basename $(@F)).o > $(PATH_LST)/$(basename $(@F)).lst
 	@-$(CC) $(CFLAGS) $< -MM > $(PATH_OBJ)/$(basename $(@F)).d
+
+$(FILES_O) : Makefile
+
+include $(FILES_O:.o=.d)
