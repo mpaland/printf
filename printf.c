@@ -154,9 +154,10 @@ static double fmsub(double a, double b, double c)
 #else
 // non ISO variant from linux kernel; checks ptr type, but triggers 'ISO C forbids braced-groups within expressions [-Wpedantic]'
 //  __extension__ is here to disable this warning
-#define container_of(ptr, type, member)  ( __extension__ ({     \
+#define container_of(ptr, type, member)  ( __extension__ ({         \
         const __typeof__( ((type *)0)->member ) *__mptr = (ptr);    \
-        (type *)( (char *)__mptr - offsetof(type,member) );}))
+        (type *)( (char *)__mptr - offsetof(type,member) );}))      \
+  /**/
 #endif
 
 #ifndef MAX
@@ -176,12 +177,23 @@ typedef uintptr_t idx_t;
 # define isnan(v) ((v) != (v))
 #endif
 
+#if 0
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wfloat-equal"
 bool iszero(double v) {
-  return v != 0;
+  return v == 0;
 }
 #pragma GCC diagnostic pop
+#else
+#define iszero(v) (                                                     \
+    __extension__  ({                                                   \
+        _Pragma("GCC diagnostic push");                                 \
+        _Pragma("GCC diagnostic ignored \"-Wfloat-equal\"");            \
+        ((v) == 0);                                        \
+        _Pragma("GCC diagnostic pop");                                  \
+      }))                                                               \
+/**/
+#endif
 
 // output function structure, passed as fisrt argument on ofn call
 // see how out_userfct augments this structure
@@ -599,8 +611,8 @@ static size_t _etoa(struct printf_state* st, idx_t idx,  double value)
     st->flags |= FLAGS_PRECISION;   // make sure _ftoa respects precision (1 digit of default precision is taken for exp format)
     // do we want to fall-back to "%f" mode?
 //    if (((value >= 1e-4) && (value < 1e6)) || value == 0) {
-    // check if value is > 1e-4 and can be printed with precision digits (and within ftoa limit)
-    if ((expval >= -4) && (expval < (int)prec) && (expval < 9)) {
+    // check if value is between 1e-4 and 1e6 or it can be printed with precision digits (and within ftoa limit)
+    if ((expval >= -4) && ((expval < 6) || ((expval < (int)prec) && (expval <= 9)))) {
       if ((int)prec > expval) {
         prec = (unsigned)((int)prec - expval - 1);
       }

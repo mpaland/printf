@@ -269,4 +269,4 @@ $(PATH_OBJ)/%.o : %.c
 
 $(FILES_O) : Makefile
 
-include $(FILES_O:.o=.d)
+-include $(FILES_O:.o=.d)
