@@ -39,7 +39,7 @@ APP = test_suite
 #              bar/file3
 # -----------------------------------------------------------------------------
 
-FILES_PRJ  = test/test_suite
+FILES_PRJ  = test/test_suite printf
 
 
 # ------------------------------------------------------------------------------
@@ -85,7 +85,7 @@ VPATH := $(sort $(dir $(FILES_TMP)))
 # ------------------------------------------------------------------------------
 AR        = $(PATH_TOOLS_CC)ar
 AS        = $(PATH_TOOLS_CC)g++
-CC        = $(PATH_TOOLS_CC)g++
+CC        = $(PATH_TOOLS_CC)gcc
 CL        = $(PATH_TOOLS_CC)g++
 NM        = $(PATH_TOOLS_CC)nm
 GCOV      = $(PATH_TOOLS_CC)gcov
@@ -107,7 +107,6 @@ SED       = $(PATH_TOOLS_UTIL)sed
 
 GCCFLAGS      = $(C_INCLUDES)                     \
                 $(C_DEFINES)                      \
-                -std=c++11                        \
                 -g                                \
                 -Wall                             \
                 -pedantic                         \
@@ -124,10 +123,8 @@ GCCFLAGS      = $(C_INCLUDES)                     \
                 -Winit-self                       \
                 -Wdouble-promotion                \
                 -gdwarf-2                         \
-                -fno-exceptions                   \
                 -O2                               \
                 -ffunction-sections               \
-                -ffat-lto-objects                 \
                 -fdata-sections                   \
                 -fverbose-asm                     \
                 -Wextra                           \
@@ -135,12 +132,12 @@ GCCFLAGS      = $(C_INCLUDES)                     \
                 -Wfloat-equal
 
 CFLAGS        = $(GCCFLAGS)                       \
-                -Wunsuffixed-float-constants      \
                 -x c                              \
                 -std=c99
 
 CPPFLAGS      = $(GCCFLAGS)                       \
                 -x c++                            \
+                -std=c++11                        \
                 -fno-rtti                         \
                 -fstrict-enums                    \
                 -fno-use-cxa-atexit               \
@@ -269,3 +266,4 @@ $(TRG)_nm.txt : $(TRG)
 	@-$(SED) -e 's|.h:\([0-9]*\),|.h(\1) :|' -e 's|:\([0-9]*\):|(\1) :|' $(PATH_ERR)/$(basename $(@F)).err
 	@-$(OBJDUMP) -S $(PATH_OBJ)/$(basename $(@F)).o > $(PATH_LST)/$(basename $(@F)).lst
 	@-$(CC) $(CFLAGS) $< -MM > $(PATH_OBJ)/$(basename $(@F)).d
+	@-$(CL) $(CFLAGS) -O0 --coverage $< -c -o $(PATH_COV)/$(basename $(@F)).o 2> $(PATH_NUL)
