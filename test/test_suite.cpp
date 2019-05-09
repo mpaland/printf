@@ -1012,6 +1012,15 @@ TEST_CASE("float", "[]" ) {
 #endif
 }
 
+TEST_CASE("float rounding", "[]") {
+  TEST_DEF;
+
+#if ENABLE_FAILING
+  // improper handling of round when decimals is affected
+  T_SPRINTF("1.0",
+            "%.1f", 0.95);
+#endif
+}
 
 TEST_CASE("types", "[]" ) {
   TEST_DEF;
