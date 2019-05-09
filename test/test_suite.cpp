@@ -981,6 +981,7 @@ TEST_CASE("float", "[]" ) {
 #endif
 
   // brute force float
+  do {
   bool fail = false;
   std::stringstream str;
   str.precision(5);
@@ -991,10 +992,14 @@ TEST_CASE("float", "[]" ) {
     fail = fail || !!strcmp(buffer, str.str().c_str());
   }
   REQUIRE(!fail);
-
+  } while (0);
 
 #ifndef PRINTF_DISABLE_SUPPORT_EXPONENTIAL
+  do {
+    bool fail = false;
+    std::stringstream str;
   // brute force exp
+    str.precision(5);
   str.setf(std::ios::scientific, std::ios::floatfield);
   for (float i = -1e20; i < 1e20f; i += 1e15f) {
     tested_sprintf(buffer, "%.5f", (double)i);
@@ -1003,6 +1008,7 @@ TEST_CASE("float", "[]" ) {
     fail = fail || !!strcmp(buffer, str.str().c_str());
   }
   REQUIRE(!fail);
+  } while (0);
 #endif
 }
 
