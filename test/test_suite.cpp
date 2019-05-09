@@ -152,7 +152,8 @@ TEST_CASE("vsnprintf", "[]" ) {
   struct dummy                                          \
   /**/
 
-#define TEST_SPRINTF(expected, ...)                     \
+// use prefix T_ so that lininsanity macros do not collide
+#define T_SPRINTF(expected, ...)                     \
   do {                                                  \
     CAPTURE(__VA_ARGS__);                               \
     ret = tested_sprintf(buffer, __VA_ARGS__);          \
@@ -161,7 +162,7 @@ TEST_CASE("vsnprintf", "[]" ) {
   } while (0)                                           \
     /**/
 
-#define TEST_SNPRINTF(expected, retval, ...)            \
+#define T_SNPRINTF(expected, retval, ...)            \
   do {                                                  \
     CAPTURE(__VA_ARGS__);                               \
     ret = tested_snprintf(buffer, __VA_ARGS__);         \
@@ -176,52 +177,52 @@ TEST_CASE("vsnprintf", "[]" ) {
 TEST_CASE("space flag", "[]" ) {
   TEST_DEF;
 
-  TEST_SPRINTF(" 42",
+  T_SPRINTF(" 42",
                "% d", 42);
 
-  TEST_SPRINTF("-42",
+  T_SPRINTF("-42",
                "% d", -42);
-  TEST_SPRINTF("   42",
+  T_SPRINTF("   42",
                "% 5d", 42);
-  TEST_SPRINTF("  -42",
+  T_SPRINTF("  -42",
                "% 5d", -42);
-  TEST_SPRINTF("             42",
+  T_SPRINTF("             42",
                "% 15d", 42);
-  TEST_SPRINTF("            -42",
+  T_SPRINTF("            -42",
                "% 15d", -42);
-  TEST_SPRINTF("            -42",
+  T_SPRINTF("            -42",
                "% 15d", -42);
-  TEST_SPRINTF("        -42.987",
+  T_SPRINTF("        -42.987",
                "% 15.3f", -42.987);
-  TEST_SPRINTF("         42.987",
+  T_SPRINTF("         42.987",
                "% 15.3f", 42.987);
-  TEST_SPRINTF("Hello testing",
+  T_SPRINTF("Hello testing",
                "% s", "Hello testing");
-  TEST_SPRINTF(" 1024",
+  T_SPRINTF(" 1024",
                "% d", 1024);
-  TEST_SPRINTF("-1024",
+  T_SPRINTF("-1024",
                "% d", -1024);
-  TEST_SPRINTF(" 1024",
+  T_SPRINTF(" 1024",
                "% i", 1024);
-  TEST_SPRINTF("-1024",
+  T_SPRINTF("-1024",
                "% i", -1024);
-  TEST_SPRINTF("1024",
+  T_SPRINTF("1024",
                "% u", 1024);
-  TEST_SPRINTF("4294966272",
+  T_SPRINTF("4294966272",
                "% u", 4294966272U);
-  TEST_SPRINTF("777",
+  T_SPRINTF("777",
                "% o", 511);
-  TEST_SPRINTF("37777777001",
+  T_SPRINTF("37777777001",
                "% o", 4294966785U);
-  TEST_SPRINTF("1234abcd",
+  T_SPRINTF("1234abcd",
                "% x", 305441741);
-  TEST_SPRINTF("edcb5433",
+  T_SPRINTF("edcb5433",
                "% x", 3989525555U);
-  TEST_SPRINTF("1234ABCD",
+  T_SPRINTF("1234ABCD",
                "% X", 305441741);
-  TEST_SPRINTF("EDCB5433",
+  T_SPRINTF("EDCB5433",
                "% X", 3989525555U);
-  TEST_SPRINTF("x",
+  T_SPRINTF("x",
                "% c", 'x');
 }
 
@@ -229,47 +230,47 @@ TEST_CASE("space flag", "[]" ) {
 TEST_CASE("+ flag", "[]" ) {
   TEST_DEF;
 
-  TEST_SPRINTF("+42",
+  T_SPRINTF("+42",
                "%+d", 42);
-  TEST_SPRINTF("-42",
+  T_SPRINTF("-42",
                "%+d", -42);
-  TEST_SPRINTF("  +42",
+  T_SPRINTF("  +42",
                "%+5d", 42);
-  TEST_SPRINTF("  -42",
+  T_SPRINTF("  -42",
                "%+5d", -42);
-  TEST_SPRINTF("            +42",
+  T_SPRINTF("            +42",
                "%+15d", 42);
-  TEST_SPRINTF("            -42",
+  T_SPRINTF("            -42",
                "%+15d", -42);
-  TEST_SPRINTF("Hello testing",
+  T_SPRINTF("Hello testing",
                "%+s", "Hello testing");
-  TEST_SPRINTF("+1024",
+  T_SPRINTF("+1024",
                "%+d", 1024);
-  TEST_SPRINTF("-1024",
+  T_SPRINTF("-1024",
                "%+d", -1024);
-  TEST_SPRINTF("+1024",
+  T_SPRINTF("+1024",
                "%+i", 1024);
-  TEST_SPRINTF("-1024",
+  T_SPRINTF("-1024",
                "%+i", -1024);
-  TEST_SPRINTF("1024",
+  T_SPRINTF("1024",
                "%+u", 1024);
-  TEST_SPRINTF("4294966272",
+  T_SPRINTF("4294966272",
                "%+u", 4294966272U);
-  TEST_SPRINTF("777",
+  T_SPRINTF("777",
                "%+o", 511);
-  TEST_SPRINTF("37777777001",
+  T_SPRINTF("37777777001",
                "%+o", 4294966785U);
-  TEST_SPRINTF("1234abcd",
+  T_SPRINTF("1234abcd",
                "%+x", 305441741);
-  TEST_SPRINTF("edcb5433",
+  T_SPRINTF("edcb5433",
                "%+x", 3989525555U);
-  TEST_SPRINTF("1234ABCD",
+  T_SPRINTF("1234ABCD",
                "%+X", 305441741);
-  TEST_SPRINTF("EDCB5433",
+  T_SPRINTF("EDCB5433",
                "%+X", 3989525555U);
-  TEST_SPRINTF("x",
+  T_SPRINTF("x",
                "%+c", 'x');
-  TEST_SPRINTF("+",
+  T_SPRINTF("+",
                "%+.0d", 0);
 }
 
@@ -277,80 +278,80 @@ TEST_CASE("+ flag", "[]" ) {
 TEST_CASE("0 flag", "[]" ) {
   TEST_DEF;
 
-  TEST_SPRINTF("42",
+  T_SPRINTF("42",
                "%0d", 42);
-  TEST_SPRINTF("42",
+  T_SPRINTF("42",
                "%0ld", 42L);
-  TEST_SPRINTF("-42",
+  T_SPRINTF("-42",
                "%0d", -42);
-  TEST_SPRINTF("00042",
+  T_SPRINTF("00042",
                "%05d", 42);
-  TEST_SPRINTF("-0042",
+  T_SPRINTF("-0042",
                "%05d", -42);
-  TEST_SPRINTF("000000000000042",
+  T_SPRINTF("000000000000042",
                "%015d", 42);
-  TEST_SPRINTF("-00000000000042",
+  T_SPRINTF("-00000000000042",
                "%015d", -42);
-  TEST_SPRINTF("000000000042.12",
+  T_SPRINTF("000000000042.12",
                "%015.2f", 42.1234);
-  TEST_SPRINTF("00000000042.988",
+  T_SPRINTF("00000000042.988",
                "%015.3f", 42.9876);
-  TEST_SPRINTF("-00000042.98760",
+  T_SPRINTF("-00000042.98760",
                "%015.5f", -42.9876);}
 
 
 TEST_CASE("- flag", "[]" ) {
   TEST_DEF;
 
-  TEST_SPRINTF("42",
+  T_SPRINTF("42",
                "%-d", 42);
-  TEST_SPRINTF("-42",
+  T_SPRINTF("-42",
                "%-d", -42);
-  TEST_SPRINTF("42   ",
+  T_SPRINTF("42   ",
                "%-5d", 42);
-  TEST_SPRINTF("-42  ",
+  T_SPRINTF("-42  ",
                "%-5d", -42);
-  TEST_SPRINTF("42             ",
+  T_SPRINTF("42             ",
                "%-15d", 42);
-  TEST_SPRINTF("-42            ",
+  T_SPRINTF("-42            ",
                "%-15d", -42);
-  TEST_SPRINTF("42",
+  T_SPRINTF("42",
                "%-0d", 42);
-  TEST_SPRINTF("-42",
+  T_SPRINTF("-42",
                "%-0d", -42);
-  TEST_SPRINTF("42   ",
+  T_SPRINTF("42   ",
                "%-05d", 42);
-  TEST_SPRINTF("-42  ",
+  T_SPRINTF("-42  ",
                "%-05d", -42);
-  TEST_SPRINTF("42             ",
+  T_SPRINTF("42             ",
                "%-015d", 42);
-  TEST_SPRINTF("-42            ",
+  T_SPRINTF("-42            ",
                "%-015d", -42);
-  TEST_SPRINTF("42",
+  T_SPRINTF("42",
                "%0-d", 42);
-  TEST_SPRINTF("-42",
+  T_SPRINTF("-42",
                "%0-d", -42);
-  TEST_SPRINTF("42   ",
+  T_SPRINTF("42   ",
                "%0-5d", 42);
-  TEST_SPRINTF("-42  ",
+  T_SPRINTF("-42  ",
                "%0-5d", -42);
-  TEST_SPRINTF("42             ",
+  T_SPRINTF("42             ",
                "%0-15d", 42);
-  TEST_SPRINTF("-42            ",
+  T_SPRINTF("-42            ",
                "%0-15d", -42);
 #ifndef PRINTF_DISABLE_SUPPORT_EXPONENTIAL
-  TEST_SPRINTF("-4.200e+01     ",
+  T_SPRINTF("-4.200e+01     ",
                "%0-15.3e", -42.);
 #else
-  TEST_SPRINTF("-4.200e+01     ",
+  T_SPRINTF("-4.200e+01     ",
                "e", -42.);
 #endif
 
 #ifndef PRINTF_DISABLE_SUPPORT_EXPONENTIAL
-  TEST_SPRINTF("-42.0          ",
+  T_SPRINTF("-42.0          ",
                "%0-15.3g", -42.);
 #else
-  TEST_SPRINTF("g",
+  T_SPRINTF("g",
                "%0-15.3g", -42.);
 #endif
 }
@@ -359,15 +360,15 @@ TEST_CASE("- flag", "[]" ) {
 TEST_CASE("# flag", "[]" ) {
   TEST_DEF;
 
-  TEST_SPRINTF("",
+  T_SPRINTF("",
                "%#.0x", 0);
-  TEST_SPRINTF("0",
+  T_SPRINTF("0",
                "%#.1x", 0);
-  TEST_SPRINTF("",
+  T_SPRINTF("",
                "%#.0llx", (long long)0);
-  TEST_SPRINTF("0x0000614e",
+  T_SPRINTF("0x0000614e",
                "%#.8x", 0x614e);
-  TEST_SPRINTF("0b110",
+  T_SPRINTF("0b110",
                "%#b", 6);
 }
 
@@ -375,35 +376,35 @@ TEST_CASE("# flag", "[]" ) {
 TEST_CASE("specifier", "[]" ) {
   TEST_DEF;
 
-  TEST_SPRINTF("Hello testing",
+  T_SPRINTF("Hello testing",
                "Hello testing");
-  TEST_SPRINTF("Hello testing",
+  T_SPRINTF("Hello testing",
                "%s", "Hello testing");
-  TEST_SPRINTF("1024",
+  T_SPRINTF("1024",
                "%d", 1024);
-  TEST_SPRINTF("-1024",
+  T_SPRINTF("-1024",
                "%d", -1024);
-  TEST_SPRINTF("1024",
+  T_SPRINTF("1024",
                "%i", 1024);
-  TEST_SPRINTF("-1024",
+  T_SPRINTF("-1024",
                "%i", -1024);
-  TEST_SPRINTF("1024",
+  T_SPRINTF("1024",
                "%u", 1024);
-  TEST_SPRINTF("4294966272",
+  T_SPRINTF("4294966272",
                "%u", 4294966272U);
-  TEST_SPRINTF("777",
+  T_SPRINTF("777",
                "%o", 511);
-  TEST_SPRINTF("37777777001",
+  T_SPRINTF("37777777001",
                "%o", 4294966785U);
-  TEST_SPRINTF("1234abcd",
+  T_SPRINTF("1234abcd",
                "%x", 305441741);
-  TEST_SPRINTF("edcb5433",
+  T_SPRINTF("edcb5433",
                "%x", 3989525555U);
-  TEST_SPRINTF("1234ABCD",
+  T_SPRINTF("1234ABCD",
                "%X", 305441741);
-  TEST_SPRINTF("EDCB5433",
+  T_SPRINTF("EDCB5433",
                "%X", 3989525555U);
-  TEST_SPRINTF("%",
+  T_SPRINTF("%",
                "%%");
 }
 
@@ -411,33 +412,33 @@ TEST_CASE("specifier", "[]" ) {
 TEST_CASE("width", "[]" ) {
   TEST_DEF;
 
-  TEST_SPRINTF("Hello testing",
+  T_SPRINTF("Hello testing",
                "%1s", "Hello testing");
-  TEST_SPRINTF("1024",
+  T_SPRINTF("1024",
                "%1d", 1024);
-  TEST_SPRINTF("-1024",
+  T_SPRINTF("-1024",
                "%1d", -1024);
-  TEST_SPRINTF("1024",
+  T_SPRINTF("1024",
                "%1i", 1024);
-  TEST_SPRINTF("-1024",
+  T_SPRINTF("-1024",
                "%1i", -1024);
-  TEST_SPRINTF("1024",
+  T_SPRINTF("1024",
                "%1u", 1024);
-  TEST_SPRINTF("4294966272",
+  T_SPRINTF("4294966272",
                "%1u", 4294966272U);
-  TEST_SPRINTF("777",
+  T_SPRINTF("777",
                "%1o", 511);
-  TEST_SPRINTF("37777777001",
+  T_SPRINTF("37777777001",
                "%1o", 4294966785U);
-  TEST_SPRINTF("1234abcd",
+  T_SPRINTF("1234abcd",
                "%1x", 305441741);
-  TEST_SPRINTF("edcb5433",
+  T_SPRINTF("edcb5433",
                "%1x", 3989525555U);
-  TEST_SPRINTF("1234ABCD",
+  T_SPRINTF("1234ABCD",
                "%1X", 305441741);
-  TEST_SPRINTF("EDCB5433",
+  T_SPRINTF("EDCB5433",
                "%1X", 3989525555U);
-  TEST_SPRINTF("x",
+  T_SPRINTF("x",
                "%1c", 'x');
 }
 
@@ -445,33 +446,33 @@ TEST_CASE("width", "[]" ) {
 TEST_CASE("width 20", "[]" ) {
   TEST_DEF;
 
-  TEST_SPRINTF("               Hello",
+  T_SPRINTF("               Hello",
                "%20s", "Hello");
-  TEST_SPRINTF("                1024",
+  T_SPRINTF("                1024",
                "%20d", 1024);
-  TEST_SPRINTF("               -1024",
+  T_SPRINTF("               -1024",
                "%20d", -1024);
-  TEST_SPRINTF("                1024",
+  T_SPRINTF("                1024",
                "%20i", 1024);
-  TEST_SPRINTF("               -1024",
+  T_SPRINTF("               -1024",
                "%20i", -1024);
-  TEST_SPRINTF("                1024",
+  T_SPRINTF("                1024",
                "%20u", 1024);
-  TEST_SPRINTF("          4294966272",
+  T_SPRINTF("          4294966272",
                "%20u", 4294966272U);
-  TEST_SPRINTF("                 777",
+  T_SPRINTF("                 777",
                "%20o", 511);
-  TEST_SPRINTF("         37777777001",
+  T_SPRINTF("         37777777001",
                "%20o", 4294966785U);
-  TEST_SPRINTF("            1234abcd",
+  T_SPRINTF("            1234abcd",
                "%20x", 305441741);
-  TEST_SPRINTF("            edcb5433",
+  T_SPRINTF("            edcb5433",
                "%20x", 3989525555U);
-  TEST_SPRINTF("            1234ABCD",
+  T_SPRINTF("            1234ABCD",
                "%20X", 305441741);
-  TEST_SPRINTF("            EDCB5433",
+  T_SPRINTF("            EDCB5433",
                "%20X", 3989525555U);
-  TEST_SPRINTF("                   x",
+  T_SPRINTF("                   x",
                "%20c", 'x');
 }
 
@@ -479,33 +480,33 @@ TEST_CASE("width 20", "[]" ) {
 TEST_CASE("width *20", "[]" ) {
   TEST_DEF;
 
-  TEST_SPRINTF("               Hello",
+  T_SPRINTF("               Hello",
                "%*s", 20, "Hello");
-  TEST_SPRINTF("                1024",
+  T_SPRINTF("                1024",
                "%*d", 20, 1024);
-  TEST_SPRINTF("               -1024",
+  T_SPRINTF("               -1024",
                "%*d", 20, -1024);
-  TEST_SPRINTF("                1024",
+  T_SPRINTF("                1024",
                "%*i", 20, 1024);
-  TEST_SPRINTF("               -1024",
+  T_SPRINTF("               -1024",
                "%*i", 20, -1024);
-  TEST_SPRINTF("                1024",
+  T_SPRINTF("                1024",
                "%*u", 20, 1024);
-  TEST_SPRINTF("          4294966272",
+  T_SPRINTF("          4294966272",
                "%*u", 20, 4294966272U);
-  TEST_SPRINTF("                 777",
+  T_SPRINTF("                 777",
                "%*o", 20, 511);
-  TEST_SPRINTF("         37777777001",
+  T_SPRINTF("         37777777001",
                "%*o", 20, 4294966785U);
-  TEST_SPRINTF("            1234abcd",
+  T_SPRINTF("            1234abcd",
                "%*x", 20, 305441741);
-  TEST_SPRINTF("            edcb5433",
+  T_SPRINTF("            edcb5433",
                "%*x", 20, 3989525555U);
-  TEST_SPRINTF("            1234ABCD",
+  T_SPRINTF("            1234ABCD",
                "%*X", 20, 305441741);
-  TEST_SPRINTF("            EDCB5433",
+  T_SPRINTF("            EDCB5433",
                "%*X", 20, 3989525555U);
-  TEST_SPRINTF("                   x",
+  T_SPRINTF("                   x",
                "%*c", 20,'x');
 }
 
@@ -513,43 +514,43 @@ TEST_CASE("width *20", "[]" ) {
 TEST_CASE("width -20", "[]" ) {
   TEST_DEF;
 
-  TEST_SPRINTF("Hello               ",
+  T_SPRINTF("Hello               ",
                "%-20s", "Hello");
-  TEST_SPRINTF("1024                ",
+  T_SPRINTF("1024                ",
                "%-20d", 1024);
-  TEST_SPRINTF("-1024               ",
+  T_SPRINTF("-1024               ",
                "%-20d", -1024);
-  TEST_SPRINTF("1024                ",
+  T_SPRINTF("1024                ",
                "%-20i", 1024);
-  TEST_SPRINTF("-1024               ",
+  T_SPRINTF("-1024               ",
                "%-20i", -1024);
-  TEST_SPRINTF("1024                ",
+  T_SPRINTF("1024                ",
                "%-20u", 1024);
-  TEST_SPRINTF("1024.1234           ",
+  T_SPRINTF("1024.1234           ",
                "%-20.4f", 1024.1234);
-  TEST_SPRINTF("4294966272          ",
+  T_SPRINTF("4294966272          ",
                "%-20u", 4294966272U);
-  TEST_SPRINTF("777                 ",
+  T_SPRINTF("777                 ",
                "%-20o", 511);
-  TEST_SPRINTF("37777777001         ",
+  T_SPRINTF("37777777001         ",
                "%-20o", 4294966785U);
-  TEST_SPRINTF("1234abcd            ",
+  T_SPRINTF("1234abcd            ",
                "%-20x", 305441741);
-  TEST_SPRINTF("edcb5433            ",
+  T_SPRINTF("edcb5433            ",
                "%-20x", 3989525555U);
-  TEST_SPRINTF("1234ABCD            ",
+  T_SPRINTF("1234ABCD            ",
                "%-20X", 305441741);
-  TEST_SPRINTF("EDCB5433            ",
+  T_SPRINTF("EDCB5433            ",
                "%-20X", 3989525555U);
-  TEST_SPRINTF("x                   ",
+  T_SPRINTF("x                   ",
                "%-20c", 'x');
-  TEST_SPRINTF("|    9| |9 | |    9|",
+  T_SPRINTF("|    9| |9 | |    9|",
                "|%5d| |%-2d| |%5d|", 9, 9, 9);
-  TEST_SPRINTF("|   10| |10| |   10|",
+  T_SPRINTF("|   10| |10| |   10|",
                "|%5d| |%-2d| |%5d|", 10, 10, 10);
-  TEST_SPRINTF("|    9| |9           | |    9|",
+  T_SPRINTF("|    9| |9           | |    9|",
                "|%5d| |%-12d| |%5d|", 9, 9, 9);
-  TEST_SPRINTF("|   10| |10          | |   10|",
+  T_SPRINTF("|   10| |10          | |   10|",
                "|%5d| |%-12d| |%5d|", 10, 10, 10);
 }
 
@@ -557,33 +558,33 @@ TEST_CASE("width -20", "[]" ) {
 TEST_CASE("width 0-20", "[]" ) {
   TEST_DEF;
 
-  TEST_SPRINTF("Hello               ",
+  T_SPRINTF("Hello               ",
                "%0-20s", "Hello");
-  TEST_SPRINTF("1024                ",
+  T_SPRINTF("1024                ",
                "%0-20d", 1024);
-  TEST_SPRINTF("-1024               ",
+  T_SPRINTF("-1024               ",
                "%0-20d", -1024);
-  TEST_SPRINTF("1024                ",
+  T_SPRINTF("1024                ",
                "%0-20i", 1024);
-  TEST_SPRINTF("-1024               ",
+  T_SPRINTF("-1024               ",
                "%0-20i", -1024);
-  TEST_SPRINTF("1024                ",
+  T_SPRINTF("1024                ",
                "%0-20u", 1024);
-  TEST_SPRINTF("4294966272          ",
+  T_SPRINTF("4294966272          ",
                "%0-20u", 4294966272U);
-  TEST_SPRINTF("777                 ",
+  T_SPRINTF("777                 ",
                "%0-20o", 511);
-  TEST_SPRINTF("37777777001         ",
+  T_SPRINTF("37777777001         ",
                "%0-20o", 4294966785U);
-  TEST_SPRINTF("1234abcd            ",
+  T_SPRINTF("1234abcd            ",
                "%0-20x", 305441741);
-  TEST_SPRINTF("edcb5433            ",
+  T_SPRINTF("edcb5433            ",
                "%0-20x", 3989525555U);
-  TEST_SPRINTF("1234ABCD            ",
+  T_SPRINTF("1234ABCD            ",
                "%0-20X", 305441741);
-  TEST_SPRINTF("EDCB5433            ",
+  T_SPRINTF("EDCB5433            ",
                "%0-20X", 3989525555U);
-  TEST_SPRINTF("x                   ",
+  T_SPRINTF("x                   ",
                "%0-20c", 'x');
 }
 
@@ -591,29 +592,29 @@ TEST_CASE("width 0-20", "[]" ) {
 TEST_CASE("padding 20", "[]" ) {
   TEST_DEF;
 
-  TEST_SPRINTF("00000000000000001024",
+  T_SPRINTF("00000000000000001024",
                "%020d", 1024);
-  TEST_SPRINTF("-0000000000000001024",
+  T_SPRINTF("-0000000000000001024",
                "%020d", -1024);
-  TEST_SPRINTF("00000000000000001024",
+  T_SPRINTF("00000000000000001024",
                "%020i", 1024);
-  TEST_SPRINTF("-0000000000000001024",
+  T_SPRINTF("-0000000000000001024",
                "%020i", -1024);
-  TEST_SPRINTF("00000000000000001024",
+  T_SPRINTF("00000000000000001024",
                "%020u", 1024);
-  TEST_SPRINTF("00000000004294966272",
+  T_SPRINTF("00000000004294966272",
                "%020u", 4294966272U);
-  TEST_SPRINTF("00000000000000000777",
+  T_SPRINTF("00000000000000000777",
                "%020o", 511);
-  TEST_SPRINTF("00000000037777777001",
+  T_SPRINTF("00000000037777777001",
                "%020o", 4294966785U);
-  TEST_SPRINTF("0000000000001234abcd",
+  T_SPRINTF("0000000000001234abcd",
                "%020x", 305441741);
-  TEST_SPRINTF("000000000000edcb5433",
+  T_SPRINTF("000000000000edcb5433",
                "%020x", 3989525555U);
-  TEST_SPRINTF("0000000000001234ABCD",
+  T_SPRINTF("0000000000001234ABCD",
                "%020X", 305441741);
-  TEST_SPRINTF("000000000000EDCB5433",
+  T_SPRINTF("000000000000EDCB5433",
                "%020X", 3989525555U);
 }
 
@@ -621,29 +622,29 @@ TEST_CASE("padding 20", "[]" ) {
 TEST_CASE("padding .20", "[]" ) {
   TEST_DEF;
 
-  TEST_SPRINTF("00000000000000001024",
+  T_SPRINTF("00000000000000001024",
                "%.20d", 1024);
-  TEST_SPRINTF("-00000000000000001024",
+  T_SPRINTF("-00000000000000001024",
                "%.20d", -1024);
-  TEST_SPRINTF("00000000000000001024",
+  T_SPRINTF("00000000000000001024",
                "%.20i", 1024);
-  TEST_SPRINTF("-00000000000000001024",
+  T_SPRINTF("-00000000000000001024",
                "%.20i", -1024);
-  TEST_SPRINTF("00000000000000001024",
+  T_SPRINTF("00000000000000001024",
                "%.20u", 1024);
-  TEST_SPRINTF("00000000004294966272",
+  T_SPRINTF("00000000004294966272",
                "%.20u", 4294966272U);
-  TEST_SPRINTF("00000000000000000777",
+  T_SPRINTF("00000000000000000777",
                "%.20o", 511);
-  TEST_SPRINTF("00000000037777777001",
+  T_SPRINTF("00000000037777777001",
                "%.20o", 4294966785U);
-  TEST_SPRINTF("0000000000001234abcd",
+  T_SPRINTF("0000000000001234abcd",
                "%.20x", 305441741);
-  TEST_SPRINTF("000000000000edcb5433",
+  T_SPRINTF("000000000000edcb5433",
                "%.20x", 3989525555U);
-  TEST_SPRINTF("0000000000001234ABCD",
+  T_SPRINTF("0000000000001234ABCD",
                "%.20X", 305441741);
-  TEST_SPRINTF("000000000000EDCB5433",
+  T_SPRINTF("000000000000EDCB5433",
                "%.20X", 3989525555U);
 }
 
@@ -651,29 +652,29 @@ TEST_CASE("padding .20", "[]" ) {
 TEST_CASE("padding #020", "[]" ) {
   TEST_DEF;
 
-  TEST_SPRINTF("00000000000000001024",
+  T_SPRINTF("00000000000000001024",
                "%#020d", 1024);
-  TEST_SPRINTF("-0000000000000001024",
+  T_SPRINTF("-0000000000000001024",
                "%#020d", -1024);
-  TEST_SPRINTF("00000000000000001024",
+  T_SPRINTF("00000000000000001024",
                "%#020i", 1024);
-  TEST_SPRINTF("-0000000000000001024",
+  T_SPRINTF("-0000000000000001024",
                "%#020i", -1024);
-  TEST_SPRINTF("00000000000000001024",
+  T_SPRINTF("00000000000000001024",
                "%#020u", 1024);
-  TEST_SPRINTF("00000000004294966272",
+  T_SPRINTF("00000000004294966272",
                "%#020u", 4294966272U);
-  TEST_SPRINTF("00000000000000000777",
+  T_SPRINTF("00000000000000000777",
                "%#020o", 511);
-  TEST_SPRINTF("00000000037777777001",
+  T_SPRINTF("00000000037777777001",
                "%#020o", 4294966785U);
-  TEST_SPRINTF("0x00000000001234abcd",
+  T_SPRINTF("0x00000000001234abcd",
                "%#020x", 305441741);
-  TEST_SPRINTF("0x0000000000edcb5433",
+  T_SPRINTF("0x0000000000edcb5433",
                "%#020x", 3989525555U);
-  TEST_SPRINTF("0X00000000001234ABCD",
+  T_SPRINTF("0X00000000001234ABCD",
                "%#020X", 305441741);
-  TEST_SPRINTF("0X0000000000EDCB5433",
+  T_SPRINTF("0X0000000000EDCB5433",
                "%#020X", 3989525555U);
 }
 
@@ -681,29 +682,29 @@ TEST_CASE("padding #020", "[]" ) {
 TEST_CASE("padding #20", "[]" ) {
   TEST_DEF;
 
-  TEST_SPRINTF("                1024",
+  T_SPRINTF("                1024",
                "%#20d", 1024);
-  TEST_SPRINTF("               -1024",
+  T_SPRINTF("               -1024",
                "%#20d", -1024);
-  TEST_SPRINTF("                1024",
+  T_SPRINTF("                1024",
                "%#20i", 1024);
-  TEST_SPRINTF("               -1024",
+  T_SPRINTF("               -1024",
                "%#20i", -1024);
-  TEST_SPRINTF("                1024",
+  T_SPRINTF("                1024",
                "%#20u", 1024);
-  TEST_SPRINTF("          4294966272",
+  T_SPRINTF("          4294966272",
                "%#20u", 4294966272U);
-  TEST_SPRINTF("                0777",
+  T_SPRINTF("                0777",
                "%#20o", 511);
-  TEST_SPRINTF("        037777777001",
+  T_SPRINTF("        037777777001",
                "%#20o", 4294966785U);
-  TEST_SPRINTF("          0x1234abcd",
+  T_SPRINTF("          0x1234abcd",
                "%#20x", 305441741);
-  TEST_SPRINTF("          0xedcb5433",
+  T_SPRINTF("          0xedcb5433",
                "%#20x", 3989525555U);
-  TEST_SPRINTF("          0X1234ABCD",
+  T_SPRINTF("          0X1234ABCD",
                "%#20X", 305441741);
-  TEST_SPRINTF("          0XEDCB5433",
+  T_SPRINTF("          0XEDCB5433",
                "%#20X", 3989525555U);
 }
 
@@ -711,29 +712,29 @@ TEST_CASE("padding #20", "[]" ) {
 TEST_CASE("padding 20.5", "[]" ) {
   TEST_DEF;
 
-  TEST_SPRINTF("               01024",
+  T_SPRINTF("               01024",
                "%20.5d", 1024);
-  TEST_SPRINTF("              -01024",
+  T_SPRINTF("              -01024",
                "%20.5d", -1024);
-  TEST_SPRINTF("               01024",
+  T_SPRINTF("               01024",
                "%20.5i", 1024);
-  TEST_SPRINTF("              -01024",
+  T_SPRINTF("              -01024",
                "%20.5i", -1024);
-  TEST_SPRINTF("               01024",
+  T_SPRINTF("               01024",
                "%20.5u", 1024);
-  TEST_SPRINTF("          4294966272",
+  T_SPRINTF("          4294966272",
                "%20.5u", 4294966272U);
-  TEST_SPRINTF("               00777",
+  T_SPRINTF("               00777",
                "%20.5o", 511);
-  TEST_SPRINTF("         37777777001",
+  T_SPRINTF("         37777777001",
                "%20.5o", 4294966785U);
-  TEST_SPRINTF("            1234abcd",
+  T_SPRINTF("            1234abcd",
                "%20.5x", 305441741);
-  TEST_SPRINTF("          00edcb5433",
+  T_SPRINTF("          00edcb5433",
                "%20.10x", 3989525555U);
-  TEST_SPRINTF("            1234ABCD",
+  T_SPRINTF("            1234ABCD",
                "%20.5X", 305441741);
-  TEST_SPRINTF("          00EDCB5433",
+  T_SPRINTF("          00EDCB5433",
                "%20.10X", 3989525555U);
 }
 
@@ -742,22 +743,22 @@ TEST_CASE("padding neg numbers", "[]" ) {
   TEST_DEF;
 
   // space padding
-  TEST_SPRINTF("-5",
+  T_SPRINTF("-5",
                "% 1d", -5);
-  TEST_SPRINTF("-5",
+  T_SPRINTF("-5",
                "% 2d", -5);
-  TEST_SPRINTF(" -5",
+  T_SPRINTF(" -5",
                "% 3d", -5);
-  TEST_SPRINTF("  -5",
+  T_SPRINTF("  -5",
                "% 4d", -5);
   // zero padding
-  TEST_SPRINTF("-5",
+  T_SPRINTF("-5",
                "%01d", -5);
-  TEST_SPRINTF("-5",
+  T_SPRINTF("-5",
                "%02d", -5);
-  TEST_SPRINTF("-05",
+  T_SPRINTF("-05",
                "%03d", -5);
-  TEST_SPRINTF("-005",
+  T_SPRINTF("-005",
                "%04d", -5);
 }
 
@@ -766,41 +767,41 @@ TEST_CASE("float padding neg numbers", "[]" ) {
   TEST_DEF;
 
   // space padding
-  TEST_SPRINTF("-5.0",
+  T_SPRINTF("-5.0",
                "% 3.1f", -5.);
-  TEST_SPRINTF("-5.0",
+  T_SPRINTF("-5.0",
                "% 4.1f", -5.);
-  TEST_SPRINTF(" -5.0",
+  T_SPRINTF(" -5.0",
                "% 5.1f", -5.);
 #ifndef PRINTF_DISABLE_SUPPORT_EXPONENTIAL
-  TEST_SPRINTF("    -5",
+  T_SPRINTF("    -5",
                "% 6.1g", -5.);
-  TEST_SPRINTF("-5.0e+00",
+  T_SPRINTF("-5.0e+00",
                "% 6.1e", -5.);
-  TEST_SPRINTF("  -5.0e+00",
+  T_SPRINTF("  -5.0e+00",
                "% 10.1e", -5.);
 #endif
 
   // zero padding
-  TEST_SPRINTF("-5.0",
+  T_SPRINTF("-5.0",
                "%03.1f", -5.);
-  TEST_SPRINTF("-5.0",
+  T_SPRINTF("-5.0",
                "%04.1f", -5.);
-  TEST_SPRINTF("-05.0",
+  T_SPRINTF("-05.0",
                "%05.1f", -5.);
   // zero padding no decimal point
-  TEST_SPRINTF("-5",
+  T_SPRINTF("-5",
                "%01.0f", -5.);
-  TEST_SPRINTF("-5",
+  T_SPRINTF("-5",
                "%02.0f", -5.);
-  TEST_SPRINTF("-05",
+  T_SPRINTF("-05",
                "%03.0f", -5.);
 #ifndef PRINTF_DISABLE_SUPPORT_EXPONENTIAL
-  TEST_SPRINTF("-005.0e+00",
+  T_SPRINTF("-005.0e+00",
                "%010.1e", -5.);
-  TEST_SPRINTF("-05E+00",
+  T_SPRINTF("-05E+00",
                "%07.0E", -5.);
-  TEST_SPRINTF("-05",
+  T_SPRINTF("-05",
                "%03.0g", -5.);
 #endif
 }
@@ -808,57 +809,57 @@ TEST_CASE("float padding neg numbers", "[]" ) {
 TEST_CASE("length", "[]" ) {
   TEST_DEF;
 
-  TEST_SPRINTF("",
+  T_SPRINTF("",
                "%.0s", "Hello testing");
-  TEST_SPRINTF("                    ",
+  T_SPRINTF("                    ",
                "%20.0s", "Hello testing");
-  TEST_SPRINTF("",
+  T_SPRINTF("",
                "%.s", "Hello testing");
-  TEST_SPRINTF("                    ",
+  T_SPRINTF("                    ",
                "%20.s", "Hello testing");
-  TEST_SPRINTF("                1024",
+  T_SPRINTF("                1024",
                "%20.0d", 1024);
-  TEST_SPRINTF("               -1024",
+  T_SPRINTF("               -1024",
                "%20.0d", -1024);
-  TEST_SPRINTF("                    ",
+  T_SPRINTF("                    ",
                "%20.d", 0);
-  TEST_SPRINTF("                1024",
+  T_SPRINTF("                1024",
                "%20.0i", 1024);
-  TEST_SPRINTF("               -1024",
+  T_SPRINTF("               -1024",
                "%20.i", -1024);
-  TEST_SPRINTF("                    ",
+  T_SPRINTF("                    ",
                "%20.i", 0);
-  TEST_SPRINTF("                1024",
+  T_SPRINTF("                1024",
                "%20.u", 1024);
-  TEST_SPRINTF("          4294966272",
+  T_SPRINTF("          4294966272",
                "%20.0u", 4294966272U);
-  TEST_SPRINTF("                    ",
+  T_SPRINTF("                    ",
                "%20.u", 0U);
-  TEST_SPRINTF("                 777",
+  T_SPRINTF("                 777",
                "%20.o", 511);
-  TEST_SPRINTF("         37777777001",
+  T_SPRINTF("         37777777001",
                "%20.0o", 4294966785U);
-  TEST_SPRINTF("                    ",
+  T_SPRINTF("                    ",
                "%20.o", 0U);
-  TEST_SPRINTF("            1234abcd",
+  T_SPRINTF("            1234abcd",
                "%20.x", 305441741);
-  TEST_SPRINTF("                                          1234abcd",
+  T_SPRINTF("                                          1234abcd",
                "%50.x", 305441741);
-  TEST_SPRINTF("                                          1234abcd     12345",
+  T_SPRINTF("                                          1234abcd     12345",
                "%50.x%10.u", 305441741, 12345);
-  TEST_SPRINTF("            edcb5433",
+  T_SPRINTF("            edcb5433",
                "%20.0x", 3989525555U);
-  TEST_SPRINTF("                    ",
+  T_SPRINTF("                    ",
                "%20.x", 0U);
-  TEST_SPRINTF("            1234ABCD",
+  T_SPRINTF("            1234ABCD",
                "%20.X", 305441741);
-  TEST_SPRINTF("            EDCB5433",
+  T_SPRINTF("            EDCB5433",
                "%20.0X", 3989525555U);
-  TEST_SPRINTF("                    ",
+  T_SPRINTF("                    ",
                "%20.X", 0U);
-  TEST_SPRINTF("  ",
+  T_SPRINTF("  ",
                "%02.0u", 0U);
-  TEST_SPRINTF("  ",
+  T_SPRINTF("  ",
                "%02.0d", 0);
 }
 
@@ -867,100 +868,100 @@ TEST_CASE("float", "[]" ) {
   TEST_DEF;
 
   // test special-case floats using math.h macros
-  TEST_SPRINTF("     nan",
+  T_SPRINTF("     nan",
                "%8f", NAN);
-  TEST_SPRINTF("     inf",
+  T_SPRINTF("     inf",
                "%8f", (double)INFINITY);
-  TEST_SPRINTF("-inf    ",
+  T_SPRINTF("-inf    ",
                "%-8f", (double)-INFINITY);
 #ifndef PRINTF_DISABLE_SUPPORT_EXPONENTIAL
-  TEST_SPRINTF("    +inf",
+  T_SPRINTF("    +inf",
                "%+8e", (double)INFINITY);
 #endif
 
-  TEST_SPRINTF("3.1415",
+  T_SPRINTF("3.1415",
                "%.4f", 3.1415354);
-  TEST_SPRINTF("30343.142",
+  T_SPRINTF("30343.142",
                "%.3f", 30343.1415354);
-  TEST_SPRINTF("34",
+  T_SPRINTF("34",
                "%.0f", 34.1415354);
-  TEST_SPRINTF("1",
+  T_SPRINTF("1",
                "%.0f", 1.3);
-  TEST_SPRINTF("2",
+  T_SPRINTF("2",
                "%.0f", 1.55);
-  TEST_SPRINTF("1.6",
+  T_SPRINTF("1.6",
                "%.1f", 1.64);
-  TEST_SPRINTF("42.90",
+  T_SPRINTF("42.90",
                "%.2f", 42.8952);
-  TEST_SPRINTF("42.895200000",
+  T_SPRINTF("42.895200000",
                "%.9f", 42.8952);
-  TEST_SPRINTF("42.8952230000",
+  T_SPRINTF("42.8952230000",
                "%.10f", 42.895223);
   // this testcase checks, that the precision is truncated to 9 digits.
   // a perfect working float should return the whole number
-  TEST_SPRINTF("42.895223123000",
+  T_SPRINTF("42.895223123000",
                "%.12f", 42.89522312345678);
   // this testcase checks, that the precision is truncated AND rounded to 9 digits.
   // a perfect working float should return the whole number
-  TEST_SPRINTF("42.895223877000",
+  T_SPRINTF("42.895223877000",
                "%.12f", 42.89522387654321);
-  TEST_SPRINTF(" 42.90",
+  T_SPRINTF(" 42.90",
                "%6.2f", 42.8952);
-  TEST_SPRINTF("+42.90",
+  T_SPRINTF("+42.90",
                "%+6.2f", 42.8952);
-  TEST_SPRINTF("+42.9",
+  T_SPRINTF("+42.9",
                "%+5.1f", 42.9252);
-  TEST_SPRINTF("42.500000",
+  T_SPRINTF("42.500000",
                "%f", 42.5);
-  TEST_SPRINTF("42.5",
+  T_SPRINTF("42.5",
                "%.1f", 42.5);
-  TEST_SPRINTF("42167.000000",
+  T_SPRINTF("42167.000000",
                "%f", 42167.0);
-  TEST_SPRINTF("-12345.987654321",
+  T_SPRINTF("-12345.987654321",
                "%.9f", -12345.987654321);
-  TEST_SPRINTF("4.0",
+  T_SPRINTF("4.0",
                "%.1f", 3.999);
-  TEST_SPRINTF("4",
+  T_SPRINTF("4",
                "%.0f", 3.5);
-  TEST_SPRINTF("4",
+  T_SPRINTF("4",
                "%.0f", 4.5);
-  TEST_SPRINTF("3",
+  T_SPRINTF("3",
                "%.0f", 3.49);
-  TEST_SPRINTF("3.5",
+  T_SPRINTF("3.5",
                "%.1f", 3.49);
-  TEST_SPRINTF("a0.5  ",
+  T_SPRINTF("a0.5  ",
                "a%-5.1f", 0.5);
-  TEST_SPRINTF("a0.5  end",
+  T_SPRINTF("a0.5  end",
                "a%-5.1fend", 0.5);
 #ifndef PRINTF_DISABLE_SUPPORT_EXPONENTIAL
-  TEST_SPRINTF("12345.7",
+  T_SPRINTF("12345.7",
                "%G", 12345.678);
-  TEST_SPRINTF("12345.68",
+  T_SPRINTF("12345.68",
                "%.7G", 12345.678);
-  TEST_SPRINTF("1.2346E+08",
+  T_SPRINTF("1.2346E+08",
                "%.5G", 123456789.);
-  TEST_SPRINTF("12345.0",
+  T_SPRINTF("12345.0",
                "%.6G", 12345.);
-  TEST_SPRINTF("  +1.235e+08",
+  T_SPRINTF("  +1.235e+08",
                "%+12.4g", 123456789.);
-  TEST_SPRINTF("0.0012",
+  T_SPRINTF("0.0012",
                "%.2G", 0.001234);
-  TEST_SPRINTF(" +0.001234",
+  T_SPRINTF(" +0.001234",
                "%+10.4G", 0.001234);
-  TEST_SPRINTF("+001.234e-05",
+  T_SPRINTF("+001.234e-05",
                "%+012.4g", 0.00001234);
-  TEST_SPRINTF("-1.23e-308",
+  T_SPRINTF("-1.23e-308",
                "%.3g", -1.2345e-308);
-  TEST_SPRINTF("+1.230E+308",
+  T_SPRINTF("+1.230E+308",
                "%+.3E", 1.23e+308);
 #endif
 
   // out of range for float: should switch to exp notation if supported, else empty
 #ifndef PRINTF_DISABLE_SUPPORT_EXPONENTIAL
-  TEST_SPRINTF("1.0e+20",
+  T_SPRINTF("1.0e+20",
                "%.1f", 1E20);
 #else
-  TEST_SPRINTF("",
+  T_SPRINTF("",
                "%.1f", 1E20);
 #endif
 
@@ -994,84 +995,84 @@ TEST_CASE("float", "[]" ) {
 TEST_CASE("types", "[]" ) {
   TEST_DEF;
 
-  TEST_SPRINTF("0",
+  T_SPRINTF("0",
                "%i", 0);
-  TEST_SPRINTF("1234",
+  T_SPRINTF("1234",
                "%i", 1234);
-  TEST_SPRINTF("32767",
+  T_SPRINTF("32767",
                "%i", 32767);
-  TEST_SPRINTF("-32767",
+  T_SPRINTF("-32767",
                "%i", -32767);
-  TEST_SPRINTF("30",
+  T_SPRINTF("30",
                "%li", 30L);
-  TEST_SPRINTF("-2147483647",
+  T_SPRINTF("-2147483647",
                "%li", -2147483647L);
-  TEST_SPRINTF("2147483647",
+  T_SPRINTF("2147483647",
                "%li", 2147483647L);
-  TEST_SPRINTF("30",
+  T_SPRINTF("30",
                "%lli", 30LL);
-  TEST_SPRINTF("-9223372036854775807",
+  T_SPRINTF("-9223372036854775807",
                "%lli", -9223372036854775807LL);
-  TEST_SPRINTF("9223372036854775807",
+  T_SPRINTF("9223372036854775807",
                "%lli", 9223372036854775807LL);
-  TEST_SPRINTF("100000",
+  T_SPRINTF("100000",
                "%lu", 100000L);
-  TEST_SPRINTF("4294967295",
+  T_SPRINTF("4294967295",
                "%lu", 0xFFFFFFFFL);
-  TEST_SPRINTF("281474976710656",
+  T_SPRINTF("281474976710656",
                "%llu", 281474976710656LLU);
-  TEST_SPRINTF("18446744073709551615",
+  T_SPRINTF("18446744073709551615",
                "%llu", 18446744073709551615LLU);
-  TEST_SPRINTF("2147483647",
+  T_SPRINTF("2147483647",
                "%zu", 2147483647UL);
-  TEST_SPRINTF("2147483647",
+  T_SPRINTF("2147483647",
                "%zd", 2147483647UL);
   if (sizeof(size_t) == sizeof(long)) {
-    TEST_SPRINTF("-2147483647",
+    T_SPRINTF("-2147483647",
                  "%zi", -2147483647L);
   }
   else {
-    TEST_SPRINTF("-2147483647",
+    T_SPRINTF("-2147483647",
                  "%zi", -2147483647LL);
   }
 
-  TEST_SPRINTF("1110101001100000",
+  T_SPRINTF("1110101001100000",
                "%b", 60000);
-  TEST_SPRINTF("101111000110000101001110",
+  T_SPRINTF("101111000110000101001110",
                "%lb", 12345678L);
-  TEST_SPRINTF("165140",
+  T_SPRINTF("165140",
                "%o", 60000);
-  TEST_SPRINTF("57060516",
+  T_SPRINTF("57060516",
                "%lo", 12345678L);
-  TEST_SPRINTF("12345678",
+  T_SPRINTF("12345678",
                "%lx", 0x12345678L);
-  TEST_SPRINTF("1234567891234567",
+  T_SPRINTF("1234567891234567",
                "%llx", 0x1234567891234567LLU);
-  TEST_SPRINTF("abcdefab",
+  T_SPRINTF("abcdefab",
                "%lx", 0xabcdefabL);
-  TEST_SPRINTF("ABCDEFAB",
+  T_SPRINTF("ABCDEFAB",
                "%lX", 0xabcdefabL);
-  TEST_SPRINTF("v",
+  T_SPRINTF("v",
                "%c", 'v');
-  TEST_SPRINTF("wv",
+  T_SPRINTF("wv",
                "%cv", 'w');
-  TEST_SPRINTF("A Test",
+  T_SPRINTF("A Test",
                "%s", "A Test");
-  TEST_SPRINTF("255",
+  T_SPRINTF("255",
                "%hhu", 0xFFFFUL);
-  TEST_SPRINTF("13398",
+  T_SPRINTF("13398",
                "%hu", 0x123456UL);
-  TEST_SPRINTF("Test16 65535",
+  T_SPRINTF("Test16 65535",
                "%s%hhi %hu", "Test", 10000, 0xFFFFFFFF);
-  TEST_SPRINTF("a",
+  T_SPRINTF("a",
                "%tx", &buffer[10] - &buffer[0]);
 // TBD
   if (sizeof(intmax_t) == sizeof(long)) {
-    TEST_SPRINTF("-2147483647",
+    T_SPRINTF("-2147483647",
                  "%ji", -2147483647L);
   }
   else {
-    TEST_SPRINTF("-2147483647",
+    T_SPRINTF("-2147483647",
                  "%ji", -2147483647LL);
   }
 }
@@ -1081,37 +1082,37 @@ TEST_CASE("pointer", "[]" ) {
   TEST_DEF;
 
   if (sizeof(void*) == 4U) {
-    TEST_SPRINTF("00001234",
+    T_SPRINTF("00001234",
                  "%p", (void*)0x1234U);
   }
   else {
-    TEST_SPRINTF("0000000000001234",
+    T_SPRINTF("0000000000001234",
                  "%p", (void*)0x1234U);
   }
 
   if (sizeof(void*) == 4U) {
-    TEST_SPRINTF("12345678",
+    T_SPRINTF("12345678",
                  "%p", (void*)0x12345678U);
   }
   else {
-    TEST_SPRINTF("0000000012345678",
+    T_SPRINTF("0000000012345678",
                  "%p", (void*)0x12345678U);
   }
 
   if (sizeof(void*) == 4U) {
-    TEST_SPRINTF("12345678-7EDCBA98",
+    T_SPRINTF("12345678-7EDCBA98",
                  "%p-%p", (void*)0x12345678U, (void*)0x7EDCBA98U);
   }
   else {
-    TEST_SPRINTF("0000000012345678-000000007EDCBA98",
+    T_SPRINTF("0000000012345678-000000007EDCBA98",
                  "%p-%p", (void*)0x12345678U, (void*)0x7EDCBA98U);
   }
   if (sizeof(uintptr_t) == sizeof(uint64_t)) {
-    TEST_SPRINTF("00000000FFFFFFFF",
+    T_SPRINTF("00000000FFFFFFFF",
                  "%p", (void*)(uintptr_t)0xFFFFFFFFU);
   }
   else {
-    TEST_SPRINTF("FFFFFFFF",
+    T_SPRINTF("FFFFFFFF",
                  "%p", (void*)(uintptr_t)0xFFFFFFFFU);
   }
 }
@@ -1120,7 +1121,7 @@ TEST_CASE("pointer", "[]" ) {
 TEST_CASE("unknown flag", "[]" ) {
   TEST_DEF;
 
-  TEST_SPRINTF("kmarco",
+  T_SPRINTF("kmarco",
                "%kmarco", 42, 37);
 }
 
@@ -1128,19 +1129,19 @@ TEST_CASE("unknown flag", "[]" ) {
 TEST_CASE("string length", "[]" ) {
   TEST_DEF;
 
-  TEST_SPRINTF("This",
+  T_SPRINTF("This",
                "%.4s", "This is a test");
-  TEST_SPRINTF("test",
+  T_SPRINTF("test",
                "%.4s", "test");
-  TEST_SPRINTF("123",
+  T_SPRINTF("123",
                "%.7s", "123");
-  TEST_SPRINTF("",
+  T_SPRINTF("",
                "%.7s", "");
-  TEST_SPRINTF("1234ab",
+  T_SPRINTF("1234ab",
                "%.4s%.2s", "123456", "abcdef");
-  TEST_SPRINTF(".2s",
+  T_SPRINTF(".2s",
                "%.4.2s", "123456");
-  TEST_SPRINTF("123",
+  T_SPRINTF("123",
                "%.*s", 3, "123456");
 }
 
@@ -1162,7 +1163,7 @@ TEST_CASE("buffer length", "[]" ) {
   tested_snprintf(buffer, 1, "%s", "Test");
   REQUIRE(buffer[0] == '\0');
 
-  TEST_SNPRINTF("H", 5,
+  T_SNPRINTF("H", 5,
                 2, "%s", "Hello");
 }
 
@@ -1170,19 +1171,19 @@ TEST_CASE("buffer length", "[]" ) {
 TEST_CASE("ret value", "[]" ) {
   TEST_DEF;
 
-  TEST_SNPRINTF("01234", 5,
+  T_SNPRINTF("01234", 5,
                 6, "0%s", "1234");
 
-  TEST_SNPRINTF("01234", 6, // '5' is truncated
+  T_SNPRINTF("01234", 6, // '5' is truncated
                 6, "0%s", "12345");
 
-  TEST_SNPRINTF("01234", 8, // '567' are truncated
+  T_SNPRINTF("01234", 8, // '567' are truncated
                 6, "0%s", "1234567");
 
-  TEST_SNPRINTF(NULL, 12,
+  T_SNPRINTF(NULL, 12,
                 10, "hello, world");
 
-  TEST_SNPRINTF("10", 5,
+  T_SNPRINTF("10", 5,
                 3, "%d", 10000);
 }
 
@@ -1190,24 +1191,24 @@ TEST_CASE("ret value", "[]" ) {
 TEST_CASE("misc", "[]" ) {
   TEST_DEF;
 
-  TEST_SPRINTF("53000atest-20 bit",
+  T_SPRINTF("53000atest-20 bit",
                "%u%u%ctest%d %s", 5, 3000, 'a', -20, "bit");
-  TEST_SPRINTF("0.33",
+  T_SPRINTF("0.33",
                "%.*f", 2, 0.33333333);
-  TEST_SPRINTF("1",
+  T_SPRINTF("1",
                "%.*d", -1, 1);
-  TEST_SPRINTF("foo",
+  T_SPRINTF("foo",
                "%.3s", "foobar");
-  TEST_SPRINTF(" ",
+  T_SPRINTF(" ",
                "% .0d", 0);
-  TEST_SPRINTF("     00004",
+  T_SPRINTF("     00004",
                "%10.5d", 4);
-  TEST_SPRINTF("hi x",
+  T_SPRINTF("hi x",
                "%*sx", -3, "hi");
 #ifndef PRINTF_DISABLE_SUPPORT_EXPONENTIAL
-  TEST_SPRINTF("0.33",
+  T_SPRINTF("0.33",
                "%.*g", 2, 0.33333333);
-  TEST_SPRINTF("3.33e-01",
+  T_SPRINTF("3.33e-01",
                "%.*e", 2, 0.33333333);
 #endif
 }
