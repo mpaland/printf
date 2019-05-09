@@ -1020,6 +1020,27 @@ TEST_CASE("float rounding", "[]") {
   T_SPRINTF("1.0",
             "%.1f", 0.95);
 #endif
+#if ENABLE_FAILING
+  // rounding is not working correctly
+  // brute-force float rounding
+  do {
+    bool fail = false;
+    std::stringstream str;
+    str.precision(5);
+    for (double i = -100000.5; !fail && i < 100000; i += 1) {
+      tested_sprintf(buffer, "%.5f", (double)i / 100000);
+      str.str("");
+      str << std::fixed << i / 100000;
+      if ((fail = strcmp(buffer, str.str().c_str()))) {
+        // repeat the failing case to catch2 it
+        T_SPRINTF(str.str(),
+                  "%.5f", i / 100000);
+      }
+    }
+    // count it as test case
+    REQUIRE(!fail);
+  } while (0);
+#endif
 }
 
 TEST_CASE("types", "[]" ) {
