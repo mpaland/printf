@@ -101,6 +101,9 @@ RM        = $(PATH_TOOLS_UTIL)rm
 SED       = $(PATH_TOOLS_UTIL)sed
 
 
+# convert GCC output for the VisualStudio(R) output window
+#PRINT_ERR   = $(SED) -e 's|.h:\([0-9]*\),|.h(\1) :|' -e 's|:\([0-9]*\):|(\1) :|'
+PRINT_ERR  = cat
 # ------------------------------------------------------------------------------
 # Compiler flags for the target architecture
 # ------------------------------------------------------------------------------
@@ -249,9 +252,9 @@ $(PATH_OBJ)/%.o : %.cpp
   # ...and Create an assembly listing using objdump
   # ...and Generate a dependency file (using the -MM flag)
 	@-$(CL) $(CPPFLAGS) $< -E -o $(PATH_PRE)/$(basename $(@F)).pre
-	@-$(CL) $(CPPFLAGS) $< -c -o $(PATH_OBJ)/$(basename $(@F)).o
-#	@-cat $(PATH_ERR)/$(basename $(@F)).err
-#	@-$(OBJDUMP) --disassemble --line-numbers -S $(PATH_OBJ)/$(basename $(@F)).o > $(PATH_LST)/$(basename $(@F)).lst
+	@-$(CL) $(CPPFLAGS) $< -c -o $(PATH_OBJ)/$(basename $(@F)).o 2> $(PATH_ERR)/$(basename $(@F)).err
+	@-$(PRINT_ERR) $(PATH_ERR)/$(basename $(@F)).err
+	@-$(OBJDUMP) --disassemble --line-numbers -S $(PATH_OBJ)/$(basename $(@F)).o > $(PATH_LST)/$(basename $(@F)).lst
 	@-$(CL) $(CPPFLAGS) $< -MM > $(PATH_OBJ)/$(basename $(@F)).d
   # profiling
 #	@-$(CL) $(CPPFLAGS) -O0 --coverage $< -c -o $(PATH_COV)/$(basename $(@F)).o 2> $(PATH_NUL)
@@ -262,8 +265,9 @@ $(PATH_OBJ)/%.o : %.c
   # ...and Reformat (using sed) any possible error/warning messages for the VisualStudio(R) output window
   # ...and Create an assembly listing using objdump
   # ...and Generate a dependency file (using the -MM flag)
-#	@-$(CL) $(CFLAGS) $< -E -o $(PATH_PRE)/$(basename $(@F)).pre
-	@-$(CC) $(CFLAGS) $< -c -o $(PATH_OBJ)/$(basename $(@F)).o
+	@-$(CL) $(CFLAGS) $< -E -o $(PATH_PRE)/$(basename $(@F)).pre
+	@-$(CC) $(CFLAGS) $< -c -o $(PATH_OBJ)/$(basename $(@F)).o 2> $(PATH_ERR)/$(basename $(@F)).err
+	@-$(PRINT_ERR) $(PATH_ERR)/$(basename $(@F)).err
 	@-$(OBJDUMP) -S $(PATH_OBJ)/$(basename $(@F)).o > $(PATH_LST)/$(basename $(@F)).lst
 	@-$(CC) $(CFLAGS) $< -MM > $(PATH_OBJ)/$(basename $(@F)).d
 
