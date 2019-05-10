@@ -385,6 +385,10 @@ TEST_CASE("# flag", "[]" ) {
             "%#.8x", 0x614e);
   T_SPRINTF("0b110",
             "%#b", 6);
+#if ENABLE_FAILING
+  T_SPRINTF("0x1234",
+            "%#4x", 0x1234);
+#endif
 }
 
 
@@ -753,6 +757,15 @@ TEST_CASE("padding 20.5", "[]" ) {
             "%20.10X", 3989525555U);
 }
 
+TEST_CASE("padding -20.5", "[]" ) {
+  TEST_DEF;
+#if ENABLE_FAILING
+  T_SPRINTF("01024               ",
+            "%-20.5d", 1024);
+  T_SPRINTF("-01024              ",
+            "%-20.5d", -1024);
+#endif
+}
 
 TEST_CASE("padding neg numbers", "[]" ) {
   TEST_DEF;
@@ -982,32 +995,32 @@ TEST_CASE("float", "[]" ) {
 
   // brute force float
   do {
-  bool fail = false;
-  std::stringstream str;
-  str.precision(5);
-  for (float i = -100000; i < 100000; i += 1) {
-    tested_sprintf(buffer, "%.5f", (double)i / 10000);
-    str.str("");
-    str << std::fixed << i / 10000;
-    fail = fail || !!strcmp(buffer, str.str().c_str());
-  }
-  REQUIRE(!fail);
+    bool fail = false;
+    std::stringstream str;
+    str.precision(5);
+    for (float i = -100000; i < 100000; i += 1) {
+      tested_sprintf(buffer, "%.5f", (double)i / 10000);
+      str.str("");
+      str << std::fixed << i / 10000;
+      fail = fail || !!strcmp(buffer, str.str().c_str());
+    }
+    REQUIRE(!fail);
   } while (0);
 
 #ifndef PRINTF_DISABLE_SUPPORT_EXPONENTIAL
   do {
     bool fail = false;
     std::stringstream str;
-  // brute force exp
+    // brute force exp
     str.precision(5);
-  str.setf(std::ios::scientific, std::ios::floatfield);
-  for (float i = -1e20; i < 1e20f; i += 1e15f) {
-    tested_sprintf(buffer, "%.5f", (double)i);
-    str.str("");
-    str << i;
-    fail = fail || !!strcmp(buffer, str.str().c_str());
-  }
-  REQUIRE(!fail);
+    str.setf(std::ios::scientific, std::ios::floatfield);
+    for (float i = -1e20; i < 1e20f; i += 1e15f) {
+      tested_sprintf(buffer, "%.5f", (double)i);
+      str.str("");
+      str << i;
+      fail = fail || !!strcmp(buffer, str.str().c_str());
+    }
+    REQUIRE(!fail);
   } while (0);
 #endif
 }
