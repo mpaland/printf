@@ -248,7 +248,7 @@ $(TRG)_nm.txt : $(TRG)
   # ...and Create an assembly listing using objdump
   # ...and Generate a dependency file (using the -MM flag)
 	@-$(CL) $(CPPFLAGS) $< -E -o $(PATH_PRE)/$(basename $(@F)).pre
-	@-$(CL) $(CPPFLAGS) $< -c -o $(PATH_OBJ)/$(basename $(@F)).o 2> $(PATH_ERR)/$(basename $(@F)).err
+	@-$(CL) $(CPPFLAGS) -O $< -c -o $(PATH_OBJ)/$(basename $(@F)).o 2> $(PATH_ERR)/$(basename $(@F)).err
 	@-$(SED) -e 's|.h:\([0-9]*\),|.h(\1) :|' -e 's|:\([0-9]*\):|(\1) :|' $(PATH_ERR)/$(basename $(@F)).err
 	@-$(OBJDUMP) --disassemble --line-numbers -S $(PATH_OBJ)/$(basename $(@F)).o > $(PATH_LST)/$(basename $(@F)).lst
 	@-$(CL) $(CPPFLAGS) $< -MM > $(PATH_OBJ)/$(basename $(@F)).d
