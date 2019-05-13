@@ -376,9 +376,8 @@ static size_t _ftoa(out_fct_type out, char* buffer, size_t idx, size_t maxlen, d
   }
 
   // test for negative
-  bool negative = false;
-  if (value < 0) {
-    negative = true;
+  bool negative =  value < 0;
+  if (negative) {
     value = 0 - value;
   }
 
@@ -392,9 +391,10 @@ static size_t _ftoa(out_fct_type out, char* buffer, size_t idx, size_t maxlen, d
     prec--;
   }
 
-  int whole = (int)value;
-  double tmp = (value - whole) * pow10[prec];
-  unsigned long frac = (unsigned long)tmp;
+  // use signed value for double/int conversions, some CPUs don't support unsigned conversion, making the code larger
+  unsigned long whole = (unsigned long)(long)value;
+  double tmp = (value - (long)whole) * pow10[prec];
+  unsigned long frac = (unsigned long)(long)tmp;
   diff = tmp - frac;
 
   if (diff < 0.5) {
@@ -421,12 +421,11 @@ static size_t _ftoa(out_fct_type out, char* buffer, size_t idx, size_t maxlen, d
   if (prec > 0U) {
     unsigned int count = prec;
     // now do fractional part, as an unsigned number
-    while (len < PRINTF_FTOA_BUFFER_SIZE) {
+    // digits(frac) <= prec
+    while (len < PRINTF_FTOA_BUFFER_SIZE && frac) {
       --count;
-      buf[len++] = (char)(48U + (frac % 10U));
-      if (!(frac /= 10U)) {
-        break;
-      }
+      buf[len++] = (char)('0' + (frac % 10U));
+      frac /= 10U;
     }
     // add extra 0s
     while ((len < PRINTF_FTOA_BUFFER_SIZE) && (count-- > 0U)) {
@@ -446,8 +445,8 @@ static size_t _ftoa(out_fct_type out, char* buffer, size_t idx, size_t maxlen, d
 
   // do whole part, number is reversed
   while (len < PRINTF_FTOA_BUFFER_SIZE) {
-    buf[len++] = (char)(48 + (whole % 10));
-    if (!(whole /= 10)) {
+    buf[len++] = (char)('0' + (whole % 10U));
+    if (!(whole /= 10)) { // output at least one zero
       break;
     }
   }
