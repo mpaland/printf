@@ -418,6 +418,7 @@ static size_t _ftoa(out_fct_type out, char* buffer, size_t idx, size_t maxlen, d
       ++whole;
     }
 
+  if (prec > 0U) {
     unsigned int count = prec;
     // now do fractional part, as an unsigned number
     while (len < PRINTF_FTOA_BUFFER_SIZE) {
@@ -433,6 +434,12 @@ static size_t _ftoa(out_fct_type out, char* buffer, size_t idx, size_t maxlen, d
     }
     if (len < PRINTF_FTOA_BUFFER_SIZE) {
       // add decimal
+      buf[len++] = '.';
+    }
+  }
+  else if (flags & FLAGS_HASH) {
+    if (len < PRINTF_FTOA_BUFFER_SIZE) {
+      // add decimal point if precision is zero and hash flag is set
       buf[len++] = '.';
     }
   }
