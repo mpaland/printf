@@ -601,7 +601,7 @@ static size_t _etoa(out_fct_type out, char* buffer, size_t idx, size_t maxlen, d
 // internal vsnprintf
 static int _vsnprintf(out_fct_type out, char* buffer, const size_t maxlen, const char* format, va_list va)
 {
-  unsigned int flags, width, precision, n;
+  unsigned int flags, width, precision;
   size_t idx = 0U;
 
   if (!buffer) {
@@ -625,16 +625,16 @@ static int _vsnprintf(out_fct_type out, char* buffer, const size_t maxlen, const
 
     // evaluate flags
     flags = 0U;
-    do {
+    for (bool cont = true; cont; ) {
       switch (*format) {
-        case '0': flags |= FLAGS_ZEROPAD; format++; n = 1U; break;
-        case '-': flags |= FLAGS_LEFT;    format++; n = 1U; break;
-        case '+': flags |= FLAGS_PLUS;    format++; n = 1U; break;
-        case ' ': flags |= FLAGS_SPACE;   format++; n = 1U; break;
-        case '#': flags |= FLAGS_HASH;    format++; n = 1U; break;
-        default :                                   n = 0U; break;
+        case '0': flags |= FLAGS_ZEROPAD; format++; break;
+        case '-': flags |= FLAGS_LEFT;    format++; break;
+        case '+': flags |= FLAGS_PLUS;    format++; break;
+        case ' ': flags |= FLAGS_SPACE;   format++; break;
+        case '#': flags |= FLAGS_HASH;    format++; break;
+        default : cont = 0U; break;
       }
-    } while (n);
+      }
 
     // evaluate width field
     width = 0U;
