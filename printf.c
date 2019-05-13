@@ -826,25 +826,18 @@ static int _vsnprintf(out_fct_type out, char* buffer, const size_t maxlen, const
 
       case 's' : {
         const char* p = va_arg(va, char*);
-        unsigned int l = _strnlen_s(p, precision ? precision : (size_t)-1);
+        unsigned int toprint = _strnlen_s(p, (flags & FLAGS_PRECISION) ? precision : (size_t)-1);
         // pre padding
-        if (flags & FLAGS_PRECISION) {
-          l = (l < precision ? l : precision);
-        }
         if (!(flags & FLAGS_LEFT)) {
-          while (l++ < width) {
-            out(' ', buffer, idx++, maxlen);
-          }
+          idx = _out_pad(out, buffer, idx, maxlen, ' ', (int)(width - toprint));
         }
         // string output
-        while ((*p != 0) && (!(flags & FLAGS_PRECISION) || precision--)) {
-          out(*(p++), buffer, idx++, maxlen);
+        for (unsigned int i = 0; i < toprint; i++) {
+          out(p[i], buffer, idx++, maxlen);
         }
         // post padding
         if (flags & FLAGS_LEFT) {
-          while (l++ < width) {
-            out(' ', buffer, idx++, maxlen);
-          }
+          idx = _out_pad(out, buffer, idx, maxlen, ' ', (int)(width - toprint));
         }
         format++;
         break;
