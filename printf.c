@@ -231,40 +231,46 @@ static size_t _out_rev(out_fct_type out, char* buffer, size_t idx, size_t maxlen
 static size_t _ntoa_format(out_fct_type out, char* buffer, size_t idx, size_t maxlen, char* buf, size_t len, bool negative, unsigned int base, unsigned int prec, unsigned int width, unsigned int flags)
 {
   // pad leading zeros
-  if (!(flags & FLAGS_LEFT)) {
-    if (width && (flags & FLAGS_ZEROPAD) && (negative || (flags & (FLAGS_PLUS | FLAGS_SPACE)))) {
-      width--;
+  int zeropad = 0;
+  if (flags & FLAGS_PRECISION) {
+    // no other source of zero-padding if prec is specified
+    zeropad = (int)(prec - len);
     }
-    while ((len < prec) && (len < PRINTF_NTOA_BUFFER_SIZE)) {
-      buf[len++] = '0';
-    }
-    while ((flags & FLAGS_ZEROPAD) && (len < width) && (len < PRINTF_NTOA_BUFFER_SIZE)) {
-      buf[len++] = '0';
-    }
+  else if (flags & FLAGS_ZEROPAD) {
+    zeropad = (int)(width - len);
+    if (negative || flags & (FLAGS_PLUS | FLAGS_SPACE)) {
+      // keep one position for sign
+      zeropad--;
   }
+  if (flags & FLAGS_HASH) {
+      // keep space for 0x / 0b
+      // octal is handled separately
+      if (base == 16U || base == 2U) {
+        zeropad -= 2;
+      }
+    }
+    }
+
+  while ((zeropad-- > 0) && (len < PRINTF_NTOA_BUFFER_SIZE)) {
+    buf[len++] = '0';
+    }
 
   // handle hash
   if (flags & FLAGS_HASH) {
-    if (!(flags & FLAGS_PRECISION) && len && ((len == prec) || (len == width))) {
-      len--;
-      if (len && (base == 16U)) {
-        len--;
-      }
-    }
-    if ((base == 16U) && !(flags & FLAGS_UPPERCASE) && (len < PRINTF_NTOA_BUFFER_SIZE)) {
-      buf[len++] = 'x';
-    }
-    else if ((base == 16U) && (flags & FLAGS_UPPERCASE) && (len < PRINTF_NTOA_BUFFER_SIZE)) {
-      buf[len++] = 'X';
-    }
-    else if ((base == 2U) && (len < PRINTF_NTOA_BUFFER_SIZE)) {
+    if (base == 2 && len < PRINTF_NTOA_BUFFER_SIZE - 1) {
       buf[len++] = 'b';
-    }
-    if (len < PRINTF_NTOA_BUFFER_SIZE) {
       buf[len++] = '0';
     }
+    // pesky octal case. Add 0 prefix only if following digit is not zero (both from value and zero-padding)
+    if (base == 8 && len < PRINTF_NTOA_BUFFER_SIZE && (!len || buf[len - 1] != '0')) {
+      buf[len++] = '0';
+    }
+    if (base == 16 && len < PRINTF_NTOA_BUFFER_SIZE - 1) {
+      buf[len++] = (flags & FLAGS_UPPERCASE) ? 'X' : 'x';
+      buf[len++] = '0';
   }
-
+  }
+  // handle '+', '-', ' '
   if (len < PRINTF_NTOA_BUFFER_SIZE) {
     if (negative) {
       buf[len++] = '-';
@@ -287,12 +293,13 @@ static size_t _ntoa_long(out_fct_type out, char* buffer, size_t idx, size_t maxl
   char buf[PRINTF_NTOA_BUFFER_SIZE];
   size_t len = 0U;
 
-  // no hash for 0 values
-  if (!value) {
+  // no hash for 0 values, except octal 0 */
+  if (!value && (base != 8)) {
     flags &= ~FLAGS_HASH;
   }
 
-  // write if precision != 0 and value is != 0
+  // if precision is specified and zero, don't print zero value
+  // if precision > 0, zero padding code will supply at least one zero
   if (!(flags & FLAGS_PRECISION) || value) {
     do {
       const char digit = (char)(value % base);
@@ -313,11 +320,12 @@ static size_t _ntoa_long_long(out_fct_type out, char* buffer, size_t idx, size_t
   size_t len = 0U;
 
   // no hash for 0 values
-  if (!value) {
+  if (!value && (base != 8)) {
     flags &= ~FLAGS_HASH;
   }
 
-  // write if precision != 0 and value is != 0
+  // if precision is specified and zero, don't print zero value
+  // if precision > 0, zero padding code will supply at least one zero
   if (!(flags & FLAGS_PRECISION) || value) {
     do {
       const char digit = (char)(value % base);
@@ -717,8 +725,8 @@ static int _vsnprintf(out_fct_type out, char* buffer, const size_t maxlen, const
           flags &= ~(FLAGS_PLUS | FLAGS_SPACE);
         }
 
-        // ignore '0' flag when precision is given
-        if (flags & FLAGS_PRECISION) {
+        // ignore '0' flag when precision is given or padding to left
+        if (flags & (FLAGS_PRECISION | FLAGS_LEFT)) {
           flags &= ~FLAGS_ZEROPAD;
         }
 
@@ -761,6 +769,9 @@ static int _vsnprintf(out_fct_type out, char* buffer, const size_t maxlen, const
 #if defined(PRINTF_SUPPORT_FLOAT)
       case 'f' :
       case 'F' :
+        if (flags & FLAGS_LEFT) {
+          flags &= ~FLAGS_ZEROPAD;
+        }
         if (*format == 'F') flags |= FLAGS_UPPERCASE;
         idx = _ftoa(out, buffer, idx, maxlen, va_arg(va, double), precision, width, flags);
         format++;
@@ -770,6 +781,9 @@ static int _vsnprintf(out_fct_type out, char* buffer, const size_t maxlen, const
       case 'E':
       case 'g':
       case 'G':
+        if (flags & FLAGS_LEFT) {
+          flags &= ~FLAGS_ZEROPAD;
+        }
         if ((*format == 'g')||(*format == 'G')) flags |= FLAGS_ADAPT_EXP;
         if ((*format == 'E')||(*format == 'G')) flags |= FLAGS_UPPERCASE;
         idx = _etoa(out, buffer, idx, maxlen, va_arg(va, double), precision, width, flags);
