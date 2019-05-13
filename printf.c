@@ -194,17 +194,23 @@ static unsigned int _atoi(const char** str)
   return i;
 }
 
+// output repeated character for padding. Return updated idx
+// nothing is output if count is negative
+static size_t _out_pad(out_fct_type out, char* buffer, size_t idx, size_t maxlen, char padchar, int count)
+{
+  while (count-- > 0) {
+    out(padchar, buffer, idx++, maxlen);
+  }
+  return idx;
+}
 
 // output the specified string in reverse, taking care of any zero-padding
 static size_t _out_rev(out_fct_type out, char* buffer, size_t idx, size_t maxlen, const char* buf, size_t len, unsigned int width, unsigned int flags)
 {
-  const size_t start_idx = idx;
-
+  const int pad = width - len;
   // pad spaces up to given width
   if (!(flags & FLAGS_LEFT) && !(flags & FLAGS_ZEROPAD)) {
-    for (size_t i = len; i < width; i++) {
-      out(' ', buffer, idx++, maxlen);
-    }
+    idx = _out_pad(out, buffer, idx, maxlen, ' ', pad);
   }
 
   // reverse string
@@ -214,9 +220,7 @@ static size_t _out_rev(out_fct_type out, char* buffer, size_t idx, size_t maxlen
 
   // append pad spaces up to given width
   if (flags & FLAGS_LEFT) {
-    while (idx - start_idx < width) {
-      out(' ', buffer, idx++, maxlen);
-    }
+    idx = _out_pad(out, buffer, idx, maxlen, ' ', pad);
   }
 
   return idx;
@@ -564,7 +568,7 @@ static size_t _etoa(out_fct_type out, char* buffer, size_t idx, size_t maxlen, d
     idx = _ntoa_long(out, buffer, idx, maxlen, (expval < 0) ? -expval : expval, expval < 0, 10, 0, minwidth-1, FLAGS_ZEROPAD | FLAGS_PLUS);
     // might need to right-pad spaces
     if (flags & FLAGS_LEFT) {
-      while (idx - start_idx < width) out(' ', buffer, idx++, maxlen);
+      idx = _out_pad(out, buffer, idx, maxlen, ' ', width - (idx - start_idx));
     }
   }
   return idx;
@@ -774,20 +778,15 @@ static int _vsnprintf(out_fct_type out, char* buffer, const size_t maxlen, const
 #endif  // PRINTF_SUPPORT_EXPONENTIAL
 #endif  // PRINTF_SUPPORT_FLOAT
       case 'c' : {
-        unsigned int l = 1U;
         // pre padding
         if (!(flags & FLAGS_LEFT)) {
-          while (l++ < width) {
-            out(' ', buffer, idx++, maxlen);
-          }
+          idx = _out_pad(out, buffer, idx, maxlen, ' ', (int)width - 1);
         }
         // char output
         out((char)va_arg(va, int), buffer, idx++, maxlen);
         // post padding
         if (flags & FLAGS_LEFT) {
-          while (l++ < width) {
-            out(' ', buffer, idx++, maxlen);
-          }
+          idx = _out_pad(out, buffer, idx, maxlen, ' ', (int)width - 1);
         }
         format++;
         break;
