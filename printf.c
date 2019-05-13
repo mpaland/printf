@@ -535,22 +535,24 @@ static size_t _etoa(out_fct_type out, char* buffer, size_t idx, size_t maxlen, d
 
   // in "%g" mode, "prec" is the number of *significant figures* not decimals
   if (flags & FLAGS_ADAPT_EXP) {
+    flags |= FLAGS_PRECISION;   // make sure _ftoa respects precision
     // do we want to fall-back to "%f" mode?
-    if ((value >= 1e-4) && (value < 1e6)) {
+    // check if value is between 1e-4 and 1e6 or it can be printed with precision digits (and within ftoa limit)
+    // handles 0.0 too (exp is 0)
+    if ((expval >= -4) && ((expval < 6) || ((expval < (int)prec) && (expval <= 9)))) {
       if ((int)prec > expval) {
         prec = (unsigned)((int)prec - expval - 1);
       }
       else {
         prec = 0;
       }
-      flags |= FLAGS_PRECISION;   // make sure _ftoa respects precision
       // no characters in exponent
       minwidth = 0U;
       expval   = 0;
     }
     else {
-      // we use one sigfig for the whole part
-      if ((prec > 0) && (flags & FLAGS_PRECISION)) {
+      // we use one sigfig for the whole part (even with default precision)
+      if (prec > 0) {
         --prec;
       }
     }
