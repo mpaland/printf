@@ -397,30 +397,27 @@ static size_t _ftoa(out_fct_type out, char* buffer, size_t idx, size_t maxlen, d
   unsigned long frac = (unsigned long)tmp;
   diff = tmp - frac;
 
-  if (diff > 0.5) {
+  if (diff < 0.5) {
+    // round down
+  }
+  else if (diff > 0.5) {
+    // round up
     ++frac;
+  }
+  else {
+    // half-way, round to even
+    if (prec == 0U) {
+      whole = (whole + 1) & ~1U;  // round whole to even
+    } else {
+      frac = (frac + 1) & ~1U;    // round frac to even
+    }
+  }
     // handle rollover, e.g. case 0.99 with prec 1 is 1.0
     if (frac >= pow10[prec]) {
       frac = 0;
       ++whole;
     }
-  }
-  else if (diff < 0.5) {
-  }
-  else if ((frac == 0U) || (frac & 1U)) {
-    // if halfway, round up if odd OR if last digit is 0
-    ++frac;
-  }
 
-  if (prec == 0U) {
-    diff = value - (double)whole;
-    if ((!(diff < 0.5) || (diff > 0.5)) && (whole & 1)) {
-      // exactly 0.5 and ODD, then round up
-      // 1.5 -> 2, but 2.5 -> 2
-      ++whole;
-    }
-  }
-  else {
     unsigned int count = prec;
     // now do fractional part, as an unsigned number
     while (len < PRINTF_FTOA_BUFFER_SIZE) {
