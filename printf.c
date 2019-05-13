@@ -503,12 +503,14 @@ static size_t _etoa(out_fct_type out, char* buffer, size_t idx, size_t maxlen, d
     uint64_t U;
     double   F;
   } conv;
+  int expval;
 
+  if (value != 0) {
   conv.F = value;
   int exp2 = (int)((conv.U >> 52U) & 0x07FFU) - 1023;           // effectively log2
   conv.U = (conv.U & ((1ULL << 52U) - 1U)) | (1023ULL << 52U);  // drop the exponent so conv.F is now in [1,2)
   // now approximate log10 from the log2 integer part and an expansion of ln around 1.5
-  int expval = (int)(0.1760912590558 + exp2 * 0.301029995663981 + (conv.F - 1.5) * 0.289529654602168);
+    expval = (int)(0.1760912590558 + exp2 * 0.301029995663981 + (conv.F - 1.5) * 0.289529654602168);
   // now we want to compute 10^expval but we want to be sure it won't overflow
   exp2 = (int)(expval * 3.321928094887362 + 0.5);
   const double z  = expval * 2.302585092994046 - exp2 * 0.6931471805599453;
@@ -520,6 +522,12 @@ static size_t _etoa(out_fct_type out, char* buffer, size_t idx, size_t maxlen, d
   if (value < conv.F) {
     expval--;
     conv.F /= 10;
+  }
+  }
+  else {
+    // treat zero as 0.0e0
+    conv.F = 0;
+    expval = 0;
   }
 
   // the exponent format is "%+03d" and largest value is "307", so set aside 4-5 characters
