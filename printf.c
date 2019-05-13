@@ -663,7 +663,12 @@ static int _vsnprintf(out_fct_type out, char* buffer, const size_t maxlen, const
       }
       else if (*format == '*') {
         const int prec = (int)va_arg(va, int);
-        precision = prec > 0 ? (unsigned int)prec : 0U;
+        if (prec >= 0) {
+          precision = (unsigned)prec;
+        } else {
+          // negative precision is like no precision specifier at all
+          flags &= ~FLAGS_PRECISION;
+        }
         format++;
       }
     }
