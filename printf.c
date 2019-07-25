@@ -357,55 +357,46 @@ static idx_t _out_rev(struct printf_state* st, idx_t idx, const char* buf, size_
 static idx_t _ntoa_format(struct printf_state* st, idx_t idx, char* buf, size_t len)
 {
   // pad leading zeros
-  unsigned zeropad = 0;
+  int zeropad = 0;
   if (st->prec || st->flags & FLAGS_PRECISION) {
     // no other source of zero-padding if prec is specified (FLAGS_PRECISION may be unset)
     zeropad = st->prec;
   }
-  else if (st->width && (st->flags & FLAGS_ZEROPAD)) {
+  else if (st->flags & FLAGS_ZEROPAD) {
     zeropad = st->width;
     if (st->flags & (FLAGS_NEGATIVE | FLAGS_PLUS | FLAGS_SPACE)) {
       // keep one space for sign
       zeropad--;
     }
     if (st->flags & FLAGS_HASH) {
-      // keep space for 0x / 0b
+      // keep space for 0x / 0b (only for width, not precision)
       // octal is handled separatelly
-      if (zeropad > 1 && (st->base == 16U || st->base == 2U)) {
+      if (st->base == 16U || st->base == 2U) {
         zeropad -= 2;
       }
     }
   }
 
-  while (len < MIN(zeropad, PRINTF_NTOA_BUFFER_SIZE)) {
+  while ((int)len < MIN(zeropad, (int)PRINTF_NTOA_BUFFER_SIZE)) {
     buf[len++] = '0';
   }
 
   // handle hash
   if (st->flags & FLAGS_HASH) {
-    switch (st->base) {
-      case 2U:
-        if (len < PRINTF_NTOA_BUFFER_SIZE)
+    if (st->base == 2 && len < PRINTF_NTOA_BUFFER_SIZE - 1) {
           buf[len++] = 'b';
-        if (len < PRINTF_NTOA_BUFFER_SIZE)
           buf[len++] = '0';
-        break;
-      case 8U:
-        // output zero prefix, but only if last digit/pad is not zero
-        if ((len < PRINTF_NTOA_BUFFER_SIZE)
-            && (!len || buf[len - 1] != '0') )
+    }
+    // pesky octal case. Add 0 prefix only if following digit is not zero (both from value and zero-padding)
+    if (st->base == 8 && len < PRINTF_NTOA_BUFFER_SIZE && (!len || buf[len - 1] != '0')) {
           buf[len++] = '0';
-        break;
-      case 16U:
-        if (len < PRINTF_NTOA_BUFFER_SIZE)
+    }
+    if (st->base == 16 && len < PRINTF_NTOA_BUFFER_SIZE - 1) {
           buf[len++] = (st->flags & FLAGS_UPPERCASE) ? 'X' : 'x';
-        if (len < PRINTF_NTOA_BUFFER_SIZE)
           buf[len++] = '0';
-        break;
-      default:;
     }
   }
-
+  // handle '+', '-', ' '
   if (len < PRINTF_NTOA_BUFFER_SIZE) {
     if (st->flags & FLAGS_NEGATIVE) {
       buf[len++] = '-';
@@ -428,7 +419,7 @@ static idx_t _ntoa_format(struct printf_state* st, idx_t idx, char* buf, size_t 
   size_t len = 0U;                                                      \
                                                                         \
   /* no hash for 0 values, except octal 0 */                            \
-  if (!value && st->base !=8) {                                         \
+  if (!value && st->base != 8) {                                        \
     st->flags &= ~FLAGS_HASH;                                           \
   }                                                                     \
                                                                         \
@@ -501,7 +492,7 @@ static idx_t _ftoa(struct printf_state* st, idx_t idx, real value)
   // if FLAGS_NEGATIVE was passed, print value as negative (used in _etoa)
   const bool negative = value < 0;
   if (negative) {
-    value = -value;
+    value = 0 - value;
     st->flags |= FLAGS_NEGATIVE;
   }
 
@@ -547,11 +538,11 @@ static idx_t _ftoa(struct printf_state* st, idx_t idx, real value)
 
   if (prec > 0U) {
     unsigned int count = prec;
-    // now do fractional part
+    // now do fractional part, as an unsigned number
     // digits(frac) <= prec
     while (len < PRINTF_NTOA_BUFFER_SIZE && frac) {
       --count;
-      buf[len++] = (char)((unsigned)'0' + (frac % 10U));
+      buf[len++] = (char)('0' + (frac % 10U));
       frac /= 10U;
     }
     // add extra 0s
@@ -570,8 +561,8 @@ static idx_t _ftoa(struct printf_state* st, idx_t idx, real value)
   }
 
   // do whole part, number is reversed
-    buf[len++] = (char)((unsigned)'0' + (whole % 10U));
   while (len < PRINTF_NTOA_BUFFER_SIZE) {
+    buf[len++] = (char)('0' + (whole % 10U));
     if (!(whole /= 10U)) {  // output at least one zero
       break;
     }
@@ -587,7 +578,7 @@ static idx_t _ftoa(struct printf_state* st, idx_t idx, real value)
        bp++; len--;
     }
   }
-  st->flags &= ~ (FLAGS_HASH|FLAGS_PRECISION);
+  st->flags &= ~(FLAGS_HASH | FLAGS_PRECISION);
   st->prec = 0;  // precision is not used for decimal point, not zero padding in %f
   return _ntoa_format(st, idx, bp, len);
 }
@@ -642,6 +633,7 @@ static size_t _etoa(struct printf_state* st, idx_t idx,  double value)
     conv.F = 0;
     expval = 0;
   }
+
   // the exponent format is "%+03d" and largest value is "307", so set aside 4-5 characters
   unsigned int minwidth = ((expval > -100) && (expval < 100)) ? 4U : 5U;
 
@@ -649,8 +641,8 @@ static size_t _etoa(struct printf_state* st, idx_t idx,  double value)
   if (st->flags & FLAGS_ADAPT_EXP) {
     st->flags |= FLAGS_PRECISION;   // make sure _ftoa respects precision (1 digit of default precision is taken for exp format)
     // do we want to fall-back to "%f" mode?
-//    if (((value >= 1e-4) && (value < 1e6)) || value == 0) {
     // check if value is between 1e-4 and 1e6 or it can be printed with precision digits (and within ftoa limit)
+    // handles 0.0 too (exp is 0)
     if ((expval >= -4) && ((expval < 6) || ((expval < (int)prec) && (expval <= 9)))) {
       if ((int)prec > expval) {
         prec = (unsigned)((int)prec - expval - 1);
@@ -663,8 +655,7 @@ static size_t _etoa(struct printf_state* st, idx_t idx,  double value)
       expval   = 0;
     }
     else {
-      // we use one sigfig for the whole part
-//      if ((prec > 0) && (st->flags & FLAGS_PRECISION)) {
+      // we use one sigfig for the whole part (even with default precision)
       if (prec > 0) {
         --prec;
       }
@@ -674,7 +665,6 @@ static size_t _etoa(struct printf_state* st, idx_t idx,  double value)
   // will everything fit?
   unsigned int width =  st->width;  // remember original width here, state is modified
   unsigned int fwidth = width;
-
   if (width > minwidth) {
    // we didn't fall-back so subtract the characters required for the exponent
     fwidth -= minwidth;
@@ -746,14 +736,14 @@ static int _vsnprintf(struct printf_state* st, idx_t idx, const char* format, va
 
     // evaluate flags
     unsigned flags = 0U;
-    for (unsigned cont = 1U; cont; ) {
+    for (bool cont = true; cont; ) {
       switch (*format) {
         case '0': flags |= FLAGS_ZEROPAD; format++; break;
         case '-': flags |= FLAGS_LEFT;    format++; break;
         case '+': flags |= FLAGS_PLUS;    format++; break;
         case ' ': flags |= FLAGS_SPACE;   format++; break;
         case '#': flags |= FLAGS_HASH;    format++; break;
-        default : cont = 0U; break;
+        default : cont = false; break;
       }
     }
     // evaluate width field
@@ -792,11 +782,7 @@ static int _vsnprintf(struct printf_state* st, idx_t idx, const char* format, va
         format++;
       }
     }
-#if 0
-    if (flags & FLAGS_LEFT) {
-      flags &= ~FLAGS_ZEROPAD;
-    }
-#endif
+
     // evaluate length field
     switch (*format) {
       case 'l' :
@@ -897,7 +883,7 @@ static int _vsnprintf(struct printf_state* st, idx_t idx, const char* format, va
               flags |= FLAGS_NEGATIVE;
             }
             st->flags = flags;
-            // not that -LONG_MIN is undefined
+            // // -LONG_MIN is undefined in C (overflow), convert to unsigned first
             idx = _ntoa_long(st, idx, value < 0 ? 0U-(unsigned long)value : (unsigned long)value);
           }
           else {
@@ -986,7 +972,8 @@ static int _vsnprintf(struct printf_state* st, idx_t idx, const char* format, va
 
       case 's' : {
         const char* p = va_arg(va, char*);
-        unsigned int toprint = _strnlen_s(p, flags & FLAGS_PRECISION ? precision : (size_t)-1);
+        unsigned int toprint = _strnlen_s(p, (flags & FLAGS_PRECISION) ? precision : (size_t)-1);
+        // pre padding
         if (!(flags & FLAGS_LEFT)) {
           idx = _out_pad(st, ' ', idx, (int)(width - toprint));
         }
@@ -1037,8 +1024,7 @@ static int _vsnprintf(struct printf_state* st, idx_t idx, const char* format, va
     }
   }
 
-  // termination in calling function
-  //_out(out, (char)0, idx < maxlen ? idx : maxlen - 1U, maxlen);
+  // termination is done in calling function, for string output only
 
   // return written chars
   return (int)(idx - start_idx);
@@ -1085,9 +1071,8 @@ int vsnprintf_(char* buffer, size_t count, const char* format, va_list va)
 int sprintf_(char* buffer, const char* format, ...)
 {
   va_list va;
-  int ret;
   va_start(va, format);
-  return vsnprintf_(buffer, SIZE_MAX, format, va);
+  const int ret = vsnprintf_(buffer, SIZE_MAX, format, va);
   va_end(va);
   return ret;
 }
