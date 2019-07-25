@@ -47,17 +47,10 @@
 
 
 // 'ntoa' conversion buffer size, this must be big enough to hold one converted
-// numeric number including padded zeros (dynamically created on stack)
+// numeric/float number including padded zeros (dynamically created on stack)
 // default: 32 byte
 #ifndef PRINTF_NTOA_BUFFER_SIZE
 #define PRINTF_NTOA_BUFFER_SIZE    32U
-#endif
-
-// 'ftoa' conversion buffer size, this must be big enough to hold one converted
-// float number including padded zeros (dynamically created on stack)
-// default: 32 byte
-#ifndef PRINTF_FTOA_BUFFER_SIZE
-#define PRINTF_FTOA_BUFFER_SIZE    32U
 #endif
 
 // support for the floating point type (%f)
@@ -437,7 +430,7 @@ static idx_t _etoa(struct printf_state* st, idx_t idx, double value);
 // internal ftoa for fixed decimal floating point
 static idx_t _ftoa(struct printf_state* st, idx_t idx, double value)
 {
-  char buf[PRINTF_FTOA_BUFFER_SIZE];
+  char buf[PRINTF_NTOA_BUFFER_SIZE];
   size_t len  = 0U;
 
   // powers of 10
@@ -472,7 +465,7 @@ static idx_t _ftoa(struct printf_state* st, idx_t idx, double value)
 
   unsigned prec = (st->flags & FLAGS_PRECISION) ? st->prec : PRINTF_DEFAULT_FLOAT_PRECISION;
   // limit precision to 9, cause a prec >= 10 can lead to overflow errors (if using 32bit integer type)
-  while ((len < PRINTF_FTOA_BUFFER_SIZE) && (prec > 9U)) {
+  while ((len < PRINTF_NTOA_BUFFER_SIZE) && (prec > 9U)) {
     buf[len++] = '0';
     prec--;
   }
@@ -510,29 +503,29 @@ static idx_t _ftoa(struct printf_state* st, idx_t idx, double value)
     unsigned int count = prec;
     // now do fractional part
     // digits(frac) <= prec
-    while (len < PRINTF_FTOA_BUFFER_SIZE && frac) {
+    while (len < PRINTF_NTOA_BUFFER_SIZE && frac) {
       --count;
       buf[len++] = (char)((unsigned)'0' + (frac % 10U));
       frac /= 10U;
     }
     // add extra 0s
-    while ((len < PRINTF_FTOA_BUFFER_SIZE) && (count-- > 0U)) {
+    while ((len < PRINTF_NTOA_BUFFER_SIZE) && (count-- > 0U)) {
       buf[len++] = '0';
     }
-    if (len < PRINTF_FTOA_BUFFER_SIZE) {
+    if (len < PRINTF_NTOA_BUFFER_SIZE) {
       // add decimal
       buf[len++] = '.';
     }
   } else if (st->flags & FLAGS_HASH) {
-    if (len < PRINTF_FTOA_BUFFER_SIZE) {
+    if (len < PRINTF_NTOA_BUFFER_SIZE) {
       // add decimal point if precision is zero and hash flag is set
       buf[len++] = '.';
     }
   }
 
   // do whole part, number is reversed
-  while (len < PRINTF_FTOA_BUFFER_SIZE) {
     buf[len++] = (char)((unsigned)'0' + (whole % 10U));
+  while (len < PRINTF_NTOA_BUFFER_SIZE) {
     if (!(whole /= 10U)) {  // output at least one zero
       break;
     }
