@@ -91,6 +91,12 @@
 #endif
 
 #define PRINTF_EXACT_ROUNDING
+
+//#define PRINTF_FLOAT_MATH
+//#define PRINTF_FLOAT_ONLY
+
+//#undef PRINTF_SUPPORT_EXPONENTIAL
+
 // sanity check
 #if defined(PRINTF_SUPPORT_FLOAT) && defined(PRINTF_FLOAT_MATH) && defined(PRINTF_SUPPORT_EXPONENTIAL)
 # error "PRINTF_SUPPORT_EXPONENTIAL is not supported in combination with PRINTF_FLOAT_MATH"
