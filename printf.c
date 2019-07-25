@@ -74,7 +74,7 @@
 // define the largest float suitable to print with %f
 // default: 1e9
 #ifndef PRINTF_MAX_FLOAT
-#define PRINTF_MAX_FLOAT  1e9
+#define PRINTF_MAX_FLOAT  1e9f
 #endif
 
 // support for the long long types (%llu or %p)
@@ -91,6 +91,11 @@
 #endif
 
 #define PRINTF_EXACT_ROUNDING
+// sanity check
+#if defined(PRINTF_SUPPORT_FLOAT) && defined(PRINTF_FLOAT_MATH) && defined(PRINTF_SUPPORT_EXPONENTIAL)
+# error "PRINTF_SUPPORT_EXPONENTIAL is not supported in combination with PRINTF_FLOAT_MATH"
+#endif
+
 ///////////////////////////////////////////////////////////////////////////////
 
 // internal flag definitions
@@ -112,12 +117,42 @@
 #if defined(PRINTF_SUPPORT_FLOAT)
 #include <float.h>
 
+# if defined(PRINTF_FLOAT_MATH)
+typedef float real;
+#define REAL_MAX FLT_MAX
+# else
+typedef double real;
+#define REAL_MAX DBL_MAX
+# endif
+
+static inline float va_int2float(uint32_t in) { return *(float*)&in; }
+
+
 # if defined(PRINTF_EXACT_ROUNDING)
 // implement fmsub without math library
 // used code from https://stackoverflow.com/questions/28630864/how-is-fma-implemented
 // c is close to a*b, so this algorithm should work correctly
 // FPU may have fma instruction, using it (through libm) will be much faster
-# ifndef USE_MATH_H
+#  if !defined(USE_MATH_H)
+
+#   if defined(PRINTF_FLOAT_MATH)
+
+struct floatfloat { float hi; float lo; };
+struct uflt {float f; uint32_t i; } ;
+
+static struct floatfloat split(float a) {
+    union uflt lo, hi = {a};
+    hi.i &= ~(((uint32_t)1U << (FLT_MANT_DIG / 2)) - 1);  // mask low-order mantissa bits
+    lo.f = a - hi.f;
+    return (struct floatfloat){hi.f,lo.f};
+}
+
+real fmsub(real a, real b, real c) {
+    struct floatfloat as = split(a), bs = split(b);
+    return ((as.hi*bs.hi - c) + as.hi*bs.lo + as.lo*bs.hi) + as.lo*bs.lo;
+}
+#   else
+
 struct doubledouble { double hi; double lo; };
 union udbl { double f; uint64_t i;}  ;
 static struct doubledouble split(double a) {
@@ -127,17 +162,21 @@ static struct doubledouble split(double a) {
     return (struct doubledouble){hi.f,lo.f};
 }
 
-double fmsub(double a, double b, double c) {
+real fmsub(real a, real b, real c) {
     struct doubledouble as = split(a), bs = split(b);
     return ((as.hi*bs.hi - c) + as.hi*bs.lo + as.lo*bs.hi) + as.lo*bs.lo;
 }
-
-# else /* ifndef USE_MATH_H */
+#   endif /* defined(PRINTF_FLOAT_MATH) */
+#  else /* !defined(USE_MATH_H) */
 
 #include <math.h>
-static double fmsub(double a, double b, double c)
+real fmsub(real a, real b, real c) {
 {
-  return fma(a,b,-c);
+#   if defined(PRINTF_FLOAT_MATH)
+  return fmaf(a, b, -c);
+#   else
+  return fma(a, b, -c);
+#   endif
 }
 # endif /* ifndef USE_MATH_H */
 # endif /* defined(PRINTF_EXACT_ROUNDING) */
@@ -176,7 +215,7 @@ typedef uintptr_t idx_t;
 #if 0
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wfloat-equal"
-bool iszero(double v) {
+bool iszero(real v) {
   return v == 0;
 }
 #pragma GCC diagnostic pop
@@ -431,20 +470,20 @@ static idx_t _etoa(struct printf_state* st, idx_t idx, double value);
 
 
 // internal ftoa for fixed decimal floating point
-static idx_t _ftoa(struct printf_state* st, idx_t idx, double value)
+static idx_t _ftoa(struct printf_state* st, idx_t idx, real value)
 {
   char buf[PRINTF_NTOA_BUFFER_SIZE];
   size_t len  = 0U;
 
   // powers of 10
-  static const double pow10[] = { 1e0, 1e1, 1e2, 1e3, 1e4, 1e5, 1e6, 1e7, 1e8, 1e9 };
+  static const real pow10[] = { 1e0, 1e1, 1e2, 1e3, 1e4, 1e5, 1e6, 1e7, 1e8, 1e9 };
 
   // test for special values
   if (isnan(value))
     return _out_rev(st, idx, "nan", 3);
-  if (value < -DBL_MAX)
+  if (value < -REAL_MAX)
     return _out_rev(st, idx, "fni-", 4);
-  if (value > DBL_MAX)
+  if (value > REAL_MAX)
     return _out_rev(st, idx, (st->flags & FLAGS_PLUS) ? "fni+" : "fni", (st->flags & FLAGS_PLUS) ? 4U : 3U);
 
   // test for very large values
@@ -476,7 +515,7 @@ static idx_t _ftoa(struct printf_state* st, idx_t idx, double value)
   // use signed value for double/int conversions, some CPUs don't support unsigned conversion, making the code larger
   unsigned long whole = (unsigned long)(long)value;
   // calculation tmp/frac is safe - only whole part is subtracted
-  double fracdbl = value - (long)whole;
+  real fracdbl = value - (long)whole;
   unsigned long frac = (unsigned long)(long)(fracdbl * pow10[prec]);
   // we need better accuracy to calculate diff - * pow10 provides inaccurate result
   // using fused multiply accumulate gets correct value
@@ -901,7 +940,13 @@ static int _vsnprintf(struct printf_state* st, idx_t idx, const char* format, va
         st->base = 10U;
         st->prec = precision;
         st->flags = flags;
-        idx = _ftoa(st, idx, va_arg(va, double));
+#if defined(PRINTF_FLOAT_ONLY)
+        // TODO - pass NaN without %hf
+        real val = (flags & FLAGS_SHORT) ? (real)va_int2float(va_arg(va, uint32_t)) : 0;
+#else
+        real val = (flags & FLAGS_SHORT) ? (real)va_int2float(va_arg(va, uint32_t)) : (real)va_arg(va, double);
+#endif
+        idx = _ftoa(st, idx, val);
         format++;
         break;
 #if defined(PRINTF_SUPPORT_EXPONENTIAL)
