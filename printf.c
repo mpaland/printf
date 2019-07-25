@@ -90,6 +90,7 @@
 #define PRINTF_SUPPORT_PTRDIFF_T
 #endif
 
+#define PRINTF_EXACT_ROUNDING
 ///////////////////////////////////////////////////////////////////////////////
 
 // internal flag definitions
@@ -111,6 +112,7 @@
 #if defined(PRINTF_SUPPORT_FLOAT)
 #include <float.h>
 
+# if defined(PRINTF_EXACT_ROUNDING)
 // implement fmsub without math library
 // used code from https://stackoverflow.com/questions/28630864/how-is-fma-implemented
 // c is close to a*b, so this algorithm should work correctly
@@ -138,6 +140,7 @@ static double fmsub(double a, double b, double c)
   return fma(a,b,-c);
 }
 # endif /* ifndef USE_MATH_H */
+# endif /* defined(PRINTF_EXACT_ROUNDING) */
 #endif /* defined(PRINTF_SUPPORT_FLOAT) */
 
 #if !defined(__GNUC__)
@@ -477,7 +480,11 @@ static idx_t _ftoa(struct printf_state* st, idx_t idx, double value)
   unsigned long frac = (unsigned long)(long)(fracdbl * pow10[prec]);
   // we need better accuracy to calculate diff - * pow10 provides inaccurate result
   // using fused multiply accumulate gets correct value
-  double diff = fmsub(fracdbl, pow10[prec], (double)(long)frac + 0.5);
+#if defined(PRINTF_EXACT_ROUNDING)
+  real diff = fmsub(fracdbl, pow10[prec], (real)(long)frac + 0.5f);
+#else
+  real diff = fracdbl * pow10[prec] - ((real)(long)frac + 0.5f);
+#endif
 
   if (diff < 0) {
     // round down
