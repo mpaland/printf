@@ -43,12 +43,16 @@ extern "C" {
 /**
  * Lock the printf to avoid collision when multiple threads/cores try to output strings/characters.
  * This function can implement a mutex, semaphore or whatever lock.
+ *
+ * \note PRINTF_ENABLE_LOCK should be defined in order to activate lock function.
  */
 void __io_lock();
 
 /**
  * Unlock the printf, release the lock, semaphore or mutex used to lock printf.
  * This function releases the mutex, semaphore or whatever lock used previously.
+ *
+ * \note PRINTF_ENABLE_LOCK should be defined in order to activate unlock function.
  */
 void __io_unlock();
 
