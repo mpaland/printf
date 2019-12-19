@@ -40,6 +40,17 @@
 extern "C" {
 #endif
 
+/**
+ * Lock the printf to avoid collision when multiple threads/cores try to output strings/characters.
+ * This function can implement a mutex, semaphore or whatever lock.
+ */
+void __io_lock();
+
+/**
+ * Unlock the printf, release the lock, semaphore or mutex used to lock printf.
+ * This function releases the mutex, semaphore or whatever lock used previously.
+ */
+void __io_unlock();
 
 /**
  * Output a character to a custom device like UART, used by the printf() function
