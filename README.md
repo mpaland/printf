@@ -140,7 +140,7 @@ The length sub-specifier modifies the length of the data type.
 | Length | d i  | u o x X |
 |--------|------|---------|
 | (none) | int  | unsigned int |
-| hh     | char | unsigned char |
+| hh     | signed char | unsigned char |
 | h      | short int | unsigned short int |
 | l      | long int | unsigned long int |
 | ll     | long long int | unsigned long long int (if PRINTF_SUPPORT_LONG_LONG is defined) |
