@@ -9602,6 +9602,7 @@ namespace Catch {
 
         size_t start = 0;
         std::stack<char> openings;
+        bool isquoted = false;
         for (size_t pos = 0; pos < names.size(); ++pos) {
             char c = names[pos];
             switch (c) {
@@ -9619,8 +9620,11 @@ namespace Catch {
 //           case '>':
                 openings.pop();
                 break;
+            case '"':
+                isquoted = !isquoted;
+                break;
             case ',':
-                if (start != pos && openings.size() == 0) {
+                if (start != pos && openings.size() == 0 && !isquoted) {
                     m_messages.emplace_back(macroName, lineInfo, resultType);
                     m_messages.back().message = trimmed(start, pos);
                     m_messages.back().message += " := ";
