@@ -110,6 +110,7 @@
 #define FLAGS_LONG_LONG (1U <<  9U)
 #define FLAGS_PRECISION (1U << 10U)
 #define FLAGS_ADAPT_EXP (1U << 11U)
+#define FLAGS_COMMA     (1U << 12U)
 
 
 // import float.h for DBL_MAX
@@ -602,12 +603,13 @@ static int _vsnprintf(out_fct_type out, char* buffer, const size_t maxlen, const
     flags = 0U;
     do {
       switch (*format) {
-        case '0': flags |= FLAGS_ZEROPAD; format++; n = 1U; break;
-        case '-': flags |= FLAGS_LEFT;    format++; n = 1U; break;
-        case '+': flags |= FLAGS_PLUS;    format++; n = 1U; break;
-        case ' ': flags |= FLAGS_SPACE;   format++; n = 1U; break;
-        case '#': flags |= FLAGS_HASH;    format++; n = 1U; break;
-        default :                                   n = 0U; break;
+        case  '0': flags |= FLAGS_ZEROPAD; format++; n = 1U; break;
+        case  '-': flags |= FLAGS_LEFT;    format++; n = 1U; break;
+        case  '+': flags |= FLAGS_PLUS;    format++; n = 1U; break;
+        case  ' ': flags |= FLAGS_SPACE;   format++; n = 1U; break;
+        case  '#': flags |= FLAGS_HASH;    format++; n = 1U; break;
+        case '\'': flags |= FLAGS_COMMA;   format++; n = 1U; break;
+        default  :                                   n = 0U; break;
       }
     } while (n);
 
