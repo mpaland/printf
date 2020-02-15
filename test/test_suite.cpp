@@ -10,10 +10,10 @@
 // to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
 // copies of the Software, and to permit persons to whom the Software is
 // furnished to do so, subject to the following conditions:
-// 
+//
 // The above copyright notice and this permission notice shall be included in
 // all copies or substantial portions of the Software.
-// 
+//
 // THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
 // IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
 // FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -272,6 +272,76 @@ TEST_CASE("+ flag", "[]" ) {
   REQUIRE(!strcmp(buffer, "x"));
 
   test::sprintf(buffer, "%+.0d", 0);
+  REQUIRE(!strcmp(buffer, "+"));
+}
+
+
+// Note: copy and pasted from "+ flag".
+// Todo: Implement output of comma e.g. if environment variable is set due to lack of locale?
+TEST_CASE("' flag", "[]" ) {
+  char buffer[100];
+
+  test::sprintf(buffer, "%'+d", 42);
+  REQUIRE(!strcmp(buffer, "+42"));
+
+  test::sprintf(buffer, "%'+d", -42);
+  REQUIRE(!strcmp(buffer, "-42"));
+
+  test::sprintf(buffer, "%'+5d", 42);
+  REQUIRE(!strcmp(buffer, "  +42"));
+
+  test::sprintf(buffer, "%'+5d", -42);
+  REQUIRE(!strcmp(buffer, "  -42"));
+
+  test::sprintf(buffer, "%'+15d", 42);
+  REQUIRE(!strcmp(buffer, "            +42"));
+
+  test::sprintf(buffer, "%'+15d", -42);
+  REQUIRE(!strcmp(buffer, "            -42"));
+
+  test::sprintf(buffer, "%'+s", "Hello testing");
+  REQUIRE(!strcmp(buffer, "Hello testing"));
+
+  test::sprintf(buffer, "%'+d", 1024);
+  REQUIRE(!strcmp(buffer, "+1024"));
+
+  test::sprintf(buffer, "%'+d", -1024);
+  REQUIRE(!strcmp(buffer, "-1024"));
+
+  test::sprintf(buffer, "%'+i", 1024);
+  REQUIRE(!strcmp(buffer, "+1024"));
+
+  test::sprintf(buffer, "%'+i", -1024);
+  REQUIRE(!strcmp(buffer, "-1024"));
+
+  test::sprintf(buffer, "%'+u", 1024);
+  REQUIRE(!strcmp(buffer, "1024"));
+
+  test::sprintf(buffer, "%'+u", 4294966272U);
+  REQUIRE(!strcmp(buffer, "4294966272"));
+
+  test::sprintf(buffer, "%'+o", 511);
+  REQUIRE(!strcmp(buffer, "777"));
+
+  test::sprintf(buffer, "%'+o", 4294966785U);
+  REQUIRE(!strcmp(buffer, "37777777001"));
+
+  test::sprintf(buffer, "%'+x", 305441741);
+  REQUIRE(!strcmp(buffer, "1234abcd"));
+
+  test::sprintf(buffer, "%'+x", 3989525555U);
+  REQUIRE(!strcmp(buffer, "edcb5433"));
+
+  test::sprintf(buffer, "%'+X", 305441741);
+  REQUIRE(!strcmp(buffer, "1234ABCD"));
+
+  test::sprintf(buffer, "%'+X", 3989525555U);
+  REQUIRE(!strcmp(buffer, "EDCB5433"));
+
+  test::sprintf(buffer, "%'+c", 'x');
+  REQUIRE(!strcmp(buffer, "x"));
+
+  test::sprintf(buffer, "%'+.0d", 0);
   REQUIRE(!strcmp(buffer, "+"));
 }
 
