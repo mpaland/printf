@@ -896,6 +896,10 @@ int vprintf_(const char* format, va_list va)
   return _vsnprintf(_out_char, buffer, (size_t)-1, format, va);
 }
 
+int vsprintf_(char* buffer, const char* format, va_list va)
+{
+  return _vsnprintf(_out_buffer, buffer, (size_t)-1, format, va);
+}
 
 int vsnprintf_(char* buffer, size_t count, const char* format, va_list va)
 {
