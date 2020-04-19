@@ -59,6 +59,7 @@ int vsnprintf(char* buffer, size_t count, const char* format, va_list va);
 
 // use output function (instead of buffer) for streamlike interface
 int fctprintf(void (*out)(char character, void* arg), void* arg, const char* format, ...);
+int vfctprintf(void (*out)(char character, void* arg), void* arg, const char* format, va_list va);
 ```
 
 **Due to general security reasons it is highly recommended to prefer and use `snprintf` (with the max buffer size as `count` parameter) instead of `sprintf`.**
