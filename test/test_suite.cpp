@@ -164,9 +164,6 @@ TEST_CASE("space flag", "[]" ) {
   test::sprintf(buffer, "% 15.3f", 42.987);
   REQUIRE(!strcmp(buffer, "         42.987"));
 
-  test::sprintf(buffer, "% s", "Hello testing");
-  REQUIRE(!strcmp(buffer, "Hello testing"));
-
   test::sprintf(buffer, "% d", 1024);
   REQUIRE(!strcmp(buffer, " 1024"));
 
@@ -178,6 +175,12 @@ TEST_CASE("space flag", "[]" ) {
 
   test::sprintf(buffer, "% i", -1024);
   REQUIRE(!strcmp(buffer, "-1024"));
+
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wformat"
+
+  test::sprintf(buffer, "% s", "Hello testing");
+  REQUIRE(!strcmp(buffer, "Hello testing"));
 
   test::sprintf(buffer, "% u", 1024);
   REQUIRE(!strcmp(buffer, "1024"));
@@ -205,6 +208,8 @@ TEST_CASE("space flag", "[]" ) {
 
   test::sprintf(buffer, "% c", 'x');
   REQUIRE(!strcmp(buffer, "x"));
+
+#pragma GCC diagnostic pop
 }
 
 
@@ -229,9 +234,6 @@ TEST_CASE("+ flag", "[]" ) {
   test::sprintf(buffer, "%+15d", -42);
   REQUIRE(!strcmp(buffer, "            -42"));
 
-  test::sprintf(buffer, "%+s", "Hello testing");
-  REQUIRE(!strcmp(buffer, "Hello testing"));
-
   test::sprintf(buffer, "%+d", 1024);
   REQUIRE(!strcmp(buffer, "+1024"));
 
@@ -243,6 +245,12 @@ TEST_CASE("+ flag", "[]" ) {
 
   test::sprintf(buffer, "%+i", -1024);
   REQUIRE(!strcmp(buffer, "-1024"));
+
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wformat"
+
+  test::sprintf(buffer, "%+s", "Hello testing");
+  REQUIRE(!strcmp(buffer, "Hello testing"));
 
   test::sprintf(buffer, "%+u", 1024);
   REQUIRE(!strcmp(buffer, "1024"));
@@ -270,6 +278,8 @@ TEST_CASE("+ flag", "[]" ) {
 
   test::sprintf(buffer, "%+c", 'x');
   REQUIRE(!strcmp(buffer, "x"));
+
+#pragma GCC diagnostic pop
 
   test::sprintf(buffer, "%+.0d", 0);
   REQUIRE(!strcmp(buffer, "+"));
@@ -332,6 +342,9 @@ TEST_CASE("- flag", "[]" ) {
   test::sprintf(buffer, "%-15d", -42);
   REQUIRE(!strcmp(buffer, "-42            "));
 
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wformat"
+
   test::sprintf(buffer, "%-0d", 42);
   REQUIRE(!strcmp(buffer, "42"));
 
@@ -381,6 +394,8 @@ TEST_CASE("- flag", "[]" ) {
 #else
   REQUIRE(!strcmp(buffer, "g"));
 #endif
+
+#pragma GCC diagnostic pop
 }
 
 
@@ -395,8 +410,15 @@ TEST_CASE("# flag", "[]" ) {
   REQUIRE(!strcmp(buffer, ""));
   test::sprintf(buffer, "%#.8x", 0x614e);
   REQUIRE(!strcmp(buffer, "0x0000614e"));
+
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wformat"
+#pragma GCC diagnostic ignored "-Wformat-extra-args"
+
   test::sprintf(buffer,"%#b", 6);
   REQUIRE(!strcmp(buffer, "0b110"));
+
+#pragma GCC diagnostic pop
 }
 
 
@@ -653,6 +675,9 @@ TEST_CASE("width -20", "[]" ) {
 }
 
 
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wformat"
+
 TEST_CASE("width 0-20", "[]" ) {
   char buffer[100];
 
@@ -698,6 +723,8 @@ TEST_CASE("width 0-20", "[]" ) {
   test::sprintf(buffer, "%0-20c", 'x');
   REQUIRE(!strcmp(buffer, "x                   "));
 }
+
+#pragma GCC diagnostic pop
 
 
 TEST_CASE("padding 20", "[]" ) {
@@ -785,6 +812,9 @@ TEST_CASE("padding .20", "[]" ) {
 TEST_CASE("padding #020", "[]" ) {
   char buffer[100];
 
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wformat"
+
   test::sprintf(buffer, "%#020d", 1024);
   REQUIRE(!strcmp(buffer, "00000000000000001024"));
 
@@ -802,6 +832,8 @@ TEST_CASE("padding #020", "[]" ) {
 
   test::sprintf(buffer, "%#020u", 4294966272U);
   REQUIRE(!strcmp(buffer, "00000000004294966272"));
+
+#pragma GCC diagnostic pop
 
   test::sprintf(buffer, "%#020o", 511);
   REQUIRE(!strcmp(buffer, "00000000000000000777"));
@@ -826,6 +858,9 @@ TEST_CASE("padding #020", "[]" ) {
 TEST_CASE("padding #20", "[]" ) {
   char buffer[100];
 
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wformat"
+
   test::sprintf(buffer, "%#20d", 1024);
   REQUIRE(!strcmp(buffer, "                1024"));
 
@@ -843,6 +878,8 @@ TEST_CASE("padding #20", "[]" ) {
 
   test::sprintf(buffer, "%#20u", 4294966272U);
   REQUIRE(!strcmp(buffer, "          4294966272"));
+
+#pragma GCC diagnostic pop
 
   test::sprintf(buffer, "%#20o", 511);
   REQUIRE(!strcmp(buffer, "                0777"));
@@ -1067,11 +1104,16 @@ TEST_CASE("length", "[]" ) {
   test::sprintf(buffer, "%20.X", 0U);
   REQUIRE(!strcmp(buffer, "                    "));
 
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wformat"
+
   test::sprintf(buffer, "%02.0u", 0U);
   REQUIRE(!strcmp(buffer, "  "));
 
   test::sprintf(buffer, "%02.0d", 0);
   REQUIRE(!strcmp(buffer, "  "));
+
+#pragma GCC diagnostic pop
 }
 
 
@@ -1284,26 +1326,26 @@ TEST_CASE("types", "[]" ) {
   test::sprintf(buffer, "%llu", 18446744073709551615LLU);
   REQUIRE(!strcmp(buffer, "18446744073709551615"));
 
-  test::sprintf(buffer, "%zu", 2147483647UL);
+  test::sprintf(buffer, "%zu", (size_t)2147483647UL);
   REQUIRE(!strcmp(buffer, "2147483647"));
 
-  test::sprintf(buffer, "%zd", 2147483647UL);
+  test::sprintf(buffer, "%zd", (size_t)2147483647UL);
   REQUIRE(!strcmp(buffer, "2147483647"));
 
-  if (sizeof(size_t) == sizeof(long)) {
-    test::sprintf(buffer, "%zi", -2147483647L);
-    REQUIRE(!strcmp(buffer, "-2147483647"));
-  }
-  else {
-    test::sprintf(buffer, "%zi", -2147483647LL);
-    REQUIRE(!strcmp(buffer, "-2147483647"));
-  }
+  test::sprintf(buffer, "%zi", (signed size_t)-2147483647L);
+  REQUIRE(!strcmp(buffer, "-2147483647"));
+
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wformat"
+#pragma GCC diagnostic ignored "-Wformat-extra-args"
 
   test::sprintf(buffer, "%b", 60000);
   REQUIRE(!strcmp(buffer, "1110101001100000"));
 
   test::sprintf(buffer, "%lb", 12345678L);
   REQUIRE(!strcmp(buffer, "101111000110000101001110"));
+
+#pragma GCC diagnostic pop
 
   test::sprintf(buffer, "%o", 60000);
   REQUIRE(!strcmp(buffer, "165140"));
@@ -1332,10 +1374,10 @@ TEST_CASE("types", "[]" ) {
   test::sprintf(buffer, "%s", "A Test");
   REQUIRE(!strcmp(buffer, "A Test"));
 
-  test::sprintf(buffer, "%hhu", 0xFFFFUL);
+  test::sprintf(buffer, "%hhu", 0xFFFFU);
   REQUIRE(!strcmp(buffer, "255"));
 
-  test::sprintf(buffer, "%hu", 0x123456UL);
+  test::sprintf(buffer, "%hu", 0x123456U);
   REQUIRE(!strcmp(buffer, "13398"));
 
   test::sprintf(buffer, "%s%hhi %hu", "Test", 10000, 0xFFFFFFFF);
@@ -1345,14 +1387,8 @@ TEST_CASE("types", "[]" ) {
   REQUIRE(!strcmp(buffer, "a"));
 
 // TBD
-  if (sizeof(intmax_t) == sizeof(long)) {
-    test::sprintf(buffer, "%ji", -2147483647L);
-    REQUIRE(!strcmp(buffer, "-2147483647"));
-  }
-  else {
-    test::sprintf(buffer, "%ji", -2147483647LL);
-    REQUIRE(!strcmp(buffer, "-2147483647"));
-  }
+  test::sprintf(buffer, "%ji", (intmax_t)-2147483647L);
+  REQUIRE(!strcmp(buffer, "-2147483647"));
 }
 
 
@@ -1394,12 +1430,18 @@ TEST_CASE("pointer", "[]" ) {
 }
 
 
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wformat"
+#pragma GCC diagnostic ignored "-Wformat-extra-args"
+
 TEST_CASE("unknown flag", "[]" ) {
   char buffer[100];
 
   test::sprintf(buffer, "%kmarco", 42, 37);
   REQUIRE(!strcmp(buffer, "kmarco"));
 }
+
+#pragma GCC diagnostic pop
 
 
 TEST_CASE("string length", "[]" ) {
@@ -1420,8 +1462,14 @@ TEST_CASE("string length", "[]" ) {
   test::sprintf(buffer, "%.4s%.2s", "123456", "abcdef");
   REQUIRE(!strcmp(buffer, "1234ab"));
 
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wformat"
+#pragma GCC diagnostic ignored "-Wformat-extra-args"
+
   test::sprintf(buffer, "%.4.2s", "123456");
   REQUIRE(!strcmp(buffer, ".2s"));
+
+#pragma GCC diagnostic pop
 
   test::sprintf(buffer, "%.*s", 3, "123456");
   REQUIRE(!strcmp(buffer, "123"));
