@@ -41,6 +41,14 @@ extern "C" {
 #endif
 
 
+#ifdef __GNUC__
+# define ATTR_PRINTF(fmt, first_arg) \
+                       __attribute__((format(__printf__, (fmt), (first_arg))))
+#else
+# define ATTR_PRINTF(fmt, first_arg) // Empty
+#endif
+
+
 /**
  * Output a character to a custom device like UART, used by the printf() function
  * This function is declared here only. You have to write your custom implementation somewhere
@@ -58,7 +66,7 @@ void _putchar(char character);
  * \return The number of characters that are written into the array, not counting the terminating null character
  */
 #define printf printf_
-int printf_(const char* format, ...);
+int printf_(const char* format, ...) ATTR_PRINTF(1, 2);
 
 
 /**
@@ -69,7 +77,7 @@ int printf_(const char* format, ...);
  * \return The number of characters that are WRITTEN into the buffer, not counting the terminating null character
  */
 #define sprintf sprintf_
-int sprintf_(char* buffer, const char* format, ...);
+int sprintf_(char* buffer, const char* format, ...) ATTR_PRINTF(2, 3);
 
 
 /**
@@ -84,8 +92,8 @@ int sprintf_(char* buffer, const char* format, ...);
  */
 #define snprintf  snprintf_
 #define vsnprintf vsnprintf_
-int  snprintf_(char* buffer, size_t count, const char* format, ...);
-int vsnprintf_(char* buffer, size_t count, const char* format, va_list va);
+int  snprintf_(char* buffer, size_t count, const char* format, ...)        ATTR_PRINTF(3, 4);
+int vsnprintf_(char* buffer, size_t count, const char* format, va_list va) ATTR_PRINTF(3, 0);
 
 
 /**
@@ -95,7 +103,7 @@ int vsnprintf_(char* buffer, size_t count, const char* format, va_list va);
  * \return The number of characters that are WRITTEN into the buffer, not counting the terminating null character
  */
 #define vprintf vprintf_
-int vprintf_(const char* format, va_list va);
+int vprintf_(const char* format, va_list va) ATTR_PRINTF(1, 0);
 
 
 /**
@@ -106,7 +114,7 @@ int vprintf_(const char* format, va_list va);
  * \param format A string that specifies the format of the output
  * \return The number of characters that are sent to the output function, not counting the terminating null character
  */
-int fctprintf(void (*out)(char character, void* arg), void* arg, const char* format, ...);
+int fctprintf(void (*out)(char character, void* arg), void* arg, const char* format, ...) ATTR_PRINTF(3, 4);
 
 
 #ifdef __cplusplus
