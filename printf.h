@@ -108,6 +108,16 @@ int vprintf_(const char* format, va_list va);
  */
 int fctprintf(void (*out)(char character, void* arg), void* arg, const char* format, ...);
 
+/**
+ * vprintf with output function
+ * You may use this as dynamic alternative to vprintf() with its fixed _putchar() output
+ * \param out An output function which takes one character and an argument pointer
+ * \param arg An argument pointer for user data passed to output function
+ * \param format A string that specifies the format of the output
+ * \param va A value identifying a variable arguments list
+ * \return The number of characters that are sent to the output function, not counting the terminating null character
+ */
+int fctvprintf(void (*out)(char character, void* arg), void* arg, const char* format, va_list va);
 
 #ifdef __cplusplus
 }
