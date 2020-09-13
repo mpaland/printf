@@ -1,3 +1,5 @@
+tmp/
+bin/
 build/
 build_autotests/
 .pio/
