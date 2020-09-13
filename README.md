@@ -1,11 +1,15 @@
 # A printf / sprintf Implementation for Embedded Systems
 
-[![Build Status](https://travis-ci.org/mpaland/printf.svg?branch=master)](https://travis-ci.org/mpaland/printf)
-[![codecov](https://codecov.io/gh/mpaland/printf/branch/master/graph/badge.svg)](https://codecov.io/gh/mpaland/printf)
-[![Coverity Status](https://img.shields.io/coverity/scan/14180.svg)](https://scan.coverity.com/projects/mpaland-printf)
-[![Github Issues](https://img.shields.io/github/issues/mpaland/printf.svg)](http://github.com/mpaland/printf/issues)
-[![Github Releases](https://img.shields.io/github/release/mpaland/printf.svg)](https://github.com/mpaland/printf/releases)
-[![GitHub license](https://img.shields.io/badge/license-MIT-blue.svg)](https://raw.githubusercontent.com/mpaland/avl_array/master/LICENSE)
+[![Build Status](https://travis-ci.org/RespiraWorks/printf.svg?branch=master)](https://travis-ci.org/RespiraWorks/printf)
+[![codecov](https://codecov.io/gh/RespiraWorks/printf/branch/master/graph/badge.svg)](https://codecov.io/gh/RespiraWorks/printf)
+[![Coverity Status](https://img.shields.io/coverity/scan/14180.svg)](https://scan.coverity.com/projects/RespiraWorks-printf)
+
+[![CircleCI Build Status](https://circleci.com/gh/RespiraWorks/printf.svg?style=shield)](https://circleci.com/gh/RespiraWorks/printf/tree/master)
+
+**RespiraWorks fork:** This fork of the public library is adapted by [RespiraWorks](https://respira.works/) as follows:
+* adapted for building with platformio
+* fewer functions implemented
+* modified to satisfy more stringent static checks and compiler warnings
 
 This is a tiny but **fully loaded** printf, sprintf and (v)snprintf implementation.
 Primarily designed for usage in embedded systems, where printf is not available due to memory issues or in avoidance of linking against libc.
@@ -14,13 +18,6 @@ Absolutely **NO dependencies** are required, *printf.c* brings all necessary rou
 
 If memory footprint is really a critical issue, floating point, exponential and 'long long' support and can be turned off via the `PRINTF_DISABLE_SUPPORT_FLOAT`, `PRINTF_DISABLE_SUPPORT_EXPONENTIAL` and `PRINTF_DISABLE_SUPPORT_LONG_LONG` compiler switches.
 When using printf (instead of sprintf/snprintf) you have to provide your own `_putchar()` low level function as console/serial output.
-
-
-## 2020 announcement
-This project is not dead! I just had no time in 2019 for sufficient support, sorry.
-Within the next weeks, I will have a look to all PRs and open issues.  
-Thank you all for supporting this project.
-
 
 ## Highlights and Design Goals
 
@@ -179,33 +176,9 @@ int length = sprintf(NULL, "Hello, world"); // length is set to 12
 | PRINTF_DISABLE_SUPPORT_PTRDIFF_T   | undefined | Define this to disable ptrdiff_t (%t) support |
 
 
-## Caveats
-None anymore (finally).
-
-
 ## Test Suite
 For testing just compile, build and run the test suite located in `test/test_suite.cpp`. This uses the [catch](https://github.com/catchorg/Catch2) framework for unit-tests, which is auto-adding main().
 Running with the `--wait-for-keypress exit` option waits for the enter key after test end.
-
-
-## Projects Using printf
-- [turnkeyboard](https://github.com/mpaland/turnkeyboard) uses printf as log and generic tty (formatting) output.
-- printf is part of [embeddedartistry/libc](https://github.com/embeddedartistry/libc), a libc targeted for embedded systems usage.
-- The [Hatchling Platform]( https://github.com/adrian3git/HatchlingPlatform) uses printf.
-
-(Just send me a mail/issue/PR to get *your* project listed here)
-
-
-## Contributing
-
-0. Give this project a :star:
-1. Create an issue and describe your idea
-2. [Fork it](https://github.com/mpaland/printf/fork)
-3. Create your feature branch (`git checkout -b my-new-feature`)
-4. Commit your changes (`git commit -am 'Add some feature'`)
-5. Publish the branch (`git push origin my-new-feature`)
-6. Create a new pull request
-7. Profit! :heavy_check_mark:
 
 
 ## License
