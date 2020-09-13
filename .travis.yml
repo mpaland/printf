@@ -24,9 +24,9 @@ addons:
 
   coverity_scan:
     project:
-      name: "mpaland/printf"
+      name: "RespiraWorks/printf"
       description: "Tiny printf implementation"
-    notification_email: marco@paland.com
+    notification_email: martin@respira.works
     build_command_prepend: "make clean"
     build_command: "make"
     branch_pattern: master
