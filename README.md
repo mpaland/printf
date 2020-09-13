@@ -6,7 +6,8 @@
 
 [![CircleCI Build Status](https://circleci.com/gh/RespiraWorks/printf.svg?style=shield)](https://circleci.com/gh/RespiraWorks/printf/tree/master)
 
-**RespiraWorks fork:** This fork of the public library is adapted by [RespiraWorks](https://respira.works/) as follows:
+**RespiraWorks fork:** This fork of [mpaland/printf](https://github.com/mpaland/printf) is adapted by [RespiraWorks](https://respira.works/) as follows:
+* updated to C++17
 * adapted for building with platformio
 * fewer functions implemented
 * modified to satisfy more stringent static checks and compiler warnings
