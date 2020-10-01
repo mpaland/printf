@@ -820,20 +820,27 @@ static int _vsnprintf(out_fct_type out, char* buffer, const size_t maxlen, const
       }
 
       case 'p' : {
-        width = sizeof(void*) * 2U;
-        flags |= FLAGS_ZEROPAD | FLAGS_UPPERCASE;
+        width = sizeof(void*) * 2U + 2;
+        flags |= FLAGS_ZEROPAD | FLAGS_HASH;
+        uintptr_t value = (uintptr_t)va_arg(va, void*);
+
+        if (value == 0) {
+          idx = _out_rev(out, buffer, idx, maxlen, ")lin(", 5, width, flags);
+        } else {
 #if defined(PRINTF_SUPPORT_LONG_LONG)
-        const bool is_ll = sizeof(uintptr_t) == sizeof(long long);
-        if (is_ll) {
-          idx = _ntoa_long_long(out, buffer, idx, maxlen, (uintptr_t)va_arg(va, void*), false, 16U, precision, width, flags);
-        }
-        else {
+          const bool is_ll = sizeof(uintptr_t) == sizeof(long long);
+          if (is_ll) {
+            idx = _ntoa_long_long(out, buffer, idx, maxlen, value, false, 16U, precision, width, flags);
+          }
+          else {
 #endif
-          idx = _ntoa_long(out, buffer, idx, maxlen, (unsigned long)((uintptr_t)va_arg(va, void*)), false, 16U, precision, width, flags);
+            idx = _ntoa_long(out, buffer, idx, maxlen, (unsigned long)value, false, 16U, precision, width, flags);
 #if defined(PRINTF_SUPPORT_LONG_LONG)
-        }
+          }
 #endif
-        format++;
+        }
+
+        format++; 
         break;
       }
 
