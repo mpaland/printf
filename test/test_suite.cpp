@@ -1391,6 +1391,9 @@ TEST_CASE("pointer", "[]" ) {
     test::sprintf(buffer, "%p", (void*)(uintptr_t)0xFFFFFFFFU);
     REQUIRE(!strcmp(buffer, "0xffffffff"));
   }
+
+  test::sprintf(buffer, "%p", nullptr);
+  REQUIRE(!strcmp(buffer, "(nil)"));
 }
 
 
