@@ -49,6 +49,75 @@ extern "C" {
 void _putchar(char character);
 
 
+
+/**
+ * PROGMEM Compatibility for AVR
+ * _SL macros (String Literal) for easy cross platform compatibility.
+ * 
+ * _SL Stores the formatting string literal in program memory on AVR devices.
+ * Also allows the compiler to test the parameter types using the format string, which can't work with PSTR().
+ * 
+ * 	  printf_SL("%i %s", x, y);
+ * 
+ * is equivalent to :
+ * 
+ * 	  printf_P(PSTR("%i %s"), x, y);
+ * 
+ * And produces the same binary if -Os is used.
+ * 
+ * The programmer is expected to recognize that printf_SL() is a macro, and not do things like:
+ * 	printf_SL("%i\n", i++);	// <--- this will increment i twice on AVR.
+ * 
+ * The symbol PLATFORM_AVR should be defined for AVR devices, add -DPLATFORM_AVR to compiler options. 
+ */
+
+#ifdef PLATFORM_AVR
+
+	int printf_P_(PGM_P format, ...);
+	int sprintf_P_(char* buffer, PGM_P format, ...);
+	int snprintf_P_(char* buffer, size_t count, PGM_P format, ...);
+	int fctprintf_P(void (*out)(char character, void* arg), void* arg, PGM_P format, ...);
+
+	int vsnprintf_P_(char* buffer, size_t count, PGM_P format, va_list va);
+	int vprintf_P_(PGM_P format, va_list va);
+
+//	Compiler will first test argument types based on format string, then remove the empty function during optimization.
+	static inline void _fmttst_optout(const char* fmt, ...) __attribute__((format(printf, 1, 2)));
+	static inline void _fmttst_optout(const char* fmt, ...)
+	{
+	}
+
+//	_SL macros for AVR
+	#define printf_SL(_fmtarg, ...) ({int _prv; _prv = printf_P_(PSTR(_fmtarg) ,##__VA_ARGS__); _fmttst_optout(_fmtarg ,##__VA_ARGS__); _prv;})
+	#define sprintf_SL(_dst, _fmtarg, ...) ({int _prv; _prv = sprintf_P_(_dst, PSTR(_fmtarg) ,##__VA_ARGS__); _fmttst_optout(_fmtarg ,##__VA_ARGS__); _prv;})
+	#define snprintf_SL(_dst, _cnt, _fmtarg, ...) ({int _prv; _prv = snprintf_P_(_dst, _cnt, PSTR(_fmtarg) ,##__VA_ARGS__); _fmttst_optout(_fmtarg ,##__VA_ARGS__); _prv;})
+	#define fctprintf_SL(_fptr, _fargs, _fmtarg, ...) ({int _prv; _prv = fctprintf_P(_fptr, _fargs, PSTR(_fmtarg) ,##__VA_ARGS__); _fmttst_optout(_fmtarg ,##__VA_ARGS__); _prv;})
+
+//	Macro overides for the standard printf_P functions
+	#define printf_P 	printf_P_
+	#define sprintf_P 	sprintf_P_
+	#define snprintf_P 	snprintf_P_
+	#define vsnprintf_P vsnprintf_P_
+	#define vprintf_P 	vprintf_P_
+
+	int printf_P_(PGM_P format, ...);
+	int sprintf_P_(char* buffer, PGM_P format, ...);
+	int snprintf_P_(char* buffer, size_t count, PGM_P format, ...);
+	int vprintf_P_(PGM_P format, va_list va);
+	int vsnprintf_P_(char* buffer, size_t count, PGM_P format, va_list va);
+	int fctprintf_P(void (*out)(char character, void* arg), void* arg, PGM_P format, ...);
+
+#else
+
+//	_SL macros for non-AVR
+	#define printf_SL(_fmtarg, ...) printf_(_fmtarg ,##__VA_ARGS__)
+	#define sprintf_SL(_dst, _fmtarg, ...) sprintf_(_dst, _fmtarg ,##__VA_ARGS__)
+	#define snprintf_SL(_dst, _cnt, _fmtarg, ...) snprintf_(_dst, _cnt, _fmtarg ,##__VA_ARGS__)
+	#define fctprintf_SL(_fptr, _fargs, _fmtarg, ...) fctprintf(_fptr, _fargs, _fmtarg ,##__VA_ARGS__)
+
+#endif
+
+
 /**
  * Tiny printf implementation
  * You have to implement _putchar if you use printf()
@@ -106,8 +175,7 @@ int vprintf_(const char* format, va_list va);
  * \param format A string that specifies the format of the output
  * \return The number of characters that are sent to the output function, not counting the terminating null character
  */
-int fctprintf(void (*out)(char character, void* arg), void* arg, const char* format, ...);
-
+int fctprintf(void (*out)(char character, void* arg), void* arg, const char* format, ...);	
 
 #ifdef __cplusplus
 }

@@ -33,6 +33,10 @@
 #include <stdbool.h>
 #include <stdint.h>
 
+#ifdef PLATFORM_AVR
+#include <avr/pgmspace.h>
+#endif
+
 #include "printf.h"
 
 
@@ -185,6 +189,22 @@ static inline bool _is_digit(char ch)
 
 
 // internal ASCII string to unsigned int conversion
+#ifdef PLATFORM_AVR
+static unsigned int _atoi(const char** str, bool is_pgm)
+{
+  unsigned int i = 0U;
+  if(is_pgm) {
+  	while (_is_digit(pgm_read_byte(*str))) {
+	    i = i * 10U + (unsigned int)(pgm_read_byte((*str)++) - '0');
+  	}
+  } else {
+  	while (_is_digit(**str)) {
+	    i = i * 10U + (unsigned int)(*((*str)++) - '0');
+  	}  	
+  }
+  return i;
+}
+#else
 static unsigned int _atoi(const char** str)
 {
   unsigned int i = 0U;
@@ -193,7 +213,7 @@ static unsigned int _atoi(const char** str)
   }
   return i;
 }
-
+#endif
 
 // output the specified string in reverse, taking care of any zero-padding
 static size_t _out_rev(out_fct_type out, char* buffer, size_t idx, size_t maxlen, const char* buf, size_t len, unsigned int width, unsigned int flags)
@@ -573,8 +593,30 @@ static size_t _etoa(out_fct_type out, char* buffer, size_t idx, size_t maxlen, d
 #endif  // PRINTF_SUPPORT_FLOAT
 
 
+// Wrapper for reading format string, to provide compatibility with AVR's PSTR()
+#ifdef PLATFORM_AVR
+static const char _fmtrd(const char* fmt, bool is_pgm)
+{
+	char c;
+	if(is_pgm)
+		c = pgm_read_byte(fmt);
+	else
+		c = *fmt;
+	return c;
+}
+	#define FMTRD(_fmt)	_fmtrd(_fmt, is_pgm)
+	#define ATOI(_src) _atoi(_src, is_pgm)
+#else
+	#define FMTRD(_fmt)	(*_fmt)
+	#define ATOI(_src) _atoi(_src)
+#endif
+
 // internal vsnprintf
+#ifdef PLATFORM_AVR
+static int _vsnprintf(out_fct_type out, char* buffer, const size_t maxlen, const char* format, va_list va, bool is_pgm)
+#else
 static int _vsnprintf(out_fct_type out, char* buffer, const size_t maxlen, const char* format, va_list va)
+#endif
 {
   unsigned int flags, width, precision, n;
   size_t idx = 0U;
@@ -584,12 +626,12 @@ static int _vsnprintf(out_fct_type out, char* buffer, const size_t maxlen, const
     out = _out_null;
   }
 
-  while (*format)
+  while (FMTRD(format))
   {
     // format specifier?  %[flags][width][.precision][length]
-    if (*format != '%') {
+    if (FMTRD(format) != '%') {
       // no
-      out(*format, buffer, idx++, maxlen);
+      out(FMTRD(format), buffer, idx++, maxlen);
       format++;
       continue;
     }
@@ -601,7 +643,7 @@ static int _vsnprintf(out_fct_type out, char* buffer, const size_t maxlen, const
     // evaluate flags
     flags = 0U;
     do {
-      switch (*format) {
+      switch (FMTRD(format)) {
         case '0': flags |= FLAGS_ZEROPAD; format++; n = 1U; break;
         case '-': flags |= FLAGS_LEFT;    format++; n = 1U; break;
         case '+': flags |= FLAGS_PLUS;    format++; n = 1U; break;
@@ -613,10 +655,10 @@ static int _vsnprintf(out_fct_type out, char* buffer, const size_t maxlen, const
 
     // evaluate width field
     width = 0U;
-    if (_is_digit(*format)) {
-      width = _atoi(&format);
+    if (_is_digit(FMTRD(format))) {
+      width = ATOI(&format);
     }
-    else if (*format == '*') {
+    else if (FMTRD(format) == '*') {
       const int w = va_arg(va, int);
       if (w < 0) {
         flags |= FLAGS_LEFT;    // reverse padding
@@ -630,13 +672,13 @@ static int _vsnprintf(out_fct_type out, char* buffer, const size_t maxlen, const
 
     // evaluate precision field
     precision = 0U;
-    if (*format == '.') {
+    if (FMTRD(format) == '.') {
       flags |= FLAGS_PRECISION;
       format++;
-      if (_is_digit(*format)) {
-        precision = _atoi(&format);
+      if (_is_digit(FMTRD(format))) {
+        precision = ATOI(&format);
       }
-      else if (*format == '*') {
+      else if (FMTRD(format) == '*') {
         const int prec = (int)va_arg(va, int);
         precision = prec > 0 ? (unsigned int)prec : 0U;
         format++;
@@ -644,11 +686,11 @@ static int _vsnprintf(out_fct_type out, char* buffer, const size_t maxlen, const
     }
 
     // evaluate length field
-    switch (*format) {
+    switch (FMTRD(format)) {
       case 'l' :
         flags |= FLAGS_LONG;
         format++;
-        if (*format == 'l') {
+        if (FMTRD(format) == 'l') {
           flags |= FLAGS_LONG_LONG;
           format++;
         }
@@ -656,7 +698,7 @@ static int _vsnprintf(out_fct_type out, char* buffer, const size_t maxlen, const
       case 'h' :
         flags |= FLAGS_SHORT;
         format++;
-        if (*format == 'h') {
+        if (FMTRD(format) == 'h') {
           flags |= FLAGS_CHAR;
           format++;
         }
@@ -680,7 +722,7 @@ static int _vsnprintf(out_fct_type out, char* buffer, const size_t maxlen, const
     }
 
     // evaluate specifier
-    switch (*format) {
+    switch (FMTRD(format)) {
       case 'd' :
       case 'i' :
       case 'u' :
@@ -690,13 +732,13 @@ static int _vsnprintf(out_fct_type out, char* buffer, const size_t maxlen, const
       case 'b' : {
         // set the base
         unsigned int base;
-        if (*format == 'x' || *format == 'X') {
+        if (FMTRD(format) == 'x' || FMTRD(format) == 'X') {
           base = 16U;
         }
-        else if (*format == 'o') {
+        else if (FMTRD(format) == 'o') {
           base =  8U;
         }
-        else if (*format == 'b') {
+        else if (FMTRD(format) == 'b') {
           base =  2U;
         }
         else {
@@ -704,12 +746,12 @@ static int _vsnprintf(out_fct_type out, char* buffer, const size_t maxlen, const
           flags &= ~FLAGS_HASH;   // no hash for dec format
         }
         // uppercase
-        if (*format == 'X') {
+        if (FMTRD(format) == 'X') {
           flags |= FLAGS_UPPERCASE;
         }
 
         // no plus or space flag for u, x, X, o, b
-        if ((*format != 'i') && (*format != 'd')) {
+        if ((FMTRD(format) != 'i') && (FMTRD(format) != 'd')) {
           flags &= ~(FLAGS_PLUS | FLAGS_SPACE);
         }
 
@@ -719,7 +761,7 @@ static int _vsnprintf(out_fct_type out, char* buffer, const size_t maxlen, const
         }
 
         // convert the integer
-        if ((*format == 'i') || (*format == 'd')) {
+        if ((FMTRD(format) == 'i') || (FMTRD(format) == 'd')) {
           // signed
           if (flags & FLAGS_LONG_LONG) {
 #if defined(PRINTF_SUPPORT_LONG_LONG)
@@ -757,7 +799,7 @@ static int _vsnprintf(out_fct_type out, char* buffer, const size_t maxlen, const
 #if defined(PRINTF_SUPPORT_FLOAT)
       case 'f' :
       case 'F' :
-        if (*format == 'F') flags |= FLAGS_UPPERCASE;
+        if (FMTRD(format) == 'F') flags |= FLAGS_UPPERCASE;
         idx = _ftoa(out, buffer, idx, maxlen, va_arg(va, double), precision, width, flags);
         format++;
         break;
@@ -766,8 +808,8 @@ static int _vsnprintf(out_fct_type out, char* buffer, const size_t maxlen, const
       case 'E':
       case 'g':
       case 'G':
-        if ((*format == 'g')||(*format == 'G')) flags |= FLAGS_ADAPT_EXP;
-        if ((*format == 'E')||(*format == 'G')) flags |= FLAGS_UPPERCASE;
+        if ((FMTRD(format) == 'g')||(FMTRD(format) == 'G')) flags |= FLAGS_ADAPT_EXP;
+        if ((FMTRD(format) == 'E')||(FMTRD(format) == 'G')) flags |= FLAGS_UPPERCASE;
         idx = _etoa(out, buffer, idx, maxlen, va_arg(va, double), precision, width, flags);
         format++;
         break;
@@ -843,7 +885,7 @@ static int _vsnprintf(out_fct_type out, char* buffer, const size_t maxlen, const
         break;
 
       default :
-        out(*format, buffer, idx++, maxlen);
+        out(FMTRD(format), buffer, idx++, maxlen);
         format++;
         break;
     }
@@ -858,7 +900,7 @@ static int _vsnprintf(out_fct_type out, char* buffer, const size_t maxlen, const
 
 
 ///////////////////////////////////////////////////////////////////////////////
-
+#ifndef PLATFORM_AVR
 int printf_(const char* format, ...)
 {
   va_list va;
@@ -912,3 +954,115 @@ int fctprintf(void (*out)(char character, void* arg), void* arg, const char* for
   va_end(va);
   return ret;
 }
+
+#else
+
+int printf_(const char* format, ...)
+{
+  va_list va;
+  va_start(va, format);
+  char buffer[1];
+  const int ret = _vsnprintf(_out_char, buffer, (size_t)-1, format, va, false);
+  va_end(va);
+  return ret;
+}
+
+
+int sprintf_(char* buffer, const char* format, ...)
+{
+  va_list va;
+  va_start(va, format);
+  const int ret = _vsnprintf(_out_buffer, buffer, (size_t)-1, format, va, false);
+  va_end(va);
+  return ret;
+}
+
+
+int snprintf_(char* buffer, size_t count, const char* format, ...)
+{
+  va_list va;
+  va_start(va, format);
+  const int ret = _vsnprintf(_out_buffer, buffer, count, format, va, false);
+  va_end(va);
+  return ret;
+}
+
+
+int vprintf_(const char* format, va_list va)
+{
+  char buffer[1];
+  return _vsnprintf(_out_char, buffer, (size_t)-1, format, va, false);
+}
+
+
+int vsnprintf_(char* buffer, size_t count, const char* format, va_list va)
+{
+  return _vsnprintf(_out_buffer, buffer, count, format, va, false);
+}
+
+
+int fctprintf(void (*out)(char character, void* arg), void* arg, const char* format, ...)
+{
+  va_list va;
+  va_start(va, format);
+  const out_fct_wrap_type out_fct_wrap = { out, arg };
+  const int ret = _vsnprintf(_out_fct, (char*)(uintptr_t)&out_fct_wrap, (size_t)-1, format, va, false);
+  va_end(va);
+  return ret;
+}
+
+
+int printf_P_(PGM_P format, ...)
+{
+  va_list va;
+  va_start(va, format);
+  char buffer[1];
+  const int ret = _vsnprintf(_out_char, buffer, (size_t)-1, format, va, true);
+  va_end(va);
+  return ret;
+}
+
+
+int sprintf_P_(char* buffer, PGM_P format, ...)
+{
+  va_list va;
+  va_start(va, format);
+  const int ret = _vsnprintf(_out_buffer, buffer, (size_t)-1, format, va, true);
+  va_end(va);
+  return ret;
+}
+
+
+int snprintf_P_(char* buffer, size_t count, PGM_P format, ...)
+{
+  va_list va;
+  va_start(va, format);
+  const int ret = _vsnprintf(_out_buffer, buffer, count, format, va, true);
+  va_end(va);
+  return ret;
+}
+
+
+int vprintf_P_(PGM_P format, va_list va)
+{
+  char buffer[1];
+  return _vsnprintf(_out_char, buffer, (size_t)-1, format, va, true);
+}
+
+
+int vsnprintf_P_(char* buffer, size_t count, PGM_P format, va_list va)
+{
+  return _vsnprintf(_out_buffer, buffer, count, format, va, true);
+}
+
+
+int fctprintf_P(void (*out)(char character, void* arg), void* arg, PGM_P format, ...)
+{
+  va_list va;
+  va_start(va, format);
+  const out_fct_wrap_type out_fct_wrap = { out, arg };
+  const int ret = _vsnprintf(_out_fct, (char*)(uintptr_t)&out_fct_wrap, (size_t)-1, format, va, true);
+  va_end(va);
+  return ret;
+}
+#endif
