@@ -29,38 +29,67 @@
 //
 ///////////////////////////////////////////////////////////////////////////////
 
-#ifndef _PRINTF_H_
-#define _PRINTF_H_
+#ifndef _PRINTF_P_H_
+#define _PRINTF_P_H_
 
 #include <stdarg.h>
 #include <stddef.h>
-
+#include <avr/pgmspace.h>
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
+#ifdef _PRINTF_H_
+  #error *** printf_P.h (and anything else which uses __attribute__(format(printf,,))) ) must be included *before* printf.h. Because printf.h redefines 'printf' ***
+#endif
+
+#ifndef PLATFORM_AVR
+  #warning *** symbol PLATFORM_AVR not defined, add -DPLATFORM_AVR to compiler options *** 
+  #define PLATFORM_AVR
+#endif
 
 /**
  * Output a character to a custom device like UART, used by the printf() function
  * This function is declared here only. You have to write your custom implementation somewhere
  * \param character Character to output
  */
-#ifndef _PRINTF_P_H_
 void _putchar(char character);
-#endif
+
 
 
 /**
- * _SL macros (String Literal) provides easy cross platform compatibility between AVR and non AVR targets.
+ * PROGMEM Compatibility for AVR
+ * _SL macros (String Literal) for easy cross platform compatibility.
  * 
+ * _SL Stores the formatting string literal in program memory on AVR devices.
+ * Also allows the compiler to test the parameter types using the format string, which can't work with PSTR().
+ * 
+ * 	  printf_SL("%i %s", x, y);
+ * 
+ * is equivalent to :
+ * 
+ * 	  printf_P(PSTR("%i %s"), x, y);
+ * 
+ * And produces the same binary if -Os is used.
+ * 
+ * The programmer is expected to recognize that printf_SL() is a macro, and not do things like:
+ * 	printf_SL("%i\n", i++);	// <--- this will increment i twice on AVR.
+ * 
+ * The symbol PLATFORM_AVR should be defined for AVR devices, add -DPLATFORM_AVR to compiler options. 
  */
-#ifndef PLATFORM_AVR
-  #define printf_SL(_fmtarg, ...) printf_(_fmtarg ,##__VA_ARGS__)
-  #define sprintf_SL(_dst, _fmtarg, ...) sprintf_(_dst, _fmtarg ,##__VA_ARGS__)
-  #define snprintf_SL(_dst, _cnt, _fmtarg, ...) snprintf_(_dst, _cnt, _fmtarg ,##__VA_ARGS__)
-  #define fctprintf_SL(_fptr, _fargs, _fmtarg, ...) fctprintf(_fptr, _fargs, _fmtarg ,##__VA_ARGS__)
-#endif
+
+//	Compiler will first test argument types based on format string, then remove the empty function during optimization.
+static inline void _fmttst_optout(const char* fmt, ...) __attribute__((format(printf, 1, 2)));
+static inline void _fmttst_optout(const char* fmt, ...)
+{
+}
+
+//	_SL macros for AVR
+#define printf_SL(_fmtarg, ...) ({int _prv; _prv = printf_P_(PSTR(_fmtarg) ,##__VA_ARGS__); _fmttst_optout(_fmtarg ,##__VA_ARGS__); _prv;})
+#define sprintf_SL(_dst, _fmtarg, ...) ({int _prv; _prv = sprintf_P_(_dst, PSTR(_fmtarg) ,##__VA_ARGS__); _fmttst_optout(_fmtarg ,##__VA_ARGS__); _prv;})
+#define snprintf_SL(_dst, _cnt, _fmtarg, ...) ({int _prv; _prv = snprintf_P_(_dst, _cnt, PSTR(_fmtarg) ,##__VA_ARGS__); _fmttst_optout(_fmtarg ,##__VA_ARGS__); _prv;})
+#define fctprintf_SL(_fptr, _fargs, _fmtarg, ...) ({int _prv; _prv = fctprintf_P(_fptr, _fargs, PSTR(_fmtarg) ,##__VA_ARGS__); _fmttst_optout(_fmtarg ,##__VA_ARGS__); _prv;})
 
 
 /**
@@ -71,8 +100,8 @@ void _putchar(char character);
  * \param format A string that specifies the format of the output
  * \return The number of characters that are written into the array, not counting the terminating null character
  */
-#define printf printf_
-int printf_(const char* format, ...);
+#define printf_P printf_P_
+int printf_P_(PGM_P format, ...);
 
 
 /**
@@ -82,8 +111,8 @@ int printf_(const char* format, ...);
  * \param format A string that specifies the format of the output
  * \return The number of characters that are WRITTEN into the buffer, not counting the terminating null character
  */
-#define sprintf sprintf_
-int sprintf_(char* buffer, const char* format, ...);
+#define sprintf_P sprintf_P_
+int sprintf_P_(char* buffer, PGM_P format, ...);
 
 
 /**
@@ -96,10 +125,10 @@ int sprintf_(char* buffer, const char* format, ...);
  *         null character. A value equal or larger than count indicates truncation. Only when the returned value
  *         is non-negative and less than count, the string has been completely written.
  */
-#define snprintf  snprintf_
-#define vsnprintf vsnprintf_
-int  snprintf_(char* buffer, size_t count, const char* format, ...);
-int vsnprintf_(char* buffer, size_t count, const char* format, va_list va);
+#define snprintf_P  snprintf_P_
+#define vsnprintf_P vsnprintf_P_
+int  snprintf_P_(char* buffer, size_t count, PGM_P format, ...);
+int vsnprintf_P_(char* buffer, size_t count, PGM_P format, va_list va);
 
 
 /**
@@ -108,8 +137,8 @@ int vsnprintf_(char* buffer, size_t count, const char* format, va_list va);
  * \param va A value identifying a variable arguments list
  * \return The number of characters that are WRITTEN into the buffer, not counting the terminating null character
  */
-#define vprintf vprintf_
-int vprintf_(const char* format, va_list va);
+#define vprintf_P vprintf_P_
+int vprintf_P_(PGM_P format, va_list va);
 
 
 /**
@@ -120,11 +149,11 @@ int vprintf_(const char* format, va_list va);
  * \param format A string that specifies the format of the output
  * \return The number of characters that are sent to the output function, not counting the terminating null character
  */
-int fctprintf(void (*out)(char character, void* arg), void* arg, const char* format, ...);	
+int fctprintf_P(void (*out)(char character, void* arg), void* arg, PGM_P format, ...);	
 
 #ifdef __cplusplus
 }
 #endif
 
 
-#endif  // _PRINTF_H_
+#endif  // _PRINTF_P_H_
