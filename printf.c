@@ -231,12 +231,12 @@ static size_t _ntoa_format(out_fct_type out, char* buffer, size_t idx, size_t ma
     if (width && (flags & FLAGS_ZEROPAD) && (negative || (flags & (FLAGS_PLUS | FLAGS_SPACE)))) {
       width--;
     }
-    while ((len < prec) && (len < PRINTF_NTOA_BUFFER_SIZE)) {
-      buf[len++] = '0';
-    }
     while ((flags & FLAGS_ZEROPAD) && (len < width) && (len < PRINTF_NTOA_BUFFER_SIZE)) {
       buf[len++] = '0';
     }
+  }
+  while ((len < prec) && (len < PRINTF_NTOA_BUFFER_SIZE)) {
+    buf[len++] = '0';
   }
 
   // handle hash
