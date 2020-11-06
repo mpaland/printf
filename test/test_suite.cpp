@@ -1503,6 +1503,9 @@ TEST_CASE("misc", "[]" ) {
   test::sprintf(buffer, "%*sx", -3, "hi");
   REQUIRE(!strcmp(buffer, "hi x"));
 
+  test::sprintf(buffer, "%-20.5i", 123);
+  REQUIRE(!strcmp(buffer, "00123               "));
+
 #ifndef PRINTF_DISABLE_SUPPORT_EXPONENTIAL
   test::sprintf(buffer, "%.*g", 2, 0.33333333);
   REQUIRE(!strcmp(buffer, "0.33"));

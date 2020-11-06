@@ -403,3 +403,6 @@ int fctprintf_P(void (*out)(char character, void* arg), void* arg, PGM_P format,
 }
 
 #endif
+
+#undef FMTRD
+#undef ATOI

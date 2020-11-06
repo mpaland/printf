@@ -185,33 +185,6 @@ static inline bool _is_digit(char ch)
 }
 
 
-// internal ASCII string to unsigned int conversion
-#ifdef PLATFORM_AVR
-static unsigned int _atoi(const char** str, bool is_pgm)
-{
-  unsigned int i = 0U;
-  if(is_pgm) {
-  	while (_is_digit(pgm_read_byte(*str))) {
-	    i = i * 10U + (unsigned int)(pgm_read_byte((*str)++) - '0');
-  	}
-  } else {
-  	while (_is_digit(**str)) {
-	    i = i * 10U + (unsigned int)(*((*str)++) - '0');
-  	}  	
-  }
-  return i;
-}
-#else
-static unsigned int _atoi(const char** str)
-{
-  unsigned int i = 0U;
-  while (_is_digit(**str)) {
-    i = i * 10U + (unsigned int)(*((*str)++) - '0');
-  }
-  return i;
-}
-#endif
-
 // output the specified string in reverse, taking care of any zero-padding
 static size_t _out_rev(out_fct_type out, char* buffer, size_t idx, size_t maxlen, const char* buf, size_t len, unsigned int width, unsigned int flags)
 {
@@ -248,12 +221,12 @@ static size_t _ntoa_format(out_fct_type out, char* buffer, size_t idx, size_t ma
     if (width && (flags & FLAGS_ZEROPAD) && (negative || (flags & (FLAGS_PLUS | FLAGS_SPACE)))) {
       width--;
     }
-    while ((len < prec) && (len < PRINTF_NTOA_BUFFER_SIZE)) {
-      buf[len++] = '0';
-    }
     while ((flags & FLAGS_ZEROPAD) && (len < width) && (len < PRINTF_NTOA_BUFFER_SIZE)) {
       buf[len++] = '0';
     }
+  }
+  while ((len < prec) && (len < PRINTF_NTOA_BUFFER_SIZE)) {
+    buf[len++] = '0';
   }
 
   // handle hash
