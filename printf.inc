@@ -368,9 +368,9 @@ char* hprintf_P(PGM_P format, ...)
   char* ret = NULL;
 
   length = _vsnprintf_P(_out_null, buffer, (size_t)-1, format, va);
-  ret = malloc(length+1);
+  ret = heap_allocate(length+1);
   if(ret)
-  	_vsnprintf_P(_out_buffer, ret, (size_t)-1, format, va);
+  	_vsnprintf_P(_out_buffer, ret, length+1, format, va);
 
   va_end(va);
   return ret;
@@ -426,7 +426,7 @@ int fifoprintf_P(struct fifo_struct *dst, const char* format, ...)
 {
   va_list va;
   va_start(va, format);
-  const int ret = _vsnprintf_P(_out_fifo, dst, (size_t)-1, format, va);
+  const int ret = _vsnprintf_P(_out_fifo, (char*)dst, (size_t)-1, format, va);
   va_end(va);
   return ret;
 }

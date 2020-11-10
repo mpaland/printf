@@ -34,13 +34,17 @@
 #include <stdint.h>
 
 
-#include "printf.h"
-
-
 // Include output method for non-standard fifo module
 #ifdef PRINTF_EXT_FIFO
+#include <util/atomic.h>
+#include <avr/pgmspace.h>
+#include <stddef.h>
 #include "fifo.h"
 #endif
+
+#include "printf.h"
+
+#include "heap.h"
 
 // define this globally (e.g. gcc -DPRINTF_INCLUDE_CONFIG_H ...) to include the
 // printf_config.h header file
@@ -617,9 +621,9 @@ char* hprintf(const char* format, ...)
   char* ret = NULL;
 
   length = _vsnprintf(_out_null, buffer, (size_t)-1, format, va);
-  ret = malloc(length+1);
+  ret = heap_allocate(length+1);
   if(ret)
-  	_vsnprintf(_out_buffer, ret, (size_t)-1, format, va);
+  	_vsnprintf(_out_buffer, ret, length+1, format, va);
 
   va_end(va);
   return ret;
@@ -675,7 +679,7 @@ int fifoprintf(struct fifo_struct *dst, const char* format, ...)
 {
   va_list va;
   va_start(va, format);
-  const int ret = _vsnprintf(_out_fifo, dst, (size_t)-1, format, va);
+  const int ret = _vsnprintf(_out_fifo, (char*)dst, (size_t)-1, format, va);
   va_end(va);
   return ret;
 }

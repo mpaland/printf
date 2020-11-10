@@ -87,7 +87,7 @@ static inline void _fmttst_optout(const char* fmt, ...)
 
 //	_SL macros for AVR
 #define printf_SL(_fmtarg, ...) ({int _prv; _prv = printf_P_(PSTR(_fmtarg) ,##__VA_ARGS__); _fmttst_optout(_fmtarg ,##__VA_ARGS__); _prv;})
-#define hprintf_SL(_fmtarg, ...) ({int _prv; _prv = hprintf_P(PSTR(_fmtarg) ,##__VA_ARGS__); _fmttst_optout(_fmtarg ,##__VA_ARGS__); _prv;})
+#define hprintf_SL(_fmtarg, ...) ({char* _prv; _prv = hprintf_P(PSTR(_fmtarg) ,##__VA_ARGS__); _fmttst_optout(_fmtarg ,##__VA_ARGS__); _prv;})
 #define sprintf_SL(_dst, _fmtarg, ...) ({int _prv; _prv = sprintf_P_(_dst, PSTR(_fmtarg) ,##__VA_ARGS__); _fmttst_optout(_fmtarg ,##__VA_ARGS__); _prv;})
 #define snprintf_SL(_dst, _cnt, _fmtarg, ...) ({int _prv; _prv = snprintf_P_(_dst, _cnt, PSTR(_fmtarg) ,##__VA_ARGS__); _fmttst_optout(_fmtarg ,##__VA_ARGS__); _prv;})
 #define fctprintf_SL(_fptr, _fargs, _fmtarg, ...) ({int _prv; _prv = fctprintf_P(_fptr, _fargs, PSTR(_fmtarg) ,##__VA_ARGS__); _fmttst_optout(_fmtarg ,##__VA_ARGS__); _prv;})
@@ -123,7 +123,7 @@ char* hprintf_P(PGM_P format, ...);
  * \param format A string that specifies the format of the output
  * \return The output on the heap, as a standard C string. free() after using.
  */
-int fifoprintf_P(struct fifo_struct *dst, PGM_P format format, ...);
+int fifoprintf_P(struct fifo_struct *dst, PGM_P format, ...);
 #endif
 
 /**
