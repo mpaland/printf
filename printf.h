@@ -10,10 +10,10 @@
 // to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
 // copies of the Software, and to permit persons to whom the Software is
 // furnished to do so, subject to the following conditions:
-// 
+//
 // The above copyright notice and this permission notice shall be included in
 // all copies or substantial portions of the Software.
-// 
+//
 // THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
 // IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
 // FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -22,130 +22,83 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 //
-// \brief Tiny printf, sprintf and snprintf implementation, optimized for speed on
-//        embedded systems with a very limited resources.
-//        Use this instead of bloated standard/newlib printf.
-//        These routines are thread safe and reentrant.
+// \brief Tiny printf, sprintf and (v)snprintf implementation, optimized for speed on
+//        embedded systems with a very limited resources. These routines are thread
+//        safe and reentrant!
+//        Use this instead of the bloated standard/newlib printf cause these use
+//        malloc for printf (and may not be thread safe).
 //
 ///////////////////////////////////////////////////////////////////////////////
 
-#ifndef _PRINTF_H_
-#define _PRINTF_H_
 
-#include <stdarg.h>
-#include <stddef.h>
+//********************************************************************************************************
+// Public defines
+//********************************************************************************************************
 
 
-#ifdef __cplusplus
-extern "C" {
+#ifdef PLATFORM_AVR
+//	Compiler will first test argument types based on format string, then remove the empty function during optimization.
+	static inline void _fmttst_optout(const char* fmt, ...) __attribute__((format(printf, 1, 2)));
+	static inline void _fmttst_optout(const char* fmt, ...)
+	{
+	}
+
+//	_SL macros for AVR
+	#define printf_SL(_fmtarg, ...) 					({int _prv; _prv = printf_P_(PSTR(_fmtarg) ,##__VA_ARGS__); _fmttst_optout(_fmtarg ,##__VA_ARGS__); _prv;})
+	#define hprintf_SL(_fmtarg, ...) 					({char* _prv; _prv = hprintf_P(PSTR(_fmtarg) ,##__VA_ARGS__); _fmttst_optout(_fmtarg ,##__VA_ARGS__); _prv;})
+	#define sprintf_SL(_dst, _fmtarg, ...) 				({int _prv; _prv = sprintf_P_(_dst, PSTR(_fmtarg) ,##__VA_ARGS__); _fmttst_optout(_fmtarg ,##__VA_ARGS__); _prv;})
+	#define snprintf_SL(_dst, _cnt, _fmtarg, ...) 		({int _prv; _prv = snprintf_P_(_dst, _cnt, PSTR(_fmtarg) ,##__VA_ARGS__); _fmttst_optout(_fmtarg ,##__VA_ARGS__); _prv;})
+	#define fctprintf_SL(_fptr, _fargs, _fmtarg, ...) 	({int _prv; _prv = fctprintf_P(_fptr, _fargs, PSTR(_fmtarg) ,##__VA_ARGS__); _fmttst_optout(_fmtarg ,##__VA_ARGS__); _prv;})
+	#define fifoprintf_SL(_dst, _fmtarg, ...) 			({int _prv; _prv = fifoprintf_P(_dst, PSTR(_fmtarg) ,##__VA_ARGS__); _fmttst_optout(_fmtarg ,##__VA_ARGS__); _prv;})
+
+#else
+
+	#define printf_SL(_fmtarg, ...) 					printf_(_fmtarg ,##__VA_ARGS__)
+	#define hprintf_SL(_fmtarg, ...) 					hprintf(_fmtarg ,##__VA_ARGS__)
+	#define sprintf_SL(_dst, _fmtarg, ...) 				sprintf_(_dst, _fmtarg ,##__VA_ARGS__)
+	#define snprintf_SL(_dst, _cnt, _fmtarg, ...) 		snprintf_(_dst, _cnt, _fmtarg ,##__VA_ARGS__)
+	#define fctprintf_SL(_fptr, _fargs, _fmtarg, ...)	fctprintf(_fptr, _fargs, _fmtarg ,##__VA_ARGS__)
+	#define fifoprintf_SL(_dst, _fmtarg, ...) 			fifoprintf(_dst, _fmtarg ,##__VA_ARGS__)
+
 #endif
 
+//********************************************************************************************************
+// Public prototypes
+//********************************************************************************************************
 
-/**
- * Output a character to a custom device like UART, used by the printf() function
- * This function is declared here only. You have to write your custom implementation somewhere
- * \param character Character to output
- */
-#ifndef _PRINTF_P_H_
-void _putchar(char character);
+//	Define externally for output of printf()
+	void _putchar(char character);
+
+#ifdef PLATFORM_AVR
+	int printf_P_(PGM_P format, ...);
+	char* hprintf_P(PGM_P format, ...);
+	int fifoprintf_P(struct fifo_struct *dst, PGM_P format, ...);
+	int sprintf_P_(char* buffer, PGM_P format, ...);
+	int  snprintf_P_(char* buffer, size_t count, PGM_P format, ...);
+	int vsnprintf_P_(char* buffer, size_t count, PGM_P format, va_list va);
+	int vprintf_P_(PGM_P format, va_list va);
+	int fctprintf_P(void (*out)(char character, void* arg), void* arg, PGM_P format, ...);	
 #endif
 
+	int sprintf_(char* buffer, const char* format, ...) __attribute__((format(printf, 2, 3)));
+	int  snprintf_(char* buffer, size_t count, const char* format, ...) __attribute__((format(printf, 3, 4)));
+	int vsnprintf_(char* buffer, size_t count, const char* format, va_list va);
+	int vprintf_(const char* format, va_list va);
+	int fctprintf(void (*out)(char character, void* arg), void* arg, const char* format, ...) __attribute__((format(printf, 3, 4)));
+	char* hprintf(const char* format, ...) __attribute__((format(printf, 1, 2)));
+	int fifoprintf(struct fifo_struct *dst, const char* format, ...) __attribute__((format(printf, 2, 3)));
+	int printf_(const char* format, ...) __attribute__((format(printf, 1, 2)));
 
-/**
- * _SL macros (String Literal) provides easy cross platform compatibility between AVR and non AVR targets.
- * 
- */
-#ifndef PLATFORM_AVR
-  #define printf_SL(_fmtarg, ...) printf_(_fmtarg ,##__VA_ARGS__)
-  #define hprintf_SL(_fmtarg, ...) hprintf(_fmtarg ,##__VA_ARGS__)
-  #define sprintf_SL(_dst, _fmtarg, ...) sprintf_(_dst, _fmtarg ,##__VA_ARGS__)
-  #define fifoprintf_SL(_dst, _fmtarg, ...) fifoprintf(_dst, _fmtarg ,##__VA_ARGS__)
-  #define snprintf_SL(_dst, _cnt, _fmtarg, ...) snprintf_(_dst, _cnt, _fmtarg ,##__VA_ARGS__)
-  #define fctprintf_SL(_fptr, _fargs, _fmtarg, ...) fctprintf(_fptr, _fargs, _fmtarg ,##__VA_ARGS__)
-#endif
+//	Override stdio interface for AVR and non-avr
+	#define sprintf_P sprintf_P_
+	#define printf_P printf_P_
+	#define snprintf_P  snprintf_P_
+	#define vsnprintf_P vsnprintf_P_
+	#define vprintf_P vprintf_P_
+	#define snprintf  snprintf_
+	#define vsnprintf vsnprintf_
+	#define sprintf sprintf_
+	#define vprintf vprintf_
 
-
-/**
- * Tiny sprintf implementation
- * Due to security reasons (buffer overflow) YOU SHOULD CONSIDER USING (V)SNPRINTF INSTEAD!
- * \param buffer A pointer to the buffer where to store the formatted string. MUST be big enough to store the output!
- * \param format A string that specifies the format of the output
- * \return The number of characters that are WRITTEN into the buffer, not counting the terminating null character
- */
-#define sprintf sprintf_
-int sprintf_(char* buffer, const char* format, ...) __attribute__((format(printf, 2, 3)));
-
-
-/**
- * Tiny snprintf/vsnprintf implementation
- * \param buffer A pointer to the buffer where to store the formatted string
- * \param count The maximum number of characters to store in the buffer, including a terminating null character
- * \param format A string that specifies the format of the output
- * \param va A value identifying a variable arguments list
- * \return The number of characters that COULD have been written into the buffer, not counting the terminating
- *         null character. A value equal or larger than count indicates truncation. Only when the returned value
- *         is non-negative and less than count, the string has been completely written.
- */
-#define snprintf  snprintf_
-#define vsnprintf vsnprintf_
-int  snprintf_(char* buffer, size_t count, const char* format, ...) __attribute__((format(printf, 3, 4)));
-int vsnprintf_(char* buffer, size_t count, const char* format, va_list va);
-
-
-/**
- * Tiny vprintf implementation
- * \param format A string that specifies the format of the output
- * \param va A value identifying a variable arguments list
- * \return The number of characters that are WRITTEN into the buffer, not counting the terminating null character
- */
-#define vprintf vprintf_
-int vprintf_(const char* format, va_list va);
-
-
-/**
- * printf with output function
- * You may use this as dynamic alternative to printf() with its fixed _putchar() output
- * \param out An output function which takes one character and an argument pointer
- * \param arg An argument pointer for user data passed to output function
- * \param format A string that specifies the format of the output
- * \return The number of characters that are sent to the output function, not counting the terminating null character
- */
-int fctprintf(void (*out)(char character, void* arg), void* arg, const char* format, ...) __attribute__((format(printf, 3, 4)));
-
-
-/**
- * hprintf, print to a standard C string on the heap.
- * This will allocate sufficient space using malloc then print to it.
- * This breaks the open-close principal, and is a memory leak risk. Use with great care, or not at all.
- * \param format A string that specifies the format of the output
- * \return The output on the heap, as a standard C string. free() after using.
- */
-char* hprintf(const char* format, ...) __attribute__((format(printf, 1, 2)));
-
-
-#ifdef PRINTF_EXT_FIFO
-/**
- * fifoprintf, print to a non-standard fifo module.
- * \param format A string that specifies the format of the output
- * \return The output on the heap, as a standard C string. free() after using.
- */
-int fifoprintf(struct fifo_struct *dst, const char* format, ...) __attribute__((format(printf, 2, 3)));
-#endif
-
-/**
- * Tiny printf implementation
- * You have to implement _putchar if you use printf()
- * To avoid conflicts with the regular printf() API it is overridden by macro defines
- * and internal underscore-appended functions like printf_() are used
- * \param format A string that specifies the format of the output
- * \return The number of characters that are written into the array, not counting the terminating null character
- */
-int printf_(const char* format, ...) __attribute__((format(printf, 1, 2)));
-#define printf printf_
-
-#ifdef __cplusplus
-}
-#endif
-
-
-#endif  // _PRINTF_H_
+//	This next line must come last, and after any other declarations which wish to use __attribute__((format(printf
+	#define printf printf_
