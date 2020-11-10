@@ -57,6 +57,7 @@ void _putchar(char character);
  */
 #ifndef PLATFORM_AVR
   #define printf_SL(_fmtarg, ...) printf_(_fmtarg ,##__VA_ARGS__)
+  #define hprintf_SL(_fmtarg, ...) hprintf(_fmtarg ,##__VA_ARGS__)
   #define sprintf_SL(_dst, _fmtarg, ...) sprintf_(_dst, _fmtarg ,##__VA_ARGS__)
   #define snprintf_SL(_dst, _cnt, _fmtarg, ...) snprintf_(_dst, _cnt, _fmtarg ,##__VA_ARGS__)
   #define fctprintf_SL(_fptr, _fargs, _fmtarg, ...) fctprintf(_fptr, _fargs, _fmtarg ,##__VA_ARGS__)
@@ -110,6 +111,15 @@ int vprintf_(const char* format, va_list va);
  */
 int fctprintf(void (*out)(char character, void* arg), void* arg, const char* format, ...) __attribute__((format(printf, 3, 4)));
 
+
+/**
+ * hprintf, print to a standard C string on the heap.
+ * This will allocate sufficient space using malloc then print to it.
+ * This breaks the open-close principal, and is a memory leak risk. Use with great care, or not at all.
+ * \param format A string that specifies the format of the output
+ * \return The output on the heap, as a standard C string. free() after using.
+ */
+char* hprintf(const char* format, ...) __attribute__((format(printf, 1, 2)));
 
 /**
  * Tiny printf implementation

@@ -592,6 +592,24 @@ int printf_(const char* format, ...)
 }
 
 
+char* hprintf(const char* format, ...)
+{
+  va_list va;
+  va_start(va, format);
+  char buffer[1];
+  int length;
+  char* ret = NULL;
+
+  length = _vsnprintf(_out_null, buffer, (size_t)-1, format, va);
+  ret = malloc(length+1);
+  if(ret)
+  	_vsnprintf(_out_buffer, ret, (size_t)-1, format, va);
+
+  va_end(va);
+  return ret;
+}
+
+
 int sprintf_(char* buffer, const char* format, ...)
 {
   va_list va;

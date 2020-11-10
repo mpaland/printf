@@ -359,6 +359,24 @@ int printf_P_(PGM_P format, ...)
 }
 
 
+char* hprintf_P(PGM_P format, ...)
+{
+  va_list va;
+  va_start(va, format);
+  char buffer[1];
+  int length;
+  char* ret = NULL;
+
+  length = _vsnprintf_P(_out_null, buffer, (size_t)-1, format, va);
+  ret = malloc(length+1);
+  if(ret)
+  	_vsnprintf_P(_out_buffer, ret, (size_t)-1, format, va);
+
+  va_end(va);
+  return ret;
+}
+
+
 int sprintf_P_(char* buffer, PGM_P format, ...)
 {
   va_list va;
