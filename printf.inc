@@ -420,6 +420,19 @@ int fctprintf_P(void (*out)(char character, void* arg), void* arg, PGM_P format,
   return ret;
 }
 
+
+#ifdef PRINTF_EXT_FIFO
+int fifoprintf_P(struct fifo_struct *dst, const char* format, ...)
+{
+  va_list va;
+  va_start(va, format);
+  const int ret = _vsnprintf_P(_out_fifo, dst, (size_t)-1, format, va);
+  va_end(va);
+  return ret;
+}
+#endif
+
+
 #endif
 
 #undef FMTRD

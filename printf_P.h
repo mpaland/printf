@@ -91,6 +91,9 @@ static inline void _fmttst_optout(const char* fmt, ...)
 #define sprintf_SL(_dst, _fmtarg, ...) ({int _prv; _prv = sprintf_P_(_dst, PSTR(_fmtarg) ,##__VA_ARGS__); _fmttst_optout(_fmtarg ,##__VA_ARGS__); _prv;})
 #define snprintf_SL(_dst, _cnt, _fmtarg, ...) ({int _prv; _prv = snprintf_P_(_dst, _cnt, PSTR(_fmtarg) ,##__VA_ARGS__); _fmttst_optout(_fmtarg ,##__VA_ARGS__); _prv;})
 #define fctprintf_SL(_fptr, _fargs, _fmtarg, ...) ({int _prv; _prv = fctprintf_P(_fptr, _fargs, PSTR(_fmtarg) ,##__VA_ARGS__); _fmttst_optout(_fmtarg ,##__VA_ARGS__); _prv;})
+#ifdef PRINTF_EXT_FIFO
+#define fifoprintf_SL(_dst, _fmtarg, ...) ({int _prv; _prv = fifoprintf_P(_dst, PSTR(_fmtarg) ,##__VA_ARGS__); _fmttst_optout(_fmtarg ,##__VA_ARGS__); _prv;})
+#endif
 
 
 /**
@@ -114,6 +117,14 @@ int printf_P_(PGM_P format, ...);
  */
 char* hprintf_P(PGM_P format, ...);
 
+#ifdef PRINTF_EXT_FIFO
+/**
+ * fifoprintf, print to a non-standard fifo module.
+ * \param format A string that specifies the format of the output
+ * \return The output on the heap, as a standard C string. free() after using.
+ */
+int fifoprintf_P(struct fifo_struct *dst, PGM_P format format, ...);
+#endif
 
 /**
  * Tiny sprintf implementation

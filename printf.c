@@ -37,6 +37,11 @@
 #include "printf.h"
 
 
+// Include output method for non-standard fifo module
+#ifdef PRINTF_EXT_FIFO
+#include "fifo.h"
+#endif
+
 // define this globally (e.g. gcc -DPRINTF_INCLUDE_CONFIG_H ...) to include the
 // printf_config.h header file
 // default: undefined
@@ -137,6 +142,17 @@ static inline void _out_buffer(char character, void* buffer, size_t idx, size_t 
     ((char*)buffer)[idx] = character;
   }
 }
+
+
+#ifdef PRINTF_EXT_FIFO
+static inline void _out_fifo(char character, void* fifo, size_t idx, size_t maxlen)
+{
+  (void)idx; (void)maxlen;
+  if (character) {
+    fifo_write_char(fifo, character);
+  }
+}
+#endif
 
 
 // internal null output
@@ -652,5 +668,18 @@ int fctprintf(void (*out)(char character, void* arg), void* arg, const char* for
   va_end(va);
   return ret;
 }
+
+
+#ifdef PRINTF_EXT_FIFO
+int fifoprintf(struct fifo_struct *dst, const char* format, ...)
+{
+  va_list va;
+  va_start(va, format);
+  const int ret = _vsnprintf(_out_fifo, dst, (size_t)-1, format, va);
+  va_end(va);
+  return ret;
+}
+#endif
+
 
 #endif

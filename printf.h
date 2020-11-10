@@ -59,6 +59,7 @@ void _putchar(char character);
   #define printf_SL(_fmtarg, ...) printf_(_fmtarg ,##__VA_ARGS__)
   #define hprintf_SL(_fmtarg, ...) hprintf(_fmtarg ,##__VA_ARGS__)
   #define sprintf_SL(_dst, _fmtarg, ...) sprintf_(_dst, _fmtarg ,##__VA_ARGS__)
+  #define fifoprintf_SL(_dst, _fmtarg, ...) fifoprintf(_dst, _fmtarg ,##__VA_ARGS__)
   #define snprintf_SL(_dst, _cnt, _fmtarg, ...) snprintf_(_dst, _cnt, _fmtarg ,##__VA_ARGS__)
   #define fctprintf_SL(_fptr, _fargs, _fmtarg, ...) fctprintf(_fptr, _fargs, _fmtarg ,##__VA_ARGS__)
 #endif
@@ -120,6 +121,16 @@ int fctprintf(void (*out)(char character, void* arg), void* arg, const char* for
  * \return The output on the heap, as a standard C string. free() after using.
  */
 char* hprintf(const char* format, ...) __attribute__((format(printf, 1, 2)));
+
+
+#ifdef PRINTF_EXT_FIFO
+/**
+ * fifoprintf, print to a non-standard fifo module.
+ * \param format A string that specifies the format of the output
+ * \return The output on the heap, as a standard C string. free() after using.
+ */
+int fifoprintf(struct fifo_struct *dst, const char* format, ...) __attribute__((format(printf, 2, 3)));
+#endif
 
 /**
  * Tiny printf implementation
