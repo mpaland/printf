@@ -199,6 +199,21 @@ int snprintf_(char* buffer, size_t count, const char* format, ...)
   return ret;
 }
 
+int snappendf(char* dst, size_t cnt, const char* fmt, ...)
+{
+	int chars_written;
+	size_t org_size;
+	va_list va;
+
+	org_size = strlen(dst);
+
+	va_start(va, fmt);
+	chars_written = vsnprintf_(&dst[org_size], cnt-org_size, fmt, va);
+	va_end(va);
+
+	return chars_written;
+}
+
 int vprintf_(const char* format, va_list va)
 {
   char buffer[1];
@@ -274,6 +289,21 @@ int snprintf_P_(char* buffer, size_t count, PGM_P format, ...)
   const int ret = _vsnprintf_P(_out_buffer, buffer, count, format, va);
   va_end(va);
   return ret;
+}
+
+int snappendf_P(char* dst, size_t cnt, PGM_P fmt, ...)
+{
+	int chars_written;
+	size_t org_size;
+	va_list va;
+
+	org_size = strlen(dst);
+
+	va_start(va, fmt);
+	chars_written = vsnprintf_P_(&dst[org_size], cnt-org_size, fmt, va);
+	va_end(va);
+
+	return chars_written;
 }
 
 int vprintf_P_(PGM_P format, va_list va)

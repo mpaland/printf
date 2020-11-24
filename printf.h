@@ -119,6 +119,7 @@ p 	Pointer address
 
 #endif
 
+
 //********************************************************************************************************
 // Public prototypes
 //********************************************************************************************************
@@ -132,13 +133,15 @@ p 	Pointer address
 	int fifoprintf_P(struct fifo_struct *dst, PGM_P format, ...);
 	int sprintf_P_(char* buffer, PGM_P format, ...);
 	int  snprintf_P_(char* buffer, size_t count, PGM_P format, ...);
+	int snappendf_P(char* dst, size_t cnt, PGM_P fmt, ...);
 	int vsnprintf_P_(char* buffer, size_t count, PGM_P format, va_list va);
 	int vprintf_P_(PGM_P format, va_list va);
 	int fctprintf_P(void (*out)(char character, void* arg), void* arg, PGM_P format, ...);	
 #endif
 
 	int sprintf_(char* buffer, const char* format, ...) __attribute__((format(printf, 2, 3)));
-	int  snprintf_(char* buffer, size_t count, const char* format, ...) __attribute__((format(printf, 3, 4)));
+	int snprintf_(char* buffer, size_t count, const char* format, ...) __attribute__((format(printf, 3, 4)));
+	int snappendf(char* buffer, size_t count, const char* format, ...) __attribute__((format(printf, 3, 4)));
 	int vsnprintf_(char* buffer, size_t count, const char* format, va_list va);
 	int vprintf_(const char* format, va_list va);
 	int fctprintf(void (*out)(char character, void* arg), void* arg, const char* format, ...) __attribute__((format(printf, 3, 4)));
