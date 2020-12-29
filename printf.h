@@ -43,7 +43,7 @@ extern "C" {
 #if defined(PRINTF_FUNCTION_RENAME)
 	#define _PRINTF_GET_FNAME(base)  PRINTF_FUNCTION_RENAME(base)
 #else
-	#define _PRINTF_GET_FNAME(base)  mp_base##
+	#define _PRINTF_GET_FNAME(base)  mp_##base
 #endif
 /**
  * Output a character to a custom device like UART, used by the printf() function
