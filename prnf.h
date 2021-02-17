@@ -92,30 +92,37 @@ p 	Pointer address
 // Public defines
 //********************************************************************************************************
 
+//	uncomment to replace std printf (& friends) with prnf using macros
+//	*caution* 
+//	due to this replacing 'printf' it will break later function declarations attempting to use __attribute__((format(printf, 1, 2)))
+//	#define OVERRIDE_STD_PRINTF
+
 
 #ifdef PLATFORM_AVR
 //	Compiler will first test argument types based on format string, then remove the empty function during optimization.
-	static inline void _fmttst_optout(const char* fmt, ...) __attribute__((format(printf, 1, 2)));
-	static inline void _fmttst_optout(const char* fmt, ...)
+	static inline void fmttst_optout(const char* fmt, ...) __attribute__((format(printf, 1, 2)));
+	static inline void fmttst_optout(const char* fmt, ...)
 	{
 	}
 
 //	_SL macros for AVR
-	#define printf_SL(_fmtarg, ...) 					({int _prv; _prv = printf_P_(PSTR(_fmtarg) ,##__VA_ARGS__); _fmttst_optout(_fmtarg ,##__VA_ARGS__); _prv;})
-	#define hprintf_SL(_fmtarg, ...) 					({char* _prv; _prv = hprintf_P(PSTR(_fmtarg) ,##__VA_ARGS__); _fmttst_optout(_fmtarg ,##__VA_ARGS__); _prv;})
-	#define sprintf_SL(_dst, _fmtarg, ...) 				({int _prv; _prv = sprintf_P_(_dst, PSTR(_fmtarg) ,##__VA_ARGS__); _fmttst_optout(_fmtarg ,##__VA_ARGS__); _prv;})
-	#define snprintf_SL(_dst, _cnt, _fmtarg, ...) 		({int _prv; _prv = snprintf_P_(_dst, _cnt, PSTR(_fmtarg) ,##__VA_ARGS__); _fmttst_optout(_fmtarg ,##__VA_ARGS__); _prv;})
-	#define fctprintf_SL(_fptr, _fargs, _fmtarg, ...) 	({int _prv; _prv = fctprintf_P(_fptr, _fargs, PSTR(_fmtarg) ,##__VA_ARGS__); _fmttst_optout(_fmtarg ,##__VA_ARGS__); _prv;})
-	#define fifoprintf_SL(_dst, _fmtarg, ...) 			({int _prv; _prv = fifoprintf_P(_dst, PSTR(_fmtarg) ,##__VA_ARGS__); _fmttst_optout(_fmtarg ,##__VA_ARGS__); _prv;})
+	#define prnf_SL(_fmtarg, ...) 						({int _prv; _prv = prnf_P(PSTR(_fmtarg) ,##__VA_ARGS__); fmttst_optout(_fmtarg ,##__VA_ARGS__); _prv;})
+	#define hprnf_SL(_fmtarg, ...) 						({char* _prv; _prv = hprnf_P(PSTR(_fmtarg) ,##__VA_ARGS__); fmttst_optout(_fmtarg ,##__VA_ARGS__); _prv;})
+	#define sprnf_SL(_dst, _fmtarg, ...) 				({int _prv; _prv = sprnf_P(_dst, PSTR(_fmtarg) ,##__VA_ARGS__); fmttst_optout(_fmtarg ,##__VA_ARGS__); _prv;})
+	#define snprnf_SL(_dst, _dst_size, _fmtarg, ...) 	({int _prv; _prv = snprnf_P(_dst, _dst_size, PSTR(_fmtarg) ,##__VA_ARGS__); fmttst_optout(_fmtarg ,##__VA_ARGS__); _prv;})
+	#define snappf_SL(_dst, _dst_size, _fmtarg, ...) 	({int _prv; _prv = snappf_P(_dst, _dst_size, PSTR(_fmtarg) ,##__VA_ARGS__); fmttst_optout(_fmtarg ,##__VA_ARGS__); _prv;})
+	#define fctprnf_SL(_fptr, _fargs, _fmtarg, ...) 	({int _prv; _prv = fctprnf_P(_fptr, _fargs, PSTR(_fmtarg) ,##__VA_ARGS__); fmttst_optout(_fmtarg ,##__VA_ARGS__); _prv;})
+	#define fifoprnf_SL(_dst, _fmtarg, ...) 			({int _prv; _prv = fifoprnf_P(_dst, PSTR(_fmtarg) ,##__VA_ARGS__); fmttst_optout(_fmtarg ,##__VA_ARGS__); _prv;})
 
 #else
 
-	#define printf_SL(_fmtarg, ...) 					printf_(_fmtarg ,##__VA_ARGS__)
-	#define hprintf_SL(_fmtarg, ...) 					hprintf(_fmtarg ,##__VA_ARGS__)
-	#define sprintf_SL(_dst, _fmtarg, ...) 				sprintf_(_dst, _fmtarg ,##__VA_ARGS__)
-	#define snprintf_SL(_dst, _cnt, _fmtarg, ...) 		snprintf_(_dst, _cnt, _fmtarg ,##__VA_ARGS__)
-	#define fctprintf_SL(_fptr, _fargs, _fmtarg, ...)	fctprintf(_fptr, _fargs, _fmtarg ,##__VA_ARGS__)
-	#define fifoprintf_SL(_dst, _fmtarg, ...) 			fifoprintf(_dst, _fmtarg ,##__VA_ARGS__)
+	#define prnf_SL(_fmtarg, ...) 						prnf(_fmtarg ,##__VA_ARGS__)
+	#define hprnf_SL(_fmtarg, ...) 						hprnf(_fmtarg ,##__VA_ARGS__)
+	#define sprnf_SL(_dst, _fmtarg, ...) 				sprnf(_dst, _fmtarg ,##__VA_ARGS__)
+	#define snprnf_SL(_dst, _dst_size, _fmtarg, ...) 	snprnf(_dst, _dst_size, _fmtarg ,##__VA_ARGS__)
+	#define snappf_SL(_dst, _dst_size, _fmtarg, ...) 	snappf(_dst, _dst_size, _fmtarg ,##__VA_ARGS__)
+	#define fctprnf_SL(_fptr, _fargs, _fmtarg, ...)		fctprnf(_fptr, _fargs, _fmtarg ,##__VA_ARGS__)
+	#define fifoprnf_SL(_dst, _fmtarg, ...) 			fifoprnf(_dst, _fmtarg ,##__VA_ARGS__)
 
 #endif
 
@@ -124,41 +131,45 @@ p 	Pointer address
 // Public prototypes
 //********************************************************************************************************
 
-//	Define externally for output of printf()
-	void _putchar(char character);
+//	Define externally for output of prnf()
+	void prnf_putc(char character);
 
 #ifdef PLATFORM_AVR
-	int printf_P_(PGM_P format, ...);
-	char* hprintf_P(PGM_P format, ...);
-	int fifoprintf_P(struct fifo_struct *dst, PGM_P format, ...);
-	int sprintf_P_(char* buffer, PGM_P format, ...);
-	int  snprintf_P_(char* buffer, size_t count, PGM_P format, ...);
-	int snappendf_P(char* dst, size_t cnt, PGM_P fmt, ...);
-	int vsnprintf_P_(char* buffer, size_t count, PGM_P format, va_list va);
-	int vprintf_P_(PGM_P format, va_list va);
-	int fctprintf_P(void (*out)(char character, void* arg), void* arg, PGM_P format, ...);	
+	int prnf_P(PGM_P fmt, ...);
+	char* hprnf_P(PGM_P fmt, ...);
+	int fifoprnf_P(struct fifo_struct *dst, PGM_P fmt, ...);
+	int sprnf_P(char* dst, PGM_P fmt, ...);
+	int snprnf_P(char* dst, size_t dst_size, PGM_P fmt, ...);
+	int snappf_P(char* dst, size_t dst_size, PGM_P fmt, ...);
+	int vsnprnf_P(char* dst, size_t dst_size, PGM_P fmt, va_list va);
+	int vprnf_P(PGM_P fmt, va_list va);
+	int fctprnf_P(void (*out)(char character, void* arg), void* arg, PGM_P fmt, ...);	
 #endif
 
-	int sprintf_(char* buffer, const char* format, ...) __attribute__((format(printf, 2, 3)));
-	int snprintf_(char* buffer, size_t count, const char* format, ...) __attribute__((format(printf, 3, 4)));
-	int snappendf(char* buffer, size_t count, const char* format, ...) __attribute__((format(printf, 3, 4)));
-	int vsnprintf_(char* buffer, size_t count, const char* format, va_list va);
-	int vprintf_(const char* format, va_list va);
-	int fctprintf(void (*out)(char character, void* arg), void* arg, const char* format, ...) __attribute__((format(printf, 3, 4)));
-	char* hprintf(const char* format, ...) __attribute__((format(printf, 1, 2)));
-	int fifoprintf(struct fifo_struct *dst, const char* format, ...) __attribute__((format(printf, 2, 3)));
-	int printf_(const char* format, ...) __attribute__((format(printf, 1, 2)));
+	int sprnf(char* dst, const char* fmt, ...) __attribute__((format(printf, 2, 3)));
+	int snprnf(char* dst, size_t dst_size, const char* fmt, ...) __attribute__((format(printf, 3, 4)));
+	int snappf(char* dst, size_t dst_size, const char* fmt, ...) __attribute__((format(printf, 3, 4)));
+	int vsnprnf(char* dst, size_t dst_size, const char* fmt, va_list va);
+	int vprnf(const char* fmt, va_list va);
+	int fctprnf(void (*out)(char character, void* arg), void* arg, const char* fmt, ...) __attribute__((format(printf, 3, 4)));
+	char* hprnf(const char* fmt, ...) __attribute__((format(printf, 1, 2)));
+	int fifoprnf(struct fifo_struct *dst, const char* fmt, ...) __attribute__((format(printf, 2, 3)));
+	int prnf(const char* fmt, ...) __attribute__((format(printf, 1, 2)));
+
+#ifdef OVERRIDE_STD_PRINTF
 
 //	Override stdio interface for AVR and non-avr
-	#define sprintf_P sprintf_P_
-	#define printf_P printf_P_
-	#define snprintf_P  snprintf_P_
-	#define vsnprintf_P vsnprintf_P_
-	#define vprintf_P vprintf_P_
-	#define snprintf  snprintf_
-	#define vsnprintf vsnprintf_
-	#define sprintf sprintf_
-	#define vprintf vprintf_
+	#define sprintf_P 	sprnf_P
+	#define printf_P 	prnf_P
+	#define snprintf_P  snprnf_P
+	#define vsnprintf_P vsnprnf_P
+	#define vprintf_P 	vprnf_P
+	#define snprintf  	snprnf
+	#define vsnprintf 	vsnprnf
+	#define sprintf	 	sprnf
+	#define vprintf 	vprnf
 
 //	This next line must come last, and after any other declarations which wish to use __attribute__((format(printf
-	#define printf printf_
+	#define printf 		prnf
+
+#endif
