@@ -13,8 +13,8 @@
 #define _SIGNCHECK(v,n)     if (1.0/v < 0.0) { v = -v; n = 1; } else { n = 0; }
 
 //
-// This is actually much quicker implementations of power functions as it
-// doesn't have so many edge cases to worry about as the standard library methods
+// This is actually a fairly efficient implementation than the pow() function as it's
+// only power of 10 and doesn't have any edge cases to worry about.
 //
 double _e10(int exp) {
     static const long pows[7] = { 1, 10, 100, 1000, 10000, 100000, 1000000 };
@@ -54,11 +54,11 @@ typedef void (*out_fct_type)(char character, void* buffer, size_t idx, size_t ma
 #define FLAGS_PRECISION (1U << 10U)
 #define FLAGS_ADAPT_EXP (1U << 11U)
 
-// Make sure you keep these in sync, can't concat the macros
+// Make sure you keep these in sync, can't concat the macros, 18 is the limit due to
+// limits of (long).
 #define MAX_FLOAT_PRECISION     18
 #define PRINTF_MAX_FLOAT        1e+18
 #define PRINTF_MIN_FLOAT        1e-18
-#define PRINTF_FTOA_BUFFER_SIZE ((2*MAX_FLOAT_PRECISION)+1)
 
 static inline void _out_char(char character, void* buffer, size_t idx, size_t maxlen)
 {
@@ -68,11 +68,9 @@ static inline void _out_char(char character, void* buffer, size_t idx, size_t ma
   }
 }
 
-
 //
-// Modified reverse output function that deals with padding and sign
-// outside of the actual buffer.
-// (needs to be passed whether the value is negative or not.)
+// Modified reverse output function that deals with space and zero padding, and sign,
+// outside of the actual buffer. Needs to know if the value is negative.
 //
 static size_t _out_rev2(out_fct_type out, char* buffer, size_t idx, size_t maxlen, const char* buf, size_t len, unsigned int width, unsigned int flags, int negative)
 {
@@ -121,14 +119,13 @@ static size_t _out_rev2(out_fct_type out, char* buffer, size_t idx, size_t maxle
 //
 // Changes compared to mpaland/printf routine:
 //
-// 1. Keeps padding (zero/space) out of internal buffer, increasing space
-//    available for the result.
+// 1. Keeps padding (zero/space) out of internal buffer
 // 2. Supports signficant digits up to 18.
 // 3. Supports FLAGS_HASH
 // 4. Max number length fits in buffer, so no length checking needed
 //
 static size_t _etoa(out_fct_type out, char* buffer, size_t idx, size_t maxlen, double value, unsigned int prec, unsigned int width, unsigned int flags) {
-    char buf[32];
+    char buf[MAX_FLOAT_PRECISION + 1 + 5];  // number, plus decimal, plus e+XXX
     int len = 0;
     int hadsig = 0;         // used for trailing zero removal
 
@@ -262,7 +259,7 @@ static size_t _etoa(out_fct_type out, char* buffer, size_t idx, size_t maxlen, d
 // 4. Max number length fits in buffer, so no length checking needed
 //
 static size_t _ftoa(out_fct_type out, char* buffer, size_t idx, size_t maxlen, double value, unsigned int prec, unsigned int width, unsigned int flags) {
-    char    buf[PRINTF_FTOA_BUFFER_SIZE];
+    char    buf[(2*MAX_FLOAT_PRECISION)+1];
     int     len = 0;
 
     // Special cases (nan, inf-, inf+)
