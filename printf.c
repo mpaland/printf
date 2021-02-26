@@ -32,9 +32,8 @@
 
 #include <stdbool.h>
 #include <stdint.h>
-
-#include "printf.h"
-
+#include <stddef.h>
+#include <stdarg.h>
 
 // define this globally (e.g. gcc -DPRINTF_INCLUDE_CONFIG_H ...) to include the
 // printf_config.h header file
@@ -179,6 +178,7 @@ static inline void _out_null(char character, void* buffer, size_t idx, size_t ma
 
 
 // internal _putchar wrapper
+extern void _putchar(char character);
 static inline void _out_char(char character, void* buffer, size_t idx, size_t maxlen)
 {
   (void)buffer; (void)idx; (void)maxlen;
@@ -927,9 +927,25 @@ static int _vsnprintf(out_fct_type out, char* buffer, const size_t maxlen, const
 
 
 ///////////////////////////////////////////////////////////////////////////////
+//
+// MAIN ENTRY ROUTINES
+//
+// If PRINTF_USE_NATIVE_NAMES is defined then the routines will be defined
+// with standard names to replace the ones in the default libraries
+//
+///////////////////////////////////////////////////////////////////////////////
+
+#ifdef PRINTF_USE_NATIVE_NAMES
+#define printf_ printf
+#define sprintf_ sprintf
+#define snprintf_ snprintf
+#define vprintf_ vprintf
+#define vsnprintf_ vsnprintf
+#endif
 
 int printf_(const char* format, ...)
 {
+    _putchar('X');
   va_list va;
   va_start(va, format);
   char buffer[1];
