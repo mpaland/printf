@@ -77,10 +77,12 @@
 #endif
 
 // define the largest float suitable to print with %f
-// default: 1e9
-#ifndef PRINTF_MAX_FLOAT
-#define PRINTF_MAX_FLOAT  1e9
+// default: 1e18 (18 is largest because of int64_t limits)
+#ifndef PRINTF_MAX_FLOAT_PRECISION
+#define PRINTF_MAX_FLOAT_PRECISION     18
 #endif
+#define PRINTF_MAX_FLOAT        _e10(PRINTF_MAX_FLOAT_PRECISION)
+#define PRINTF_MIN_FLOAT        _e10(-PRINTF_MAX_FLOAT_PRECISION)
 
 // support for the long long types (%llu or %p)
 // default: activated
@@ -111,12 +113,43 @@
 #define FLAGS_PRECISION (1U << 10U)
 #define FLAGS_ADAPT_EXP (1U << 11U)
 
-
 // import float.h for DBL_MAX
 #if defined(PRINTF_SUPPORT_FLOAT)
 #include <float.h>
 #endif
 
+//
+// Helper macro to record and remove negativity (also works for -0.0)
+//
+#define _ISIGNCHECK(i,n)     if (i < 0) { i = -i; n = 1; } else { n = 0; } 
+#define _FSIGNCHECK(f,n)     if (1.0/f < 0.0) { f = -f; n = 1; } else { n = 0; } 
+
+#if defined(PRINTF_SUPPORT_FLOAT)
+//
+// This is actually a fairly efficient implementation compared to pow() as it's
+// only power of 10 and doesn't have any edge cases to worry about.
+//
+double _e10(int exp) {
+    static const int64_t pows[] = { 1, 10, 100, 1000, 10000, 100000, 1000000, 10000000,
+                                    100000000, 1000000000, 10000000000, 100000000000,
+                                    (int64_t)1e+12, (int64_t)1e+13, (int64_t)1e+14, (int64_t)1e+15, 
+                                    (int64_t)1e+16, (int64_t)1e+17, (int64_t)1e+18 };
+   
+    double  rc = 1.0;
+    int negative;
+    _ISIGNCHECK(exp, negative);
+
+    // Handle exponents above our constants...  
+    while (exp > 18) {
+        rc *= 1e+18;
+        exp -= 18;
+    }
+    // Now deal with what's left...
+    rc *= pows[exp];
+    // And adjust for plus or minus...
+    return(negative ? 1.0/rc : rc);
+}
+#endif // defined(PRINTF_SUPPORT_FLOAT)
 
 // output function type
 typedef void (*out_fct_type)(char character, void* buffer, size_t idx, size_t maxlen);
@@ -192,6 +225,60 @@ static unsigned int _atoi(const char** str)
     i = i * 10U + (unsigned int)(*((*str)++) - '0');
   }
   return i;
+}
+
+//
+// Modified reverse output function that deals with space and zero padding, and sign,
+// outside of the actual buffer. Needs to know if the value is negative.
+//
+// TODO: replace other out_rev calls
+//
+static size_t _out_rev2(out_fct_type out, char* buffer, size_t idx, size_t maxlen, const char* buf, size_t len, unsigned int width, unsigned int flags, int negative)
+{
+    const size_t start_idx = idx;
+
+    // First figure out the right sign to use...
+    int sign=0;
+    if (negative) {
+        sign='-';
+    } else if (flags & FLAGS_PLUS) {
+        sign='+';
+    } else if (flags & FLAGS_SPACE) {
+        sign=' ';
+    }
+    if (sign) {
+        len++;        // so space padding works
+    }
+    // Now we can output... first padding spaces (if needed) 
+    if (!(flags & FLAGS_LEFT) && !(flags & FLAGS_ZEROPAD)) {
+        for (int i=len; i < width; i++) {
+            out(' ', buffer, idx++, maxlen);
+        }
+    }
+    // Now the sign
+    if (sign) {
+        out(sign, buffer, idx++,maxlen);
+    }
+    // Now zeropad (no spaces would have happened)
+    if (!(flags & FLAGS_LEFT) && (flags & FLAGS_ZEROPAD)) {
+        for (int i=len; i < width; i++) {
+            out('0', buffer, idx++, maxlen);
+        }
+    }
+    if (sign) {
+        len--;        // put back the length
+    }
+    // The the value
+    while(len > 0) {
+        out(buf[--len], buffer, idx++, maxlen);
+    }
+    // append pad spaces up to given width
+    if (flags & FLAGS_LEFT) {
+        while (idx - start_idx < width) {
+          out(' ', buffer, idx++, maxlen);
+        }
+    }
+    return idx;
 }
 
 
@@ -328,250 +415,232 @@ static size_t _ntoa_long_long(out_fct_type out, char* buffer, size_t idx, size_t
 
 
 #if defined(PRINTF_SUPPORT_FLOAT)
-
 #if defined(PRINTF_SUPPORT_EXPONENTIAL)
-// forward declaration so that _ftoa can switch to exp notation for values > PRINTF_MAX_FLOAT
+// forward declaration so that _ftoa can switch to exp notation for values where needed
 static size_t _etoa(out_fct_type out, char* buffer, size_t idx, size_t maxlen, double value, unsigned int prec, unsigned int width, unsigned int flags);
 #endif
 
+//
+// Given a float value, turn it into a string with the given number of
+// "prec" decimal places. If the number is too large to be calculated
+// (MAX_FLOAT) then switch to scientific notation (with 6 sig digs)
+//
+// Changes compared to mpaland/printf routine:
+//
+// 1. Keeps padding (zero/space) out of internal buffer, increasing space
+//    available for the result.
+// 2. Supports precision up to 18 digits (e+18 and e-18)
+// 3. Supports FLAGS_HASH
+// 4. Max number length fits in buffer, so no length checking needed
+//
+static size_t _ftoa(out_fct_type out, char* buffer, size_t idx, size_t maxlen, double value, unsigned int prec, unsigned int width, unsigned int flags) {
+    char    buf[(2*PRINTF_MAX_FLOAT_PRECISION)+1];
+    size_t  len = 0;
 
-// internal ftoa for fixed decimal floating point
-static size_t _ftoa(out_fct_type out, char* buffer, size_t idx, size_t maxlen, double value, unsigned int prec, unsigned int width, unsigned int flags)
-{
-  char buf[PRINTF_FTOA_BUFFER_SIZE];
-  size_t len  = 0U;
-  double diff = 0.0;
+    // Special cases (nan, inf-, inf+)
+    if (value != value) {
+        return _out_rev2(out, buffer, idx, maxlen, "nan", 3, width, flags, 0);
+    }
+    if (value < -DBL_MAX) {
+        return _out_rev2(out, buffer, idx, maxlen, "fni", 3, width, (flags&~FLAGS_ZEROPAD), 1);
+    }
+    if (value > DBL_MAX) {
+        return _out_rev2(out, buffer, idx, maxlen, "fni", 3, width, (flags&~FLAGS_ZEROPAD), 0);
+    }
 
-  // powers of 10
-  static const double pow10[] = { 1, 10, 100, 1000, 10000, 100000, 1000000, 10000000, 100000000, 1000000000 };
+    if (!(flags & FLAGS_PRECISION)) {
+        prec = PRINTF_DEFAULT_FLOAT_PRECISION;
+    } else if (prec > PRINTF_MAX_FLOAT_PRECISION) {
+        prec=PRINTF_MAX_FLOAT_PRECISION;
+    }
 
-  // test for special values
-  if (value != value)
-    return _out_rev(out, buffer, idx, maxlen, "nan", 3, width, flags);
-  if (value < -DBL_MAX)
-    return _out_rev(out, buffer, idx, maxlen, "fni-", 4, width, flags);
-  if (value > DBL_MAX)
-    return _out_rev(out, buffer, idx, maxlen, (flags & FLAGS_PLUS) ? "fni+" : "fni", (flags & FLAGS_PLUS) ? 4U : 3U, width, flags);
+    // Store and remove negativity
+    int negative;
+    _FSIGNCHECK(value, negative);
 
-  // test for very large values
-  // standard printf behavior is to print EVERY whole number digit -- which could be 100s of characters overflowing your buffers == bad
-  if ((value > PRINTF_MAX_FLOAT) || (value < -PRINTF_MAX_FLOAT)) {
+    // Check for very large or very small numbers that might break things
+    if (value > PRINTF_MAX_FLOAT || (value < PRINTF_MIN_FLOAT && value != 0)) {
 #if defined(PRINTF_SUPPORT_EXPONENTIAL)
-    return _etoa(out, buffer, idx, maxlen, value, prec, width, flags);
+        return _etoa(out, buffer, idx, maxlen, (negative ? -value : value), PRINTF_DEFAULT_FLOAT_PRECISION, width, flags);
 #else
-    return 0U;
+        return 0U;
 #endif
-  }
+    }
 
-  // test for negative
-  bool negative = false;
-  if (value < 0) {
-    negative = true;
-    value = 0 - value;
-  }
+    // First we separate the whole and fractioanal parts
+    int64_t whole = (int64_t)value;
+    double dfrac = value - whole;
+    
+    // Now deal with fractional precision (and rounding)
+    dfrac *= _e10((int)prec);
+    int64_t frac = (int64_t)dfrac;
 
-  // set default precision, if not set explicitly
-  if (!(flags & FLAGS_PRECISION)) {
-    prec = PRINTF_DEFAULT_FLOAT_PRECISION;
-  }
-  // limit precision to 9, cause a prec >= 10 can lead to overflow errors
-  while ((len < PRINTF_FTOA_BUFFER_SIZE) && (prec > 9U)) {
-    buf[len++] = '0';
-    prec--;
-  }
-
-  int whole = (int)value;
-  double tmp = (value - whole) * pow10[prec];
-  unsigned long frac = (unsigned long)tmp;
-  diff = tmp - frac;
-
-  if (diff > 0.5) {
-    ++frac;
-    // handle rollover, e.g. case 0.99 with prec 1 is 1.0
-    if (frac >= pow10[prec]) {
-      frac = 0;
-      ++whole;
+    if ((dfrac - frac) >= 0.5) {
+        frac++;
+        if (frac >= _e10((int)prec)) {
+            whole++;
+            frac = 0;
+        }
     }
-  }
-  else if (diff < 0.5) {
-  }
-  else if ((frac == 0U) || (frac & 1U)) {
-    // if halfway, round up if odd OR if last digit is 0
-    ++frac;
-  }
-
-  if (prec == 0U) {
-    diff = value - (double)whole;
-    if ((!(diff < 0.5) || (diff > 0.5)) && (whole & 1)) {
-      // exactly 0.5 and ODD, then round up
-      // 1.5 -> 2, but 2.5 -> 2
-      ++whole;
+    // Build the number output
+    if (prec) {
+        while (prec--) {
+            buf[len++] = '0' + frac%10;
+            frac /= 10;
+        }
+        buf[len++] = '.';
+    } else if (flags & FLAGS_HASH) {
+        buf[len++] = '.';
     }
-  }
-  else {
-    unsigned int count = prec;
-    // now do fractional part, as an unsigned number
-    while (len < PRINTF_FTOA_BUFFER_SIZE) {
-      --count;
-      buf[len++] = (char)(48U + (frac % 10U));
-      if (!(frac /= 10U)) {
-        break;
-      }
+    if (!whole) 
+        buf[len++] = '0';
+    while (whole) {
+        buf[len++] = '0' + whole%10;
+        whole /= 10;
     }
-    // add extra 0s
-    while ((len < PRINTF_FTOA_BUFFER_SIZE) && (count-- > 0U)) {
-      buf[len++] = '0';
-    }
-    if (len < PRINTF_FTOA_BUFFER_SIZE) {
-      // add decimal
-      buf[len++] = '.';
-    }
-  }
-
-  // do whole part, number is reversed
-  while (len < PRINTF_FTOA_BUFFER_SIZE) {
-    buf[len++] = (char)(48 + (whole % 10));
-    if (!(whole /= 10)) {
-      break;
-    }
-  }
-
-  // pad leading zeros
-  if (!(flags & FLAGS_LEFT) && (flags & FLAGS_ZEROPAD)) {
-    if (width && (negative || (flags & (FLAGS_PLUS | FLAGS_SPACE)))) {
-      width--;
-    }
-    while ((len < width) && (len < PRINTF_FTOA_BUFFER_SIZE)) {
-      buf[len++] = '0';
-    }
-  }
-
-  if (len < PRINTF_FTOA_BUFFER_SIZE) {
-    if (negative) {
-      buf[len++] = '-';
-    }
-    else if (flags & FLAGS_PLUS) {
-      buf[len++] = '+';  // ignore the space if the '+' exists
-    }
-    else if (flags & FLAGS_SPACE) {
-      buf[len++] = ' ';
-    }
-  }
-
-  return _out_rev(out, buffer, idx, maxlen, buf, len, width, flags);
+    return _out_rev2(out, buffer, idx, maxlen, buf, len, width, flags, negative);
 }
-
-
 #if defined(PRINTF_SUPPORT_EXPONENTIAL)
-// internal ftoa variant for exponential floating-point type, contributed by Martijn Jasperse <m.jasperse@gmail.com>
-static size_t _etoa(out_fct_type out, char* buffer, size_t idx, size_t maxlen, double value, unsigned int prec, unsigned int width, unsigned int flags)
-{
-  // check for NaN and special values
-  if ((value != value) || (value > DBL_MAX) || (value < -DBL_MAX)) {
-    return _ftoa(out, buffer, idx, maxlen, value, prec, width, flags);
-  }
+//
+// Given a float print the scientific notation using a specific number of significant
+// digits (not precision), if FLAGS_ADAPT_EXP is set then try to print as a normal
+// float first only switch to scientific if we need to.
+//
+// Changes compared to mpaland/printf routine:
+//
+// 1. Keeps padding (zero/space) out of internal buffer
+// 2. Supports signficant digits up to 18.
+// 3. Supports FLAGS_HASH
+// 4. Max number length fits in buffer, so no length checking needed
+//
+static size_t _etoa(out_fct_type out, char* buffer, size_t idx, size_t maxlen, double value, unsigned int prec, unsigned int width, unsigned int flags) {
+    char    buf[PRINTF_MAX_FLOAT_PRECISION + 1 + 5];  // number, plus decimal, plus e+XXX
+    size_t  len = 0;
+    int     hadsig = 0;         // used for trailing zero removal
 
-  // determine the sign
-  const bool negative = value < 0;
-  if (negative) {
-    value = -value;
-  }
-
-  // default precision
-  if (!(flags & FLAGS_PRECISION)) {
-    prec = PRINTF_DEFAULT_FLOAT_PRECISION;
-  }
-
-  // determine the decimal exponent
-  // based on the algorithm by David Gay (https://www.ampl.com/netlib/fp/dtoa.c)
-  union {
-    uint64_t U;
-    double   F;
-  } conv;
-
-  conv.F = value;
-  int exp2 = (int)((conv.U >> 52U) & 0x07FFU) - 1023;           // effectively log2
-  conv.U = (conv.U & ((1ULL << 52U) - 1U)) | (1023ULL << 52U);  // drop the exponent so conv.F is now in [1,2)
-  // now approximate log10 from the log2 integer part and an expansion of ln around 1.5
-  int expval = (int)(0.1760912590558 + exp2 * 0.301029995663981 + (conv.F - 1.5) * 0.289529654602168);
-  // now we want to compute 10^expval but we want to be sure it won't overflow
-  exp2 = (int)(expval * 3.321928094887362 + 0.5);
-  const double z  = expval * 2.302585092994046 - exp2 * 0.6931471805599453;
-  const double z2 = z * z;
-  conv.U = (uint64_t)(exp2 + 1023) << 52U;
-  // compute exp(z) using continued fractions, see https://en.wikipedia.org/wiki/Exponential_function#Continued_fractions_for_ex
-  conv.F *= 1 + 2 * z / (2 - z + (z2 / (6 + (z2 / (10 + z2 / 14)))));
-  // correct for rounding errors
-  if (value < conv.F) {
-    expval--;
-    conv.F /= 10;
-  }
-
-  // the exponent format is "%+03d" and largest value is "307", so set aside 4-5 characters
-  unsigned int minwidth = ((expval < 100) && (expval > -100)) ? 4U : 5U;
-
-  // in "%g" mode, "prec" is the number of *significant figures* not decimals
-  if (flags & FLAGS_ADAPT_EXP) {
-    // do we want to fall-back to "%f" mode?
-    if ((value >= 1e-4) && (value < 1e6)) {
-      if ((int)prec > expval) {
-        prec = (unsigned)((int)prec - expval - 1);
-      }
-      else {
-        prec = 0;
-      }
-      flags |= FLAGS_PRECISION;   // make sure _ftoa respects precision
-      // no characters in exponent
-      minwidth = 0U;
-      expval   = 0;
+    // check for NaN and special values
+    if ((value != value) || (value > DBL_MAX) || (value < -DBL_MAX)) {
+        return _ftoa(out, buffer, idx, maxlen, value, prec, width, flags);
     }
-    else {
-      // we use one sigfig for the whole part
-      if ((prec > 0) && (flags & FLAGS_PRECISION)) {
-        --prec;
-      }
+
+    // If we are a normal 'e' type output then we need an extra digit to be
+    // consistent with the standard printf
+    if (!(flags & FLAGS_ADAPT_EXP)) {
+        prec++;
     }
-  }
-
-  // will everything fit?
-  unsigned int fwidth = width;
-  if (width > minwidth) {
-    // we didn't fall-back so subtract the characters required for the exponent
-    fwidth -= minwidth;
-  } else {
-    // not enough characters, so go back to default sizing
-    fwidth = 0U;
-  }
-  if ((flags & FLAGS_LEFT) && minwidth) {
-    // if we're padding on the right, DON'T pad the floating part
-    fwidth = 0U;
-  }
-
-  // rescale the float value
-  if (expval) {
-    value /= conv.F;
-  }
-
-  // output the floating part
-  const size_t start_idx = idx;
-  idx = _ftoa(out, buffer, idx, maxlen, negative ? -value : value, prec, fwidth, flags & ~FLAGS_ADAPT_EXP);
-
-  // output the exponent part
-  if (minwidth) {
-    // output the exponential symbol
-    out((flags & FLAGS_UPPERCASE) ? 'E' : 'e', buffer, idx++, maxlen);
-    // output the exponent value
-    idx = _ntoa_long(out, buffer, idx, maxlen, (expval < 0) ? -expval : expval, expval < 0, 10, 0, minwidth-1, FLAGS_ZEROPAD | FLAGS_PLUS);
-    // might need to right-pad spaces
-    if (flags & FLAGS_LEFT) {
-      while (idx - start_idx < width) out(' ', buffer, idx++, maxlen);
+    if (prec > PRINTF_MAX_FLOAT_PRECISION) {
+        prec=PRINTF_MAX_FLOAT_PRECISION;
     }
-  }
-  return idx;
+    // Adjust for 0 precision requests...
+    if (prec == 0) {
+        prec = 1;
+    }
+    // Store and remove negativity
+    int negative;
+    _FSIGNCHECK(value, negative);
+
+    // Handle the various verions of scientific with/without trailing zeros
+    if (!(flags & FLAGS_ADAPT_EXP)) {
+        // Straight scientific with trailing zeros
+        hadsig = 1;
+    } else if (value >= _e10((int)prec) || (value <= 1e-05 && value != 0)) {
+        // Too large, so switch to scientific without trailing zeros
+        flags &= ~FLAGS_ADAPT_EXP;
+    }
+
+    // Move so we are within the range 0 to <1
+    int exp=0;
+    int64_t whole = 0;
+    while (value < 0.00001 && value > 0) {
+        value *= 100000;
+        exp -=5;
+    }
+    while (value < 0.1 && value > 0) {
+        value *= 10;
+        exp--;
+    }
+    while (value > 100000) {
+        value /= 100000;
+        exp += 5;
+    }
+    while (value >= 1) {
+        value /= 10;
+        exp++;
+    }
+    // If we are zero then fix exponential value
+    if (value == 0) {
+        exp++;
+    }
+    value *= _e10((int)prec);
+    exp -= prec;
+    whole = (int64_t)value;
+    if ((value - whole) >= 0.5) whole++;
+
+    // There are some strange rounding issues that cause problems
+    if (whole == _e10((int)prec)) {
+        whole /= 10;
+        exp++;
+    }
+    // If we are printing in scientific notation then we need to adjust
+    // the exponent accordingly and print out the e value
+    if (!(flags & FLAGS_ADAPT_EXP)) {
+        int exval = exp + (prec-1);
+        int neg = exval < 0;
+        exval = (neg ? -exval : exval);
+
+        // Always print the lowest 2 digits (even if zero)
+        buf[len++] = '0' + exval%10;
+        exval /= 10;
+        buf[len++] = '0' + exval%10;
+        exval /= 10;
+        // Print the third only if we have one
+        if (exval) 
+            buf[len++] = '0' + exval%10;
+        // Print the sign and 'e'
+        buf[len++] = (neg ? '-' : '+');
+        buf[len++] = (flags & FLAGS_UPPERCASE ? 'E' : 'e');
+        exp = -(prec-1);
+    }
+
+    // If we have a hash, then we don't strip zeros, and if we are
+    // zero (with stripping) then make it easy.
+    if (flags & FLAGS_HASH) {
+        hadsig=1;
+    } else if (whole == 0) {
+        if (!hadsig) 
+            exp = 0;
+    }
+
+    // Now output the trailing zeros for non decimals
+    while (exp > 0) {
+        buf[len++] = '0';
+        exp--;
+    }
+    if ((flags & FLAGS_HASH) && exp == 0) {
+        buf[len++] = '.';
+    }
+    if (whole == 0 && exp == 0) {
+        buf[len++] = '0';
+    }
+    while (whole || exp < 0) {
+        int n = whole%10;
+        whole /= 10;
+        exp++;
+        if (!hadsig && n == 0 && exp < 1) continue;
+        hadsig = 1;
+        buf[len++] = '0' + n;
+        if (exp == 0) {
+            buf[len++] = '.';
+            if (!whole) {
+                buf[len++] = '0';
+            }
+        } 
+    }
+    return _out_rev2(out, buffer, idx, maxlen, buf, len, width, flags, negative);
 }
-#endif  // PRINTF_SUPPORT_EXPONENTIAL
-#endif  // PRINTF_SUPPORT_FLOAT
+#endif //defined(PRINTF_SUPPORT_EXPONENTIAL)
 
+#endif //defined(PRINTF_SUPPORT_FLOAT)
 
 // internal vsnprintf
 static int _vsnprintf(out_fct_type out, char* buffer, const size_t maxlen, const char* format, va_list va)
