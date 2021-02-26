@@ -130,8 +130,10 @@
 // only power of 10 and doesn't have any edge cases to worry about.
 //
 double _e10(int exp) {
-    static const int64_t pows[] = { 1e+0, 1e+1, 1e+2, 1e+3, 1e+4, 1e+5, 1e+6, 1e+7, 1e+8, 1e+9,
-                                    1e+10, 1e+11, 1e+12, 1e+13, 1e+14, 1e+15, 1e+16, 1e+17, 1e+18 };
+    static const int64_t pows[] = { 1, 10, 100, 1000, 10000, 100000, 1000000, 10000000,
+                                    100000000, 1000000000, 10000000000, 100000000000,
+                                    (int64_t)1e+12, (int64_t)1e+13, (int64_t)1e+14, (int64_t)1e+15, 
+                                    (int64_t)1e+16, (int64_t)1e+17, (int64_t)1e+18 };
    
     double  rc = 1.0;
     int negative;
