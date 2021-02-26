@@ -416,6 +416,91 @@ static size_t _ntoa_long_long(out_fct_type out, char* buffer, size_t idx, size_t
 
 #if defined(PRINTF_SUPPORT_FLOAT)
 #if defined(PRINTF_SUPPORT_EXPONENTIAL)
+// forward declaration so that _ftoa can switch to exp notation for values where needed
+static size_t _etoa(out_fct_type out, char* buffer, size_t idx, size_t maxlen, double value, unsigned int prec, unsigned int width, unsigned int flags);
+#endif
+
+//
+// Given a float value, turn it into a string with the given number of
+// "prec" decimal places. If the number is too large to be calculated
+// (MAX_FLOAT) then switch to scientific notation (with 6 sig digs)
+//
+// Changes compared to mpaland/printf routine:
+//
+// 1. Keeps padding (zero/space) out of internal buffer, increasing space
+//    available for the result.
+// 2. Supports precision up to 18 digits (e+18 and e-18)
+// 3. Supports FLAGS_HASH
+// 4. Max number length fits in buffer, so no length checking needed
+//
+static size_t _ftoa(out_fct_type out, char* buffer, size_t idx, size_t maxlen, double value, unsigned int prec, unsigned int width, unsigned int flags) {
+    char    buf[(2*PRINTF_MAX_FLOAT_PRECISION)+1];
+    size_t  len = 0;
+
+    // Special cases (nan, inf-, inf+)
+    if (value != value) {
+        return _out_rev2(out, buffer, idx, maxlen, "nan", 3, width, flags, 0);
+    }
+    if (value < -DBL_MAX) {
+        return _out_rev2(out, buffer, idx, maxlen, "fni", 3, width, (flags&~FLAGS_ZEROPAD), 1);
+    }
+    if (value > DBL_MAX) {
+        return _out_rev2(out, buffer, idx, maxlen, "fni", 3, width, (flags&~FLAGS_ZEROPAD), 0);
+    }
+
+    if (!(flags & FLAGS_PRECISION)) {
+        prec = PRINTF_DEFAULT_FLOAT_PRECISION;
+    } else if (prec > PRINTF_MAX_FLOAT_PRECISION) {
+        prec=PRINTF_MAX_FLOAT_PRECISION;
+    }
+
+    // Store and remove negativity
+    int negative;
+    _FSIGNCHECK(value, negative);
+
+    // Check for very large or very small numbers that might break things
+    if (value > PRINTF_MAX_FLOAT || (value < PRINTF_MIN_FLOAT && value != 0)) {
+#if defined(PRINTF_SUPPORT_EXPONENTIAL)
+        return _etoa(out, buffer, idx, maxlen, (negative ? -value : value), PRINTF_DEFAULT_FLOAT_PRECISION, width, flags);
+#else
+        return 0U;
+#endif
+    }
+
+    // First we separate the whole and fractioanal parts
+    int64_t whole = (int64_t)value;
+    double dfrac = value - whole;
+    
+    // Now deal with fractional precision (and rounding)
+    dfrac *= _e10((int)prec);
+    int64_t frac = (int64_t)dfrac;
+
+    if ((dfrac - frac) >= 0.5) {
+        frac++;
+        if (frac >= _e10((int)prec)) {
+            whole++;
+            frac = 0;
+        }
+    }
+    // Build the number output
+    if (prec) {
+        while (prec--) {
+            buf[len++] = '0' + frac%10;
+            frac /= 10;
+        }
+        buf[len++] = '.';
+    } else if (flags & FLAGS_HASH) {
+        buf[len++] = '.';
+    }
+    if (!whole) 
+        buf[len++] = '0';
+    while (whole) {
+        buf[len++] = '0' + whole%10;
+        whole /= 10;
+    }
+    return _out_rev2(out, buffer, idx, maxlen, buf, len, width, flags, negative);
+}
+#if defined(PRINTF_SUPPORT_EXPONENTIAL)
 //
 // Given a float print the scientific notation using a specific number of significant
 // digits (not precision), if FLAGS_ADAPT_EXP is set then try to print as a normal
@@ -432,6 +517,11 @@ static size_t _etoa(out_fct_type out, char* buffer, size_t idx, size_t maxlen, d
     char    buf[PRINTF_MAX_FLOAT_PRECISION + 1 + 5];  // number, plus decimal, plus e+XXX
     size_t  len = 0;
     int     hadsig = 0;         // used for trailing zero removal
+
+    // check for NaN and special values
+    if ((value != value) || (value > DBL_MAX) || (value < -DBL_MAX)) {
+        return _ftoa(out, buffer, idx, maxlen, value, prec, width, flags);
+    }
 
     // If we are a normal 'e' type output then we need an extra digit to be
     // consistent with the standard printf
@@ -550,86 +640,6 @@ static size_t _etoa(out_fct_type out, char* buffer, size_t idx, size_t maxlen, d
 }
 #endif //defined(PRINTF_SUPPORT_EXPONENTIAL)
 
-//
-// Given a float value, turn it into a string with the given number of
-// "prec" decimal places. If the number is too large to be calculated
-// (MAX_FLOAT) then switch to scientific notation (with 6 sig digs)
-//
-// Changes compared to mpaland/printf routine:
-//
-// 1. Keeps padding (zero/space) out of internal buffer, increasing space
-//    available for the result.
-// 2. Supports precision up to 18 digits (e+18 and e-18)
-// 3. Supports FLAGS_HASH
-// 4. Max number length fits in buffer, so no length checking needed
-//
-static size_t _ftoa(out_fct_type out, char* buffer, size_t idx, size_t maxlen, double value, unsigned int prec, unsigned int width, unsigned int flags) {
-    char    buf[(2*PRINTF_MAX_FLOAT_PRECISION)+1];
-    size_t  len = 0;
-
-    // Special cases (nan, inf-, inf+)
-    if (__builtin_isnan(value)) {
-        return _out_rev2(out, buffer, idx, maxlen, "nan", 3, width, flags, 0);
-    }
-    if (value < -DBL_MAX) {
-        return _out_rev2(out, buffer, idx, maxlen, "fni", 3, width, (flags&~FLAGS_ZEROPAD), 1);
-    }
-    if (value > DBL_MAX) {
-        return _out_rev2(out, buffer, idx, maxlen, "fni", 3, width, (flags&~FLAGS_ZEROPAD), 0);
-    }
-
-    if (!(flags & FLAGS_PRECISION)) {
-        prec = PRINTF_DEFAULT_FLOAT_PRECISION;
-    } else if (prec > PRINTF_MAX_FLOAT_PRECISION) {
-        prec=PRINTF_MAX_FLOAT_PRECISION;
-    }
-
-    // Store and remove negativity
-    int negative;
-    _FSIGNCHECK(value, negative);
-
-    // Check for very large or very small numbers that might break things
-    if (value > PRINTF_MAX_FLOAT || (value < PRINTF_MIN_FLOAT && value != 0)) {
-#if defined(PRINTF_SUPPORT_EXPONENTIAL)
-        return _etoa(out, buffer, idx, maxlen, (negative ? -value : value), PRINTF_DEFAULT_FLOAT_PRECISION, width, flags);
-#else
-        return 0U;
-#endif
-    }
-
-    // First we separate the whole and fractioanal parts
-    int64_t whole = (int64_t)value;
-    double dfrac = value - whole;
-    
-    // Now deal with fractional precision (and rounding)
-    dfrac *= _e10((int)prec);
-    int64_t frac = (int64_t)dfrac;
-
-    if ((dfrac - frac) >= 0.5) {
-        frac++;
-        if (frac >= _e10((int)prec)) {
-            whole++;
-            frac = 0;
-        }
-    }
-    // Build the number output
-    if (prec) {
-        while (prec--) {
-            buf[len++] = '0' + frac%10;
-            frac /= 10;
-        }
-        buf[len++] = '.';
-    } else if (flags & FLAGS_HASH) {
-        buf[len++] = '.';
-    }
-    if (!whole) 
-        buf[len++] = '0';
-    while (whole) {
-        buf[len++] = '0' + whole%10;
-        whole /= 10;
-    }
-    return _out_rev2(out, buffer, idx, maxlen, buf, len, width, flags, negative);
-}
 #endif //defined(PRINTF_SUPPORT_FLOAT)
 
 // internal vsnprintf
