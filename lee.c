@@ -17,7 +17,7 @@
 // only power of 10 and doesn't have any edge cases to worry about.
 //
 double _e10(int exp) {
-    static const long pows[7] = { 1, 10, 100, 1000, 10000, 100000, 1000000 };
+    static const int64_t pows[7] = { 1, 10, 100, 1000, 10000, 100000, 1000000 };
     double rc = 1;
     if (exp < 0) {
         exp = -exp;
@@ -55,7 +55,7 @@ typedef void (*out_fct_type)(char character, void* buffer, size_t idx, size_t ma
 #define FLAGS_ADAPT_EXP (1U << 11U)
 
 // Make sure you keep these in sync, can't concat the macros, 18 is the limit due to
-// limits of (long).
+// limits of (int64_t).
 #define MAX_FLOAT_PRECISION     18
 #define PRINTF_MAX_FLOAT        1e+18
 #define PRINTF_MIN_FLOAT        1e-18
@@ -156,7 +156,7 @@ static size_t _etoa(out_fct_type out, char* buffer, size_t idx, size_t maxlen, d
 
     // Move so we are within the range 0 to <1
     int exp=0;
-    long whole = 0;
+    int64_t whole = 0;
     while (value < 0.00001 && value > 0) {
         value *= 100000;
         exp -=5;
@@ -179,7 +179,7 @@ static size_t _etoa(out_fct_type out, char* buffer, size_t idx, size_t maxlen, d
     }
     value *= _e10(prec);
     exp -= prec;
-    whole = (long)value;
+    whole = (int64_t)value;
     if ((value - whole) >= 0.5) whole++;
 
     // There are some strange rounding issues that cause problems
@@ -289,12 +289,12 @@ static size_t _ftoa(out_fct_type out, char* buffer, size_t idx, size_t maxlen, d
     }
 
     // First we separate the whole and fractioanal parts
-    long whole = (long)value;
+    int64_t whole = (int64_t)value;
     double dfrac = value - whole;
     
     // Now deal with fractional precision (and rounding)
     dfrac *= _e10(prec);
-    long frac = (long)dfrac;
+    int64_t frac = (int64_t)dfrac;
 
     if ((dfrac - frac) >= 0.5) {
         frac++;
