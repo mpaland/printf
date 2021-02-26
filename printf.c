@@ -235,6 +235,8 @@ static unsigned int _atoi(const char** str)
 //
 static size_t _out_rev2(out_fct_type out, char* buffer, size_t idx, size_t maxlen, const char* buf, size_t len, unsigned int width, unsigned int flags, int negative)
 {
+    const size_t start_idx = idx;
+
     // First figure out the right sign to use...
     int sign=0;
     if (negative) {
@@ -269,6 +271,12 @@ static size_t _out_rev2(out_fct_type out, char* buffer, size_t idx, size_t maxle
     // The the value
     while(len > 0) {
         out(buf[--len], buffer, idx++, maxlen);
+    }
+    // append pad spaces up to given width
+    if (flags & FLAGS_LEFT) {
+        while (idx - start_idx < width) {
+          out(' ', buffer, idx++, maxlen);
+        }
     }
     return idx;
 }
@@ -421,9 +429,9 @@ static size_t _ntoa_long_long(out_fct_type out, char* buffer, size_t idx, size_t
 // 4. Max number length fits in buffer, so no length checking needed
 //
 static size_t _etoa(out_fct_type out, char* buffer, size_t idx, size_t maxlen, double value, unsigned int prec, unsigned int width, unsigned int flags) {
-    char buf[PRINTF_MAX_FLOAT_PRECISION + 1 + 5];  // number, plus decimal, plus e+XXX
-    int len = 0;
-    int hadsig = 0;         // used for trailing zero removal
+    char    buf[PRINTF_MAX_FLOAT_PRECISION + 1 + 5];  // number, plus decimal, plus e+XXX
+    size_t  len = 0;
+    int     hadsig = 0;         // used for trailing zero removal
 
     // If we are a normal 'e' type output then we need an extra digit to be
     // consistent with the standard printf
@@ -437,18 +445,18 @@ static size_t _etoa(out_fct_type out, char* buffer, size_t idx, size_t maxlen, d
     if (prec == 0) {
         prec = 1;
     }
+    // Store and remove negativity
+    int negative;
+    _FSIGNCHECK(value, negative);
+
     // Handle the various verions of scientific with/without trailing zeros
     if (!(flags & FLAGS_ADAPT_EXP)) {
         // Straight scientific with trailing zeros
         hadsig = 1;
-    } else if (value >= _e10(prec) || (value <= 1e-05 && value != 0)) {
+    } else if (value >= _e10((int)prec) || (value <= 1e-05 && value != 0)) {
         // Too large, so switch to scientific without trailing zeros
         flags &= ~FLAGS_ADAPT_EXP;
     }
-
-    // Store and remove negativity
-    int negative;
-    _FSIGNCHECK(value, negative);
 
     // Move so we are within the range 0 to <1
     int exp=0;
@@ -473,13 +481,13 @@ static size_t _etoa(out_fct_type out, char* buffer, size_t idx, size_t maxlen, d
     if (value == 0) {
         exp++;
     }
-    value *= _e10(prec);
+    value *= _e10((int)prec);
     exp -= prec;
     whole = (int64_t)value;
     if ((value - whole) >= 0.5) whole++;
 
     // There are some strange rounding issues that cause problems
-    if (whole == _e10(prec)) {
+    if (whole == _e10((int)prec)) {
         whole /= 10;
         exp++;
     }
@@ -557,7 +565,7 @@ static size_t _etoa(out_fct_type out, char* buffer, size_t idx, size_t maxlen, d
 //
 static size_t _ftoa(out_fct_type out, char* buffer, size_t idx, size_t maxlen, double value, unsigned int prec, unsigned int width, unsigned int flags) {
     char    buf[(2*PRINTF_MAX_FLOAT_PRECISION)+1];
-    int     len = 0;
+    size_t  len = 0;
 
     // Special cases (nan, inf-, inf+)
     if (__builtin_isnan(value)) {
@@ -594,12 +602,12 @@ static size_t _ftoa(out_fct_type out, char* buffer, size_t idx, size_t maxlen, d
     double dfrac = value - whole;
     
     // Now deal with fractional precision (and rounding)
-    dfrac *= _e10(prec);
+    dfrac *= _e10((int)prec);
     int64_t frac = (int64_t)dfrac;
 
     if ((dfrac - frac) >= 0.5) {
         frac++;
-        if (frac >= _e10(prec)) {
+        if (frac >= _e10((int)prec)) {
             whole++;
             frac = 0;
         }
