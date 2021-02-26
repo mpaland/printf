@@ -258,7 +258,7 @@ static size_t _out_rev2(out_fct_type out, char* buffer, size_t idx, size_t maxle
         out(sign, buffer, idx++,maxlen);
     }
     // Now zeropad (no spaces would have happened)
-    if (flags & FLAGS_ZEROPAD) {
+    if (!(flags & FLAGS_LEFT) && (flags & FLAGS_ZEROPAD)) {
         for (int i=len; i < width; i++) {
             out('0', buffer, idx++, maxlen);
         }
@@ -560,7 +560,7 @@ static size_t _ftoa(out_fct_type out, char* buffer, size_t idx, size_t maxlen, d
     int     len = 0;
 
     // Special cases (nan, inf-, inf+)
-    if (value != value) {
+    if (__builtin_isnan(value)) {
         return _out_rev2(out, buffer, idx, maxlen, "nan", 3, width, flags, 0);
     }
     if (value < -DBL_MAX) {
