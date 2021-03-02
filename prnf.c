@@ -94,23 +94,6 @@
   		void* arg;
 	} out_fct_wrap_type;
 
-// 	internal secure strlen
-// 	\return The length of the string (excluding the terminating 0) limited by 'maxsize'
-	static inline size_t _strnlen_s(const char* str, size_t maxsize)
-	{
-  		const char* s;
-  		for (s = str; *s && maxsize--; ++s);
-  		return (size_t)(s - str);
-	}
-
-
-// 	internal test if char is a digit (0-9)
-// 	\return true if char is a digit
-	static inline bool _is_digit(char ch)
-	{
-  		return (ch >= '0') && (ch <= '9');
-	}
-
 //********************************************************************************************************
 // Public variables
 //********************************************************************************************************
@@ -147,6 +130,9 @@
 
 	static int core_prnf(out_fct_type out, char* buffer, const size_t maxlen, const char* format, va_list va);
 	static uint8_t asctoint(const char** str);
+
+	static size_t _strnlen_s(const char* str, size_t maxlen);
+	static bool _is_digit(char ch);
 
 #ifdef PLATFORM_AVR
 	static int core_prnf_P(out_fct_type out, char* buffer, const size_t maxlen, PGM_P format, va_list va);
@@ -202,16 +188,19 @@ int snprnf(char* dst, size_t dst_size, const char* format, ...)
   return ret;
 }
 
-int snappendf(char* dst, size_t dst_size, const char* fmt, ...)
+int snappf(char* dst, size_t dst_size, const char* fmt, ...)
 {
-	int chars_written;
-	size_t org_size;
+	int chars_written = 0;
+	size_t org_len;
 	va_list va;
 
-	org_size = strlen(dst);
+	if(dst_size)
+		org_len = _strnlen_s(dst, dst_size-1);
+	else
+		org_len = 0;
 
 	va_start(va, fmt);
-	chars_written = vsnprnf(&dst[org_size], dst_size-org_size, fmt, va);
+	chars_written = vsnprnf(&dst[org_len], dst_size-org_len, fmt, va);
 	va_end(va);
 
 	return chars_written;
@@ -294,16 +283,19 @@ int snprnf_P(char* dst, size_t dst_size, PGM_P format, ...)
   return ret;
 }
 
-int snappendf_P(char* dst, size_t dst_size, PGM_P fmt, ...)
+int snappf_P(char* dst, size_t dst_size, PGM_P fmt, ...)
 {
 	int chars_written;
-	size_t org_size;
+	size_t org_len;
 	va_list va;
 
-	org_size = strlen(dst);
+	if(dst_size)
+		org_len = _strnlen_s(dst, dst_size-1);
+	else
+		org_len = 0;
 
 	va_start(va, fmt);
-	chars_written = vsnprnf_P(&dst[org_size], dst_size-org_size, fmt, va);
+	chars_written = vsnprnf_P(&dst[org_size], dst_size-org_len, fmt, va);
 	va_end(va);
 
 	return chars_written;
@@ -414,6 +406,24 @@ static size_t out_rev(out_fct_type out, char* buffer, size_t idx, size_t maxlen,
   return idx;
 }
 
+// 	internal secure strlen
+// 	\return The length of the string (excluding the terminating 0) limited by 'maxlen'
+static size_t _strnlen_s(const char* str, size_t maxlen)
+{
+	const char* s;
+	for (s = str; *s && maxlen--; ++s);
+	return (size_t)(s - str);
+}
+
+
+// 	internal test if char is a digit (0-9)
+// 	\return true if char is a digit
+static bool _is_digit(char ch)
+{
+	return (ch >= '0') && (ch <= '9');
+}
+
+
 // internal itoa format
 static size_t numtoasc_format(out_fct_type out, char* buffer, size_t idx, size_t maxlen, char* buf, uint8_t len, bool negative, uint8_t base, uint8_t prec, uint8_t width, uint16_t flags)
 {
@@ -477,6 +487,7 @@ static size_t numtoasc_format(out_fct_type out, char* buffer, size_t idx, size_t
 
   return out_rev(out, buffer, idx, maxlen, buf, len, width, flags);
 }
+
 
 // internal itoa for 'long' type
 #ifdef PRINTF_SUPPORT_LONG_LONG
@@ -577,7 +588,7 @@ static size_t fltasc(out_fct_type out, char* buffer, size_t idx, size_t maxlen, 
     }
   }
   else {
-    unsigned int count = prec;
+    uint8_t count = prec;
     // now do fractional part, as an unsigned number
     while (len < PRINTF_FTOA_BUFFER_SIZE) {
       --count;
