@@ -309,6 +309,63 @@ static size_t _out_rev(out_fct_type out, char* buffer, size_t idx, size_t maxlen
   return idx;
 }
 
+// new internal itoa format, we'll do sign and zeropad here...
+static size_t _ntoa_format2(out_fct_type out, char* buffer, size_t idx, size_t maxlen, char* buf, size_t len, bool negative, unsigned int base, unsigned int prec, unsigned int width, unsigned int flags)
+{
+  // Deal with the situation of no output chars
+  if (len == 0 && prec == 0) {
+    return 0;
+  }
+
+  // Now work out the sign char (if any)...
+  char sign=0;
+  if (negative) {
+    sign='-';
+  } else if (flags & FLAGS_PLUS) {
+    sign='+';
+  } else if (flags & FLAGS_SPACE) {
+    sign=' ';
+  }
+
+  // Now the prefix chars (if any)...
+  char prefix1 = 0;
+  char prefix2 = 0;
+  if (flags & FLAGS_HASH) {
+    if (base == 16U) {
+      prefix1 = '0';
+      prefix2 = (flags & FLAGS_UPPERCASE ? 'X' : 'x');
+    } else if (base == 2U) {
+      prefix1 = 'b';
+    }
+  }
+
+  // Now adjust width for any up-front chars so padding words
+  if (sign) width--;
+  if (prefix1) width--;
+  if (prefix2) width--;
+
+  // Now we can space pad
+  if (!(flags & FLAGS_LEFT) && !(flags & FLAGS_ZEROPAD)) {
+    while (width && (len < width)) {
+        out(' ', buffer, idx++, maxlen);
+        width--;
+    }
+  }
+  
+  // Now sign and prefix
+  if (sign) out(sign, buffer, idx++, maxlen);
+  if (prefix1) out(prefix1, buffer, idx++, maxlen);
+  if (prefix2) out(prefix2, buffer, idx++, maxlen);
+
+  // Now we can zeropad...
+  if (!(flags & FLAGS_LEFT) && (flags & FLAGS_ZEROPAD)) {
+      while (width && (len < width)) {
+            out('0', buffer, idx++, maxlen);
+            width--;
+      }
+  }
+  return _out_rev2(out, buffer, idx, maxlen, buf, len, width, flags & FLAGS_LEFT, negative);
+}
 
 // internal itoa format
 static size_t _ntoa_format(out_fct_type out, char* buffer, size_t idx, size_t maxlen, char* buf, size_t len, bool negative, unsigned int base, unsigned int prec, unsigned int width, unsigned int flags)
@@ -384,7 +441,7 @@ static size_t _ntoa_long(out_fct_type out, char* buffer, size_t idx, size_t maxl
     } while (value && (len < PRINTF_NTOA_BUFFER_SIZE));
   }
 
-  return _ntoa_format(out, buffer, idx, maxlen, buf, len, negative, (unsigned int)base, prec, width, flags);
+  return _ntoa_format2(out, buffer, idx, maxlen, buf, len, negative, (unsigned int)base, prec, width, flags);
 }
 
 
@@ -409,7 +466,7 @@ static size_t _ntoa_long_long(out_fct_type out, char* buffer, size_t idx, size_t
     } while (value && (len < PRINTF_NTOA_BUFFER_SIZE));
   }
 
-  return _ntoa_format(out, buffer, idx, maxlen, buf, len, negative, (unsigned int)base, prec, width, flags);
+  return _ntoa_format2(out, buffer, idx, maxlen, buf, len, negative, (unsigned int)base, prec, width, flags);
 }
 #endif  // PRINTF_SUPPORT_LONG_LONG
 
