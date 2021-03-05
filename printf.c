@@ -317,6 +317,11 @@ static size_t _ntoa_format2(out_fct_type out, char* buffer, size_t idx, size_t m
     return 0;
   }
 
+  // Deal with input length less than precision (with a 1 minimum)
+  while (len < prec || len < 1) {
+    buf[len++] = '0';
+  }
+
   // Now work out the sign char (if any)...
   char sign=0;
   if (negative) {
@@ -340,9 +345,9 @@ static size_t _ntoa_format2(out_fct_type out, char* buffer, size_t idx, size_t m
   }
 
   // Now adjust width for any up-front chars so padding words
-  if (sign) width--;
-  if (prefix1) width--;
-  if (prefix2) width--;
+  if (sign && width) width--;
+  if (prefix1 && width) width--;
+  if (prefix2 && width) width--;
 
   // Now we can space pad
   if (!(flags & FLAGS_LEFT) && !(flags & FLAGS_ZEROPAD)) {
@@ -364,7 +369,7 @@ static size_t _ntoa_format2(out_fct_type out, char* buffer, size_t idx, size_t m
             width--;
       }
   }
-  return _out_rev2(out, buffer, idx, maxlen, buf, len, width, flags & FLAGS_LEFT, negative);
+  return _out_rev2(out, buffer, idx, maxlen, buf, len, width, flags & FLAGS_LEFT, 0);
 }
 
 // internal itoa format
