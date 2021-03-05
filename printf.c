@@ -313,12 +313,12 @@ static size_t _out_rev(out_fct_type out, char* buffer, size_t idx, size_t maxlen
 static size_t _ntoa_format2(out_fct_type out, char* buffer, size_t idx, size_t maxlen, char* buf, size_t len, bool negative, unsigned int base, unsigned int prec, unsigned int width, unsigned int flags)
 {
   // Deal with the situation of no output chars
-  if (len == 0 && prec == 0) {
-    return 0;
+  if (prec == 0) {
+    flags &= (~FLAGS_HASH);
   }
 
   // Deal with input length less than precision (with a 1 minimum)
-  while (len < prec || len < 1) {
+  while (len < prec) {
     buf[len++] = '0';
   }
 
@@ -340,7 +340,10 @@ static size_t _ntoa_format2(out_fct_type out, char* buffer, size_t idx, size_t m
       prefix1 = '0';
       prefix2 = (flags & FLAGS_UPPERCASE ? 'X' : 'x');
     } else if (base == 2U) {
-      prefix1 = 'b';
+      prefix1 = '0';
+      prefix2 = 'b';
+    } else if (base == 8U) {
+      prefix1 = '0';
     }
   }
 
