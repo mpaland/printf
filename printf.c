@@ -926,7 +926,6 @@ static int _vsnprintf(out_fct_type out, char* buffer, const size_t maxlen, const
 
 int printf_(const char* format, ...)
 {
-    _putchar('X');
   va_list va;
   va_start(va, format);
   char buffer[1];
