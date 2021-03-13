@@ -35,35 +35,6 @@
 
 	#include "includes.h"
 
-//********************************************************************************************************
-// Configurable defines
-//********************************************************************************************************
-
-//	minimal is ~2.3k, all options is ~6.4k
-	#define PRNF_SUPPORT_LONG_LONG
-	#define PRNF_SUPPORT_FLOAT
-	#define PRNF_SUPPORT_EXPONENTIAL
-
-// 	'ntoa' conversion buffer size, this must be big enough to hold one converted
-// 	numeric number including padded zeros (dynamically created on stack)
-	#define PRNF_NTOA_BUFFER_SIZE    32
-
-// 	'ftoa' conversion buffer size, this must be big enough to hold one converted
-// 	float number including padded zeros (dynamically created on stack)
-// 	default: 32 byte
-	#define PRNF_FTOA_BUFFER_SIZE    32
-
-//	Called if above buffer sizes are *reached* (although not necessarily exceeded)
-  	#define WARN_NTOA_BUFFER_SIZE()		((void)0)
-  	#define WARN_FTOA_BUFFER_SIZE() 	((void)0)
-
-// 	define the default floating point precision
-// 	default: 6 digits
-	#define PRNF_DEFAULT_FLOAT_PRECISION  6
-
-// 	define the largest float suitable to print with %f
-// 	default: 1e9
-	#define PRNF_MAX_FLOAT  1e9
 
 //********************************************************************************************************
 // Local defines
@@ -97,6 +68,10 @@
 //********************************************************************************************************
 // Private variables
 //********************************************************************************************************
+
+#ifdef 	PRNF_BUFFER_STATIC
+	static char itoabuf[PRNF_BUFFER_SIZE];
+#endif
 
 //********************************************************************************************************
 // Private prototypes
@@ -490,27 +465,27 @@ static size_t numtoasc_format(void(*out_fptr)(char, void*), void* out_vars, size
     	if(width && (flags & FLAGS_ZEROPAD) && (negative || (flags & (FLAGS_PLUS | FLAGS_SPACE))))
 			width--;
 
-		while((flags & FLAGS_ZEROPAD) && (len < width) && (len < PRNF_NTOA_BUFFER_SIZE))
+		while((flags & FLAGS_ZEROPAD) && (len < width) && (len < PRNF_BUFFER_SIZE))
      		buf[len++] = '0';
   	};
 
-	while((len < prec) && (len < PRNF_NTOA_BUFFER_SIZE))
+	while((len < prec) && (len < PRNF_BUFFER_SIZE))
 		buf[len++] = '0';
 
 	// handle hash
 	if(flags & FLAGS_HASH)
 	{
-		if((base == 16) && !(flags & FLAGS_UPPERCASE) && (len < PRNF_NTOA_BUFFER_SIZE))
+		if((base == 16) && !(flags & FLAGS_UPPERCASE) && (len < PRNF_BUFFER_SIZE))
       		buf[len++] = 'x';
 
-		else if((base == 16) && (flags & FLAGS_UPPERCASE) && (len < PRNF_NTOA_BUFFER_SIZE))
+		else if((base == 16) && (flags & FLAGS_UPPERCASE) && (len < PRNF_BUFFER_SIZE))
       		buf[len++] = 'X';
 
-    	else if ((base == 2) && (len < PRNF_NTOA_BUFFER_SIZE))
+    	else if ((base == 2) && (len < PRNF_BUFFER_SIZE))
       		buf[len++] = 'b';
 
 
-    	if (len < PRNF_NTOA_BUFFER_SIZE)
+    	if (len < PRNF_BUFFER_SIZE)
     	{
 			// Only add a zero if number does not already start with a zero
       		if(len)
@@ -523,7 +498,7 @@ static size_t numtoasc_format(void(*out_fptr)(char, void*), void* out_vars, size
     	};
 	};
 
-	if(len < PRNF_NTOA_BUFFER_SIZE)
+	if(len < PRNF_BUFFER_SIZE)
 	{
     	if(negative)
     		buf[len++] = '-';
@@ -535,8 +510,8 @@ static size_t numtoasc_format(void(*out_fptr)(char, void*), void* out_vars, size
       		buf[len++] = ' ';
   	};
 
-	if(len == PRNF_NTOA_BUFFER_SIZE)
-  		WARN_NTOA_BUFFER_SIZE();
+	if(len == PRNF_BUFFER_SIZE)
+  		PRNF_WARN_BUFFER_SIZE();
 
 	return out_rev(out_fptr, out_vars, idx, buf, len, width, flags);
 }
@@ -552,10 +527,12 @@ static size_t numtoasc(void(*out_fptr)(char, void*), void* out_vars, size_t idx,
 	size_t len = 0;
 	size_t ret;
 
-	#ifdef PRNF_USE_HEAP
-		char *buf = heap_allocate(PRNF_NTOA_BUFFER_SIZE);
+	#ifdef PRNF_BUFFER_HEAP
+		char *buf = heap_allocate(PRNF_BUFFER_SIZE);
+	#elif defined PRNF_BUFFER_STATIC
+		char *buf = itoabuf;
 	#else
-		char buf[PRNF_NTOA_BUFFER_SIZE];
+		char buf[PRNF_BUFFER_SIZE];
 	#endif
 
 	// no hash for 0 values
@@ -565,17 +542,39 @@ static size_t numtoasc(void(*out_fptr)(char, void*), void* out_vars, size_t idx,
   	// write if precision != 0 and value is != 0
   	if(!(flags & FLAGS_PRECISION) || value)
   	{
-    	do
-    	{
-      		const char digit = (char)(value % base);
-      		buf[len++] = digit < 10 ? '0' + digit : (flags & FLAGS_UPPERCASE ? 'A' : 'a') + digit - 10;
-      		value /= base;
-    	}while(value && (len < PRNF_NTOA_BUFFER_SIZE));
+  		//Allow compiler to optimize /10 and %10 or /16 and %16 with whatever bit shifting magic it likes.
+  		if(base == 10)
+  		{	
+    		do
+    		{
+	      		const char digit = (char)(value % 10);
+      			buf[len++] = digit + '0';
+      			value /= 10;
+    		}while(value && (len < PRNF_BUFFER_SIZE));
+  		}
+  		else if(base == 16)
+  		{	
+    		do
+    		{
+	      		const char digit = (char)(value % 16);
+      			buf[len++] = digit < 10 ? '0' + digit : (flags & FLAGS_UPPERCASE ? 'A' : 'a') + digit - 10;
+      			value /= 16;
+    		}while(value && (len < PRNF_BUFFER_SIZE));
+  		}
+  		else
+  		{
+    		do
+    		{
+	      		const char digit = (char)(value % base);
+      			buf[len++] = digit < 10 ? '0' + digit : (flags & FLAGS_UPPERCASE ? 'A' : 'a') + digit - 10;
+      			value /= base;
+    		}while(value && (len < PRNF_BUFFER_SIZE));
+    	};
   	};
 
 	ret = numtoasc_format(out_fptr, out_vars, idx, buf, len, negative, base, prec, width, flags);
 
-	#ifdef PRNF_USE_HEAP
+	#ifdef PRNF_BUFFER_HEAP
 		heap_free(buf);
 	#endif
 	return ret;
@@ -590,10 +589,12 @@ static size_t fltasc(void(*out_fptr)(char, void*), void* out_vars, size_t idx, d
 	double diff = 0.0;
 	size_t ret;
 
-	#ifdef PRNF_USE_HEAP
-		char *buf = heap_allocate(PRNF_FTOA_BUFFER_SIZE);
+	#ifdef PRNF_BUFFER_HEAP
+		char *buf = heap_allocate(PRNF_BUFFER_SIZE);
+	#elif defined PRNF_BUFFER_STATIC
+		char *buf = itoabuf;
 	#else
-		char buf[PRNF_FTOA_BUFFER_SIZE];
+		char buf[PRNF_BUFFER_SIZE];
 	#endif
 
 	// powers of 10
@@ -627,7 +628,7 @@ static size_t fltasc(void(*out_fptr)(char, void*), void* out_vars, size_t idx, d
 		prec = PRNF_DEFAULT_FLOAT_PRECISION;
 
   	// limit precision to 9, cause a prec >= 10 can lead to overflow errors
-  	while((len < PRNF_FTOA_BUFFER_SIZE) && (prec > 9))
+  	while((len < PRNF_BUFFER_SIZE) && (prec > 9))
   	{
     	buf[len++] = '0';
     	prec--;
@@ -667,7 +668,7 @@ static size_t fltasc(void(*out_fptr)(char, void*), void* out_vars, size_t idx, d
   	{
     	uint8_t count = prec;
     	// now do fractional part, as an unsigned number
-    	while(len < PRNF_FTOA_BUFFER_SIZE)
+    	while(len < PRNF_BUFFER_SIZE)
     	{
       		count--;
       		buf[len++] = (char)(48 + (frac % 10));
@@ -676,16 +677,16 @@ static size_t fltasc(void(*out_fptr)(char, void*), void* out_vars, size_t idx, d
     	};
 
     	// add extra 0s
-    	while((len < PRNF_FTOA_BUFFER_SIZE) && (count-- > 0))
+    	while((len < PRNF_BUFFER_SIZE) && (count-- > 0))
       		buf[len++] = '0';
 
       	// add decimal
-		if(len < PRNF_FTOA_BUFFER_SIZE)
+		if(len < PRNF_BUFFER_SIZE)
       		buf[len++] = '.';
 	};
 
 	// do whole part, number is reversed
-  	while(len < PRNF_FTOA_BUFFER_SIZE)
+  	while(len < PRNF_BUFFER_SIZE)
   	{
     	buf[len++] = (char)(48 + (whole % 10));
     	if(!(whole /= 10))
@@ -698,11 +699,11 @@ static size_t fltasc(void(*out_fptr)(char, void*), void* out_vars, size_t idx, d
     	if(width && (negative || (flags & (FLAGS_PLUS | FLAGS_SPACE)))) {
       	width--;
     	}
-    	while((len < width) && (len < PRNF_FTOA_BUFFER_SIZE))
+    	while((len < width) && (len < PRNF_BUFFER_SIZE))
 			buf[len++] = '0';
 	}
 
-  	if(len < PRNF_FTOA_BUFFER_SIZE)
+  	if(len < PRNF_BUFFER_SIZE)
   	{
     	if(negative)
       		buf[len++] = '-';
@@ -714,11 +715,11 @@ static size_t fltasc(void(*out_fptr)(char, void*), void* out_vars, size_t idx, d
       		buf[len++] = ' ';
   	};
 
-	if(len == PRNF_FTOA_BUFFER_SIZE)
-  		WARN_FTOA_BUFFER_SIZE();
+	if(len == PRNF_BUFFER_SIZE)
+  		PRNF_WARN_BUFFER_SIZE();
 
 	ret = out_rev(out_fptr, out_vars, idx, buf, len, width, flags);
-	#ifdef PRNF_USE_HEAP
+	#ifdef PRNF_BUFFER_HEAP
 		heap_free(buf);
 	#endif
 	return ret;

@@ -89,19 +89,50 @@ p 	Pointer address
 */
 
 //********************************************************************************************************
-// Public defines
+// Configurable defines
 //********************************************************************************************************
 
+//	minimal is ~2.3k, all options is ~6.4k
+	#define PRNF_SUPPORT_LONG_LONG
+	#define PRNF_SUPPORT_FLOAT
+	#define PRNF_SUPPORT_EXPONENTIAL
+
+// 	define the default floating point precision
+// 	default: 6 digits
+	#define PRNF_DEFAULT_FLOAT_PRECISION  6
+
+// 	define the largest float suitable to print with %f
+// 	default: 1e9
+	#define PRNF_MAX_FLOAT  1e9
+
+//	Provides hprnf()
+	#define PRNF_SUPPORT_HEAP
+
+//	Provides fifoprnf()
+	#define PRNF_SUPPORT_FIFO
+
+// 	'ntoa' or 'ftoa' conversion buffer size, this must be big enough to hold one converted
+// 	int or float number including padded zeros 
+	#define PRNF_BUFFER_SIZE    32
+
+//	Called if above buffer size is *reached* (although not necessarily exceeded)
+  	#define PRNF_WARN_BUFFER_SIZE()	((void)0)
+ 
+//	Above buffer storage, default is to use the stack which is both re-enterent and thread safe.
+//	Or, choose 1 alternative:
+//	#define PRNF_BUFFER_STATIC
+//	#define PRNF_BUFFER_HEAP
+
+//	Buffer storage for number conversions, buffer size will still 	
 //	uncomment to replace std printf (& friends) with prnf using macros
 //	*caution* 
 //	due to this replacing 'printf' it will break later function declarations attempting to use __attribute__((format(printf, 1, 2)))
 //	#define OVERRIDE_STD_PRINTF
 
-//	Use the heap for buffers, to reduce stack usage. Allocated buffer sizes will still be as defined in prnf.c
-//	Also provides hprnf()
-	#define PRNF_USE_HEAP
+//********************************************************************************************************
+// Public defines
+//********************************************************************************************************
 
-	#define PRNF_SUPPORT_FIFO
 
 #ifdef PLATFORM_AVR
 //	Compiler will first test argument types based on format string, then remove the empty function during optimization.
