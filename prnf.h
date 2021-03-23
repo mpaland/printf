@@ -105,12 +105,6 @@ p 	Pointer address
 // 	default: 1e9
 	#define PRNF_MAX_FLOAT  1e9
 
-//	Provides hprnf()
-	#define PRNF_SUPPORT_HEAP
-
-//	Provides fifoprnf()
-	#define PRNF_SUPPORT_FIFO
-
 // 	'ntoa' or 'ftoa' conversion buffer size, this must be big enough to hold one converted
 // 	int or float number including padded zeros 
 	#define PRNF_BUFFER_SIZE    32
@@ -143,29 +137,17 @@ p 	Pointer address
 
 //	_SL macros for AVR
 	#define prnf_SL(_fmtarg, ...) 						({int _prv; _prv = prnf_P(PSTR(_fmtarg) ,##__VA_ARGS__); fmttst_optout(_fmtarg ,##__VA_ARGS__); _prv;})
-	#ifdef PRNF_USE_HEAP
-	#define hprnf_SL(_fmtarg, ...) 						({char* _prv; _prv = hprnf_P(PSTR(_fmtarg) ,##__VA_ARGS__); fmttst_optout(_fmtarg ,##__VA_ARGS__); _prv;})
-	#endif
 	#define sprnf_SL(_dst, _fmtarg, ...) 				({int _prv; _prv = sprnf_P(_dst, PSTR(_fmtarg) ,##__VA_ARGS__); fmttst_optout(_fmtarg ,##__VA_ARGS__); _prv;})
 	#define snprnf_SL(_dst, _dst_size, _fmtarg, ...) 	({int _prv; _prv = snprnf_P(_dst, _dst_size, PSTR(_fmtarg) ,##__VA_ARGS__); fmttst_optout(_fmtarg ,##__VA_ARGS__); _prv;})
 	#define snappf_SL(_dst, _dst_size, _fmtarg, ...) 	({int _prv; _prv = snappf_P(_dst, _dst_size, PSTR(_fmtarg) ,##__VA_ARGS__); fmttst_optout(_fmtarg ,##__VA_ARGS__); _prv;})
 	#define fptrprnf_SL(_fptr, _fargs, _fmtarg, ...) 	({int _prv; _prv = fctprnf_P(_fptr, _fargs, PSTR(_fmtarg) ,##__VA_ARGS__); fmttst_optout(_fmtarg ,##__VA_ARGS__); _prv;})
-	#ifdef PRNF_SUPPORT_FIFO
-	#define fifoprnf_SL(_dst, _fmtarg, ...) 			({int _prv; _prv = fifoprnf_P(_dst, PSTR(_fmtarg) ,##__VA_ARGS__); fmttst_optout(_fmtarg ,##__VA_ARGS__); _prv;})
-	#endif
 #else
 
 	#define prnf_SL(_fmtarg, ...) 						prnf(_fmtarg ,##__VA_ARGS__)
-	#ifdef PRNF_USE_HEAP
-	#define hprnf_SL(_fmtarg, ...) 						hprnf(_fmtarg ,##__VA_ARGS__)
-	#endif
 	#define sprnf_SL(_dst, _fmtarg, ...) 				sprnf(_dst, _fmtarg ,##__VA_ARGS__)
 	#define snprnf_SL(_dst, _dst_size, _fmtarg, ...) 	snprnf(_dst, _dst_size, _fmtarg ,##__VA_ARGS__)
 	#define snappf_SL(_dst, _dst_size, _fmtarg, ...) 	snappf(_dst, _dst_size, _fmtarg ,##__VA_ARGS__)
 	#define fptrprnf_SL(_fptr, _fargs, _fmtarg, ...)	fctprnf(_fptr, _fargs, _fmtarg ,##__VA_ARGS__)
-	#ifdef PRNF_SUPPORT_FIFO
-	#define fifoprnf_SL(_dst, _fmtarg, ...) 			fifoprnf(_dst, _fmtarg ,##__VA_ARGS__)
-	#endif
 #endif
 
 
@@ -181,13 +163,10 @@ p 	Pointer address
 	int snprnf(char* dst, size_t dst_size, const char* fmt, ...) __attribute__((format(printf, 3, 4)));
 	int snappf(char* dst, size_t dst_size, const char* fmt, ...) __attribute__((format(printf, 3, 4)));
 	int fptrprnf(void(*out_fptr)(char, void*), void* out_vars, const char* fmt, ...) __attribute__((format(printf, 3, 4)));
-	char* hprnf(const char* fmt, ...) __attribute__((format(printf, 1, 2)));
-	#ifdef PRNF_SUPPORT_FIFO
-	int fifoprnf(struct fifo_struct *dst, const char* fmt, ...) __attribute__((format(printf, 2, 3)));
-	#endif
 	int vprnf(const char* fmt, va_list va);
 	int vsnprnf(char* dst, size_t dst_size, const char* fmt, va_list va);
 	int vsprnf(char* dst, const char* fmt, va_list va);
+	int vfptrprnf(void(*out_fptr)(char, void*), void* out_vars, const char* fmt, va_list va);
 
 #ifdef PLATFORM_AVR
 	int prnf_P(PGM_P fmt, ...);
@@ -195,13 +174,10 @@ p 	Pointer address
 	int snprnf_P(char* dst, size_t dst_size, PGM_P fmt, ...);
 	int snappf_P(char* dst, size_t dst_size, PGM_P fmt, ...);
 	int fptrprnf_P(void(*out_fptr)(char, void*), void* out_vars, PGM_P fmt, ...);	
-	char* hprnf_P(PGM_P fmt, ...);
-	#ifdef PRNF_SUPPORT_FIFO
-	int fifoprnf_P(struct fifo_struct *dst, PGM_P fmt, ...);
-	#endif
 	int vprnf_P(PGM_P fmt, va_list va);
 	int vsprnf_P(char* dst, PGM_P fmt, va_list va);
 	int vsnprnf_P(char* dst, size_t dst_size, PGM_P fmt, va_list va);
+	int vfptrprnf_P(void(*out_fptr)(char, void*), void* out_vars, PGM_P fmt, va_list va);
 #endif
 
 #ifdef OVERRIDE_STD_PRINTF

@@ -78,11 +78,7 @@
 //********************************************************************************************************
 
 	static void out_buf(char x, void* out_vars);
-	static void out_null(char x, void* out_vars);
 	static void out_putc(char x, void* out_vars);
-#ifdef PRNF_SUPPORT_FIFO
-	static void out_fifo(char x, void* out_vars);
-#endif
 
 	static size_t out_rev(void(*out_fptr)(char, void*), void* out_vars, size_t idx, const char* buf, uint8_t len, uint8_t width, uint16_t flags);
 	static size_t numtoasc_format(void(*out_fptr)(char, void*), void* out_vars, size_t idx, char* buf, uint8_t len, bool negative, uint8_t base, uint8_t prec, uint8_t width, uint16_t flags);
@@ -124,26 +120,6 @@ int prnf(const char* format, ...)
 
 	va_end(va);
 	return ret;
-}
-
-char* hprnf(const char* format, ...)
-{
-	va_list va;
-	va_start(va, format);
-
-	struct out_buf_vars_struct out_buf_vars;
-	char* result;
-
-  	out_buf_vars.dst_size = core_prnf(out_null, NULL, format, va) + 1;
-   	out_buf_vars.buf = heap_allocate(out_buf_vars.dst_size);
-	out_buf_vars.bufpos = 0;
-	result = out_buf_vars.buf;
-
-  	if(out_buf_vars.buf)
-  		core_prnf(out_buf, &out_buf_vars, format, va);
-
-  	va_end(va);
-  	return result;
 }
 
 int sprnf(char* dst, const char* format, ...)
@@ -219,22 +195,16 @@ int fptrprnf(void(*out_fptr)(char, void*), void* out_vars, const char* format, .
   	va_list va;
   	va_start(va, format);
 
-	const int ret = core_prnf(out_fptr, out_vars, format, va);
+	const int ret = vfptrprnf(out_fptr, out_vars, format, va);
 
 	va_end(va);
 	return ret;
 }
 
-#ifdef PRNF_SUPPORT_FIFO
-int fifoprnf(struct fifo_struct *dst, const char* format, ...)
+int vfptrprnf(void(*out_fptr)(char, void*), void* out_vars, const char* format, va_list va)
 {
-	va_list va;
-	va_start(va, format);
-	const int ret = core_prnf(out_fifo, dst, format, va);
-	va_end(va);
-	return ret;
+	return core_prnf(out_fptr, out_vars, format, va);
 }
-#endif
 
 #ifdef PLATFORM_AVR
 
@@ -247,26 +217,6 @@ int prnf_P(PGM_P format, ...)
 
 	va_end(va);
 	return ret;
-}
-
-char* hprnf_P(PGM_P format, ...)
-{
-	va_list va;
-	va_start(va, format);
-
-	struct out_buf_vars_struct out_buf_vars;
-	char* result;
-
-  	out_buf_vars.dst_size = core_prnf_P(out_null, NULL, format, va) + 1;
-   	out_buf_vars.buf = heap_allocate(out_buf_vars.dst_size);
-	out_buf_vars.bufpos = 0;
-	result = out_buf_vars.buf;
-
-  	if(out_buf_vars.buf)
-  		core_prnf_P(out_buf, &out_buf_vars, format, va);
-
-  	va_end(va);
-  	return result;
 }
 
 int sprnf_P(char* dst, PGM_P format, ...)
@@ -347,16 +297,10 @@ int fptrprnf_P(void(*out_fptr)(char, void*), void* out_vars, PGM_P format, ...)
 	return ret;
 }
 
-#ifdef PRNF_SUPPORT_FIFO
-int fifoprnf_P(struct fifo_struct *dst, PGM_P format, ...)
+int vfptrprnf_P(void(*out_fptr)(char, void*), void* out_vars, PGM_P format, va_list va)
 {
-	va_list va;
-	va_start(va, format);
-	const int ret = core_prnf_P(out_fifo, dst, format, va);
-	va_end(va);
-	return ret;
+	return core_prnf_P(out_fptr, out_vars, format, va);
 }
-#endif
 
 #endif
 
@@ -383,12 +327,6 @@ static void out_buf(char x, void* out_vars)
 	};
 }
 
-// internal null output
-static void out_null(char x, void* out_vars)
-{
-	(void)x; (void)out_vars;
-}
-
 // internal prnf_putc wrapper
 static void out_putc(char x, void* out_vars)
 {
@@ -396,14 +334,6 @@ static void out_putc(char x, void* out_vars)
 	if(x)
     	prnf_putc(x);
 }
-
-#ifdef PRNF_SUPPORT_FIFO
-static void out_fifo(char x, void* out_vars)
-{
-	if(x)
-		fifo_write_char((struct fifo_struct*)out_vars, x);
-}
-#endif
 
 // output the specified string in reverse, taking care of any zero-padding
 static size_t out_rev(void(*out_fptr)(char, void*), void* out_vars, size_t idx, const char* buf, uint8_t len, uint8_t width, uint16_t flags)
