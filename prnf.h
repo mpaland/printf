@@ -85,6 +85,14 @@ s 	String of characters
 p 	Pointer address
 % 	A % followed by another % character will write a single %
 
+S	String of characters (same as s). Or for AVR targets, a string of characters in program memory.
+	Format testing expects wchar_t* for %S, use the wrapper PRNF_ARG_SL("my text") for string literal arguments to prnf
+	prnf_SL("%50S\r\n", PRNF_ARG_SL("Right aligned in 50"));
+	prnf_SL("%-50S\r\n", PRNF_ARG_SL("Left aligned in 50"));
+
+	The above will store both the formatting string and the argument in program memory on AVR, or ram on non-avr targets
+
+	For string constants in program memory, you will need to cast to (wchat_t*) to avoid type warnings.
 
 */
 
@@ -103,7 +111,7 @@ p 	Pointer address
 
 // 	define the largest float suitable to print with %f
 // 	default: 1e9
-	#define PRNF_MAX_FLOAT  1e9
+	#define PRNF_MAX_FLOAT	1e9
 
 // 	'ntoa' or 'ftoa' conversion buffer size, this must be big enough to hold one converted
 // 	int or float number including padded zeros 
@@ -141,6 +149,7 @@ p 	Pointer address
 	#define snprnf_SL(_dst, _dst_size, _fmtarg, ...) 	({int _prv; _prv = snprnf_P(_dst, _dst_size, PSTR(_fmtarg) ,##__VA_ARGS__); fmttst_optout(_fmtarg ,##__VA_ARGS__); _prv;})
 	#define snappf_SL(_dst, _dst_size, _fmtarg, ...) 	({int _prv; _prv = snappf_P(_dst, _dst_size, PSTR(_fmtarg) ,##__VA_ARGS__); fmttst_optout(_fmtarg ,##__VA_ARGS__); _prv;})
 	#define fptrprnf_SL(_fptr, _fargs, _fmtarg, ...) 	({int _prv; _prv = fctprnf_P(_fptr, _fargs, PSTR(_fmtarg) ,##__VA_ARGS__); fmttst_optout(_fmtarg ,##__VA_ARGS__); _prv;})
+	#define PRNF_ARG_SL(_arg)							((wchar_t*)PSTR(_arg))
 #else
 
 	#define prnf_SL(_fmtarg, ...) 						prnf(_fmtarg ,##__VA_ARGS__)
@@ -148,6 +157,7 @@ p 	Pointer address
 	#define snprnf_SL(_dst, _dst_size, _fmtarg, ...) 	snprnf(_dst, _dst_size, _fmtarg ,##__VA_ARGS__)
 	#define snappf_SL(_dst, _dst_size, _fmtarg, ...) 	snappf(_dst, _dst_size, _fmtarg ,##__VA_ARGS__)
 	#define fptrprnf_SL(_fptr, _fargs, _fmtarg, ...)	fctprnf(_fptr, _fargs, _fmtarg ,##__VA_ARGS__)
+	#define PRNF_ARG_SL(_arg)							((wchar_t*)(_arg))
 #endif
 
 

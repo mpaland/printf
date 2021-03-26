@@ -103,6 +103,7 @@
 	static bool prnf_is_digit(char ch);
 
 #ifdef PLATFORM_AVR
+	static size_t prnf_strnlen_s_P(PGM_P str, size_t maxlen);
 	static int core_prnf_P(void(*out_fptr)(char, void*), void* out_vars, PGM_P format, va_list va);
 	static uint8_t asctoint_P(const char** str);
 #endif
@@ -370,6 +371,13 @@ static size_t out_rev(void(*out_fptr)(char, void*), void* out_vars, size_t idx, 
 	return idx;
 }
 
+// 	internal test if char is a digit (0-9)
+// 	\return true if char is a digit
+static bool prnf_is_digit(char ch)
+{
+	return (ch >= '0') && (ch <= '9');
+}
+
 // 	internal secure strlen
 // 	\return The length of the string (excluding the terminating 0) limited by 'maxlen'
 static size_t prnf_strnlen_s(const char* str, size_t maxlen)
@@ -379,12 +387,15 @@ static size_t prnf_strnlen_s(const char* str, size_t maxlen)
 	return (size_t)(s - str);
 }
 
-// 	internal test if char is a digit (0-9)
-// 	\return true if char is a digit
-static bool prnf_is_digit(char ch)
+#ifdef PLATFORM_AVR
+//The first pass requires this to provide for PSTR() arguments with a ram string format
+static size_t prnf_strnlen_s_P(PGM_P str, size_t maxlen)
 {
-	return (ch >= '0') && (ch <= '9');
+	PGM_P s;
+	for (s = str; pgm_read_byte(s) && maxlen--; ++s);
+	return (size_t)(s - str);
 }
+#endif
 
 // internal itoa format
 static size_t numtoasc_format(void(*out_fptr)(char, void*), void* out_vars, size_t idx, char* buf, uint8_t len, bool negative, uint8_t base, uint8_t prec, uint8_t width, uint16_t flags)
@@ -786,11 +797,11 @@ static size_t exptoasc(void(*out_fptr)(char, void*), void* out_vars, size_t idx,
 
 // wrappers for PGM or non-PGM access
 #ifndef SECOND_PASS
-	#define FMTRD(_fmt) (*(_fmt))
-	#define ATOI(_src)	asctoint(_src)
+	#define FMTRD(_fmt) 				(*(_fmt))
+	#define ATOI(_src)					asctoint(_src)
 #else
-	#define FMTRD(_fmt)	pgm_read_byte(_fmt)
-	#define ATOI(_src) 	asctoint_P(_src)
+	#define FMTRD(_fmt)					pgm_read_byte(_fmt)
+	#define ATOI(_src) 					asctoint_P(_src)
 #endif
 
 // internal ASCII string to unsigned int conversion
@@ -1063,6 +1074,10 @@ static int core_prnf_P(void(*out_fptr)(char, void*), void* out_vars, PGM_P forma
 				break;
 			};
 
+//			For non-avr, both %s and %S are the same.
+			#ifndef PLATFORM_AVR
+			case 'S' :
+			#endif
 			case 's' :
 			{
 				const char* p = va_arg(va, char*);
@@ -1078,10 +1093,12 @@ static int core_prnf_P(void(*out_fptr)(char, void*), void* out_vars, PGM_P forma
 						idx++;
 					};
 				};
+				while((*p != 0) && (!(flags & FLAGS_PRECISION) || precision--))
 				// string output
 				while((*p != 0) && (!(flags & FLAGS_PRECISION) || precision--))
 				{
-					out_fptr(*(p++), out_vars);
+					out_fptr(*p, out_vars);
+					p++;
 					idx++;
 				};
 				// post padding
@@ -1096,6 +1113,43 @@ static int core_prnf_P(void(*out_fptr)(char, void*), void* out_vars, PGM_P forma
 				format++;
 				break;
 			};
+
+			#ifdef PLATFORM_AVR
+			case 'S' :
+			{
+				const char* p = va_arg(va, char*);
+				size_t l = prnf_strnlen_s_P(p, precision ? precision : (size_t)-1);
+				// pre padding
+				if(flags & FLAGS_PRECISION)
+				l = (l < precision ? l : precision);
+				if(!(flags & FLAGS_LEFT))
+				{
+					while(l++ < width)
+					{
+						out_fptr(' ', out_vars);
+						idx++;
+					};
+				};
+				// string output
+				while((pgm_read_byte(p) != 0) && (!(flags & FLAGS_PRECISION) || precision--))
+				{
+					out_fptr(pgm_read_byte(p), out_vars);
+					p++;
+					idx++;
+				};
+				// post padding
+				if(flags & FLAGS_LEFT)
+				{
+					while(l++ < width)
+					{
+						out_fptr(' ', out_vars);
+						idx++;
+					};
+				};
+				format++;
+				break;
+			};		
+			#endif
 
 			case 'p' :
 			{
