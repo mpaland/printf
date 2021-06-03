@@ -1,0 +1,9 @@
+
+	#define DBG(fmtarg, ...) 	fifo_prnf_SL(main_fifo_dbg_ptr, "%S:%.4i - "fmtarg , PRNF_ARG_SL(__FILE__), __LINE__ ,##__VA_ARGS__)
+	#define TXT(fmtarg, ...) 	fifo_prnf_SL(main_fifo_txt_ptr, fmtarg ,##__VA_ARGS__)
+
+	Both of the above macros will make full use of PSTR on AVR platforms, for both the fmtarg and __FILE__
+	fmtarg MUST be a string literal.
+
+
+
