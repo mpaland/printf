@@ -82,6 +82,7 @@ e or E 	Scientific-notation (exponential) floating point
 g or G 	Scientific or decimal floating point
 c 	Single character
 s 	String of characters
+h 	String of characters to free from the heap after sending
 p 	Pointer address
 % 	A % followed by another % character will write a single %
 
@@ -105,6 +106,9 @@ S	String of characters (same as s). Or for AVR targets, a string of characters i
 	#define PRNF_SUPPORT_FLOAT
 	#define PRNF_SUPPORT_EXPONENTIAL
 
+//	provides %h which works like %s only the passed address is freed from the heap after output
+	#define PRNF_SUPPORT_HEAP_STRINGS
+
 // 	define the default floating point precision
 // 	default: 6 digits
 	#define PRNF_DEFAULT_FLOAT_PRECISION  6
@@ -121,7 +125,8 @@ S	String of characters (same as s). Or for AVR targets, a string of characters i
   	#define PRNF_WARN_BUFFER_SIZE()	((void)0)
  
 //	Above buffer storage, default is to use the stack which is both re-enterent and thread safe.
-//	Or, choose 1 alternative:
+//	choose 1:
+	#define PRNF_BUFFER_STACK
 //	#define PRNF_BUFFER_STATIC
 //	#define PRNF_BUFFER_HEAP
 
