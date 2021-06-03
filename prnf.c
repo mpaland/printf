@@ -831,7 +831,6 @@ static int core_prnf_P(void(*out_fptr)(char, void*), void* out_vars, PGM_P forma
 	size_t width;
 	uint8_t precision, n;
 	size_t idx = 0;
-	const char* ptr_to_free = NULL;
 
 	while(FMTRD(format))
 	{
@@ -1074,12 +1073,7 @@ static int core_prnf_P(void(*out_fptr)(char, void*), void* out_vars, PGM_P forma
 				format++;
 				break;
 			};
-#ifdef PRNF_SUPPORT_HEAP_STRINGS
-//			%h free string from heap after output
-			bool do_free = false;
-			case 'h' :
-				do_free = true;
-#endif
+
 //			For non-avr, both %s and %S are the same.
 			#ifndef PLATFORM_AVR
 			case 'S' :
@@ -1087,7 +1081,6 @@ static int core_prnf_P(void(*out_fptr)(char, void*), void* out_vars, PGM_P forma
 			case 's' :
 			{
 				const char* p = va_arg(va, char*);
-				ptr_to_free = p;
 				size_t l = prnf_strnlen_s(p, precision ? precision : (size_t)-1);
 				// pre padding
 				if(flags & FLAGS_PRECISION)
@@ -1117,14 +1110,6 @@ static int core_prnf_P(void(*out_fptr)(char, void*), void* out_vars, PGM_P forma
 						idx++;
 					};
 				};
-#ifdef PRNF_SUPPORT_HEAP_STRINGS
-				// free %h string from heap (if you don't like it, just be quiet and don't use it).
-				if(do_free)
-				{
-					do_free = false;
-					heap_free(ptr_to_free);
-				};
-#endif
 				format++;
 				break;
 			};
