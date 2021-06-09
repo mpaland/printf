@@ -426,9 +426,9 @@ static size_t numtoasc_format(void(*out_fptr)(char, void*), void* out_vars, size
       		buf[len++] = 'b';
 
 
-    	if (len < PRNF_BUFFER_SIZE)
+    	if(len < PRNF_BUFFER_SIZE)
     	{
-			// Only add a zero if number does not already start with a zero
+			// Only add a zero if number does not already start with a zero (affects only octal, as other bases start with x/X/b at this point)
       		if(len)
       		{
         		if(buf[len-1]!='0')
@@ -483,7 +483,8 @@ static size_t numtoasc(void(*out_fptr)(char, void*), void* out_vars, size_t idx,
   	// write if precision != 0 and value is != 0
   	if(!(flags & FLAGS_PRECISION) || value)
   	{
-  		//Allow compiler to optimize /10 and %10 or /16 and %16 with whatever bit shifting magic it likes.
+  		//Allow compiler to optimize /10 and %10 or /16 and %16 or /8 and %8 or /2 and %2, with whatever bit shifting magic it likes.
+		//This gives a performance increase on platforms without hardware multiply & divide
   		if(base == 10)
   		{	
     		do
@@ -502,13 +503,22 @@ static size_t numtoasc(void(*out_fptr)(char, void*), void* out_vars, size_t idx,
       			value /= 16;
     		}while(value && (len < PRNF_BUFFER_SIZE));
   		}
-  		else
+  		else if(base == 2)
+  		{	
+    		do
+    		{
+	      		const char digit = (char)(value % 2);
+      			buf[len++] = digit + '0';
+      			value /= 2;
+    		}while(value && (len < PRNF_BUFFER_SIZE));
+  		}
+  		else	//the only remaining supported base is octal
   		{
     		do
     		{
-	      		const char digit = (char)(value % base);
-      			buf[len++] = digit < 10 ? '0' + digit : (flags & FLAGS_UPPERCASE ? 'A' : 'a') + digit - 10;
-      			value /= base;
+	      		const char digit = (char)(value % 8);
+      			buf[len++] = digit + '0';
+      			value /= 8;
     		}while(value && (len < PRNF_BUFFER_SIZE));
     	};
   	};
@@ -551,10 +561,17 @@ static size_t fltasc(void(*out_fptr)(char, void*), void* out_vars, size_t idx, d
   	if(value > DBL_MAX)
 	    return out_rev(out_fptr, out_vars, idx, (flags & FLAGS_PLUS) ? "fni+" : "fni", (flags & FLAGS_PLUS) ? 4 : 3, width, flags);
 
+	#ifndef PRNF_SUPPORT_EXPONENTIAL
+  	if(value < -PRNF_MAX_FLOAT)
+	    return out_rev(out_fptr, out_vars, idx, "fni-", 4, width, flags);
+  	if(value > PRNF_MAX_FLOAT)
+	    return out_rev(out_fptr, out_vars, idx, (flags & FLAGS_PLUS) ? "fni+" : "fni", (flags & FLAGS_PLUS) ? 4 : 3, width, flags);
+	#else
   	// test for very large values
   	// standard printf behavior is to print EVERY whole number digit -- which could be 100s of characters overflowing your buffers == bad
   	if((value > PRNF_MAX_FLOAT) || (value < -PRNF_MAX_FLOAT))
 		return exptoasc(out_fptr, out_vars, idx, value, prec, width, flags);
+	#endif
 
 	// test for negative
 	bool negative = false;
@@ -1073,7 +1090,6 @@ static int core_prnf_P(void(*out_fptr)(char, void*), void* out_vars, PGM_P forma
 				format++;
 				break;
 			};
-
 //			For non-avr, both %s and %S are the same.
 			#ifndef PLATFORM_AVR
 			case 'S' :
