@@ -76,6 +76,25 @@ TEST_CASE("fctprintf", "[]" ) {
   REQUIRE(printf_buffer[22] == (char)0xCC);
 }
 
+// output function type
+typedef void (*out_fct_type)(char character, void* arg);
+
+
+static void vfctprintf_builder_1(out_fct_type f, char* buffer, ...)
+{
+  va_list args;
+  va_start(args, buffer);
+  test::vfctprintf(f, nullptr, "This is a test of %X", args);
+  va_end(args);
+}
+
+TEST_CASE("vfctprintf", "[]" ) {
+  printf_idx = 0U;
+  memset(printf_buffer, 0xCC, 100U);
+  vfctprintf_builder_1(&_out_fct, nullptr, 0x12EFU);
+  REQUIRE(!strncmp(printf_buffer, "This is a test of 12EF", 22U));
+  REQUIRE(printf_buffer[22] == (char)0xCC);
+}
 
 TEST_CASE("snprintf", "[]" ) {
   char buffer[100];
