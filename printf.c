@@ -561,7 +561,7 @@ static size_t _etoa(out_fct_type out, char* buffer, size_t idx, size_t maxlen, d
     // output the exponential symbol
     out((flags & FLAGS_UPPERCASE) ? 'E' : 'e', buffer, idx++, maxlen);
     // output the exponent value
-    idx = _ntoa_long(out, buffer, idx, maxlen, (expval < 0) ? -expval : expval, expval < 0, 10, 0, minwidth-1, FLAGS_ZEROPAD | FLAGS_PLUS);
+    idx = _ntoa_long(out, buffer, idx, maxlen, (unsigned long) ((expval < 0) ? -expval : expval), expval < 0, 10, 0, minwidth-1, FLAGS_ZEROPAD | FLAGS_PLUS);
     // might need to right-pad spaces
     if (flags & FLAGS_LEFT) {
       while (idx - start_idx < width) out(' ', buffer, idx++, maxlen);
