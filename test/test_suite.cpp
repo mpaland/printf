@@ -1085,7 +1085,7 @@ TEST_CASE("float", "[]" ) {
   test::sprintf(buffer, "%8f", INFINITY);
   REQUIRE(!strcmp(buffer, "     inf"));
 
-  test::sprintf(buffer, "%-8f", -INFINITY);
+  test::sprintf(buffer, "%-8f", (double) -INFINITY);
   REQUIRE(!strcmp(buffer, "-inf    "));
 
 #ifndef PRINTF_DISABLE_SUPPORT_EXPONENTIAL
@@ -1217,7 +1217,7 @@ TEST_CASE("float", "[]" ) {
   std::stringstream str;
   str.precision(5);
   for (float i = -100000; i < 100000; i += 1) {
-    test::sprintf(buffer, "%.5f", i / 10000);
+    test::sprintf(buffer, "%.5f", (double)(i / 10000));
     str.str("");
     str << std::fixed << i / 10000;
     fail = fail || !!strcmp(buffer, str.str().c_str());
@@ -1228,8 +1228,8 @@ TEST_CASE("float", "[]" ) {
 #ifndef PRINTF_DISABLE_SUPPORT_EXPONENTIAL
   // brute force exp
   str.setf(std::ios::scientific, std::ios::floatfield);
-  for (float i = -1e20; i < 1e20; i += 1e15) {
-    test::sprintf(buffer, "%.5f", i);
+  for (float i = -1e20; i < 1e20; i += (float) 1e15) {
+    test::sprintf(buffer, "%.5f", (double) i);
     str.str("");
     str << i;
     fail = fail || !!strcmp(buffer, str.str().c_str());
