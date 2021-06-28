@@ -383,12 +383,12 @@ static size_t _ftoa(out_fct_type out, char* buffer, size_t idx, size_t maxlen, d
   int whole = (int)value;
   double tmp = (value - whole) * pow10[prec];
   unsigned long frac = (unsigned long)tmp;
-  diff = tmp - frac;
+  diff = tmp - (double)frac;
 
   if (diff > 0.5) {
     ++frac;
     // handle rollover, e.g. case 0.99 with prec 1 is 1.0
-    if (frac >= pow10[prec]) {
+    if ((double)frac >= pow10[prec]) {
       frac = 0;
       ++whole;
     }
