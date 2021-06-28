@@ -292,7 +292,7 @@ static size_t _ntoa_long(out_fct_type out, char* buffer, size_t idx, size_t maxl
   if (!(flags & FLAGS_PRECISION) || value) {
     do {
       const char digit = (char)(value % base);
-      buf[len++] = digit < 10 ? '0' + digit : (flags & FLAGS_UPPERCASE ? 'A' : 'a') + digit - 10;
+      buf[len++] = (char)(digit < 10 ? '0' + digit : (flags & FLAGS_UPPERCASE ? 'A' : 'a') + digit - 10);
       value /= base;
     } while (value && (len < PRINTF_NTOA_BUFFER_SIZE));
   }
@@ -317,7 +317,7 @@ static size_t _ntoa_long_long(out_fct_type out, char* buffer, size_t idx, size_t
   if (!(flags & FLAGS_PRECISION) || value) {
     do {
       const char digit = (char)(value % base);
-      buf[len++] = digit < 10 ? '0' + digit : (flags & FLAGS_UPPERCASE ? 'A' : 'a') + digit - 10;
+      buf[len++] = (char)(digit < 10 ? '0' + digit : (flags & FLAGS_UPPERCASE ? 'A' : 'a') + digit - 10);
       value /= base;
     } while (value && (len < PRINTF_NTOA_BUFFER_SIZE));
   }
@@ -561,7 +561,10 @@ static size_t _etoa(out_fct_type out, char* buffer, size_t idx, size_t maxlen, d
     // output the exponential symbol
     out((flags & FLAGS_UPPERCASE) ? 'E' : 'e', buffer, idx++, maxlen);
     // output the exponent value
-    idx = _ntoa_long(out, buffer, idx, maxlen, (unsigned long) ((expval < 0) ? -expval : expval), expval < 0, 10, 0, minwidth-1, FLAGS_ZEROPAD | FLAGS_PLUS);
+    idx = _ntoa_long(out, buffer, idx, maxlen,
+                    (unsigned long)((expval < 0) ? -expval : expval),
+                    expval < 0, 10, 0, minwidth-1,
+                    FLAGS_ZEROPAD | FLAGS_PLUS);
     // might need to right-pad spaces
     if (flags & FLAGS_LEFT) {
       while (idx - start_idx < width) out(' ', buffer, idx++, maxlen);
@@ -834,7 +837,7 @@ static int _vsnprintf(out_fct_type out, char* buffer, const size_t maxlen, const
           }
           else {
 #endif
-            idx = _ntoa_long(out, buffer, idx, maxlen, (unsigned long)value, false, 16U, precision, width, flags);
+            idx = _ntoa_long(out, buffer, idx, maxlen, (unsigned long)((uintptr_t)va_arg(va, void*)), false, 16U, precision, width, flags);
 #if defined(PRINTF_SUPPORT_LONG_LONG)
           }
 #endif
