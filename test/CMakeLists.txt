@@ -53,7 +53,6 @@ elseif (CMAKE_CXX_COMPILER_ID STREQUAL "GNU" OR
                 -fdata-sections
                 -fverbose-asm
                 -Wunused-parameter
-                -Wfloat-equal
 	)
 endif()
 

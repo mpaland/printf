@@ -1228,7 +1228,7 @@ TEST_CASE("float", "[]" ) {
 #ifndef PRINTF_DISABLE_SUPPORT_EXPONENTIAL
   // brute force exp
   str.setf(std::ios::scientific, std::ios::floatfield);
-  for (float i = -1e20; i < 1e20; i += (float) 1e15) {
+  for (float i = -1e20; i < (float) 1e20; i += (float) 1e15) {
     test::sprintf(buffer, "%.5f", (double) i);
     str.str("");
     str << i;
