@@ -95,11 +95,27 @@ static void vprintf_builder_1(char* buffer, ...)
   va_end(args);
 }
 
+static void vsprintf_builder_1(char* buffer, ...)
+{
+  va_list args;
+  va_start(args, buffer);
+  test::vsprintf(buffer, "%d", args);
+  va_end(args);
+}
+
 static void vsnprintf_builder_1(char* buffer, ...)
 {
   va_list args;
   va_start(args, buffer);
   test::vsnprintf(buffer, 100U, "%d", args);
+  va_end(args);
+}
+
+static void vsprintf_builder_3(char* buffer, ...)
+{
+  va_list args;
+  va_start(args, buffer);
+  test::vsprintf(buffer, "%d %d %s", args);
   va_end(args);
 }
 
@@ -120,6 +136,17 @@ TEST_CASE("vprintf", "[]" ) {
   REQUIRE(printf_buffer[4] == (char)0xCC);
   printf_buffer[4] = 0;
   REQUIRE(!strcmp(printf_buffer, "2345"));
+}
+
+
+TEST_CASE("vsprintf", "[]" ) {
+  char buffer[100];
+
+  vsprintf_builder_1(buffer, -1);
+  REQUIRE(!strcmp(buffer, "-1"));
+
+  vsprintf_builder_3(buffer, 3, -1000, "test");
+  REQUIRE(!strcmp(buffer, "3 -1000 test"));
 }
 
 
