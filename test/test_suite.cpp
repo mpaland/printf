@@ -1361,36 +1361,39 @@ TEST_CASE("pointer", "[]" ) {
 
   test::sprintf(buffer, "%p", (void*)0x1234U);
   if (sizeof(void*) == 4U) {
-    REQUIRE(!strcmp(buffer, "00001234"));
+    REQUIRE(!strcmp(buffer, "0x00001234"));
   }
   else {
-    REQUIRE(!strcmp(buffer, "0000000000001234"));
+    REQUIRE(!strcmp(buffer, "0x0000000000001234"));
   }
 
   test::sprintf(buffer, "%p", (void*)0x12345678U);
   if (sizeof(void*) == 4U) {
-    REQUIRE(!strcmp(buffer, "12345678"));
+    REQUIRE(!strcmp(buffer, "0x12345678"));
   }
   else {
-    REQUIRE(!strcmp(buffer, "0000000012345678"));
+    REQUIRE(!strcmp(buffer, "0x0000000012345678"));
   }
 
   test::sprintf(buffer, "%p-%p", (void*)0x12345678U, (void*)0x7EDCBA98U);
   if (sizeof(void*) == 4U) {
-    REQUIRE(!strcmp(buffer, "12345678-7EDCBA98"));
+    REQUIRE(!strcmp(buffer, "0x12345678-0x7edcba98"));
   }
   else {
-    REQUIRE(!strcmp(buffer, "0000000012345678-000000007EDCBA98"));
+    REQUIRE(!strcmp(buffer, "0x0000000012345678-0x000000007edcba98"));
   }
 
   if (sizeof(uintptr_t) == sizeof(uint64_t)) {
     test::sprintf(buffer, "%p", (void*)(uintptr_t)0xFFFFFFFFU);
-    REQUIRE(!strcmp(buffer, "00000000FFFFFFFF"));
+    REQUIRE(!strcmp(buffer, "0x00000000ffffffff"));
   }
   else {
     test::sprintf(buffer, "%p", (void*)(uintptr_t)0xFFFFFFFFU);
-    REQUIRE(!strcmp(buffer, "FFFFFFFF"));
+    REQUIRE(!strcmp(buffer, "0xffffffff"));
   }
+
+  test::sprintf(buffer, "%p", nullptr);
+  REQUIRE(!strcmp(buffer, "(nil)"));
 }
 
 
