@@ -131,8 +131,7 @@ GCCFLAGS      = $(C_INCLUDES)                     \
                 -fdata-sections                   \
                 -fverbose-asm                     \
                 -Wextra                           \
-                -Wunused-parameter                \
-                -Wfloat-equal
+                -Wunused-parameter                
 
 CFLAGS        = $(GCCFLAGS)                       \
                 -Wunsuffixed-float-constants      \
