@@ -1106,17 +1106,17 @@ TEST_CASE("float", "[]" ) {
   char buffer[100];
 
   // test special-case floats using math.h macros
-  test::sprintf(buffer, "%8f", NAN);
+  test::sprintf(buffer, "%8f", (double) NAN);
   REQUIRE(!strcmp(buffer, "     nan"));
 
-  test::sprintf(buffer, "%8f", INFINITY);
+  test::sprintf(buffer, "%8f", (double) INFINITY);
   REQUIRE(!strcmp(buffer, "     inf"));
 
   test::sprintf(buffer, "%-8f", (double) -INFINITY);
   REQUIRE(!strcmp(buffer, "-inf    "));
 
 #ifndef PRINTF_DISABLE_SUPPORT_EXPONENTIAL
-  test::sprintf(buffer, "%+8e", INFINITY);
+  test::sprintf(buffer, "%+8e", (double) INFINITY);
   REQUIRE(!strcmp(buffer, "    +inf"));
 #endif
 
