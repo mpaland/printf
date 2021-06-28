@@ -53,8 +53,8 @@ if (NOT "${DEFAULT_FLOAT_PRECISION}" STREQUAL "")
 	add_definitions(-DPRINTF_DEFAULT_FLOAT_PRECISION=${DEFAULT_FLOAT_PRECISION})
 endif()
 
-set(LARGEST_FLOAT_TYPE "" CACHE STRING "Largest floating-point type suitable to print with %f")
-if (NOT "${LARGEST_FLOAT_TYPE}" STREQUAL "")
+set(MAX_FLOAT_IN_NON_EXPONENT_NOTATION "" CACHE STRING "Largest floating-point value for which printing with %f uses non-exponential notation")
+if (NOT "${MAX_FLOAT_IN_NON_EXPONENT_NOTATION}" STREQUAL "")
 	add_definitions(-DPRINTF_MAX_FLOAT=${LARGEST_FLOAT_TYPE})
 endif()
 
