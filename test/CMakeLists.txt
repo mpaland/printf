@@ -1,16 +1,5 @@
 cmake_minimum_required(VERSION 3.9)
 
-
-################
-##  Packages  ##
-################
-
-# find_package(mplanad-printf REQUIRED)
-
-#############
-##  Tests  ##
-#############
-
 enable_language(CXX)
 
 add_executable(test_suite "test_suite.cpp")
@@ -31,29 +20,31 @@ elseif (CMAKE_CXX_COMPILER_ID STREQUAL "GNU" OR
         CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
 	# lots of warnings and all warnings as errors
 	target_compile_options(test_suite PRIVATE
-                -g
-                -Wall
+        -g
+		-Wall
 		-Wextra
-                -pedantic
-                -Wundef
-                -Wsign-conversion
-                -Wuninitialized
-                -Wshadow
-                -Wunreachable-code
-                -Wswitch-default
-                -Wswitch
-                -Wcast-align
-                -Wmissing-include-dirs
-                -Winit-self
-                -Wdouble-promotion
-                -gdwarf-2
-                -fno-exceptions
-                -ffunction-sections
-                -ffat-lto-objects
-                -fdata-sections
-                -fverbose-asm
-                -Wunused-parameter
+		-pedantic
+		-Wundef
+		-Wsign-conversion
+		-Wuninitialized
+		-Wshadow
+		-Wunreachable-code
+		-Wswitch-default
+		-Wswitch
+		-Wcast-align
+		-Wmissing-include-dirs
+		-Winit-self
+		-Wdouble-promotion
+		-gdwarf-2
+		-fno-exceptions
+		-ffunction-sections
+		-fdata-sections
+		-fverbose-asm
+		-Wunused-parameter
 	)
+	if (CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
+		target_compile_options(test_suite PRIVATE -ffat-lto-objects)
+	endif()
 endif()
 
 add_test(
