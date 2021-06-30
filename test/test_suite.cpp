@@ -263,9 +263,6 @@ TEST_CASE("space flag - non-standard format", "[]" ) {
   test::sprintf(buffer, "% s", "Hello testing");
   REQUIRE(!strcmp(buffer, "Hello testing"));
 
-  test::sprintf(buffer, "% s", "Hello testing");
-  REQUIRE(!strcmp(buffer, "Hello testing"));
-
   test::sprintf(buffer, "% u", 1024);
   REQUIRE(!strcmp(buffer, "1024"));
 
@@ -514,6 +511,9 @@ TEST_CASE("specifier", "[]" ) {
 
   test::sprintf(buffer, "%s", "Hello testing");
   REQUIRE(!strcmp(buffer, "Hello testing"));
+
+  test::sprintf(buffer, "%s", NULL);
+  REQUIRE(!strcmp(buffer, "(null)"));
 
   test::sprintf(buffer, "%d", 1024);
   REQUIRE(!strcmp(buffer, "1024"));
@@ -1506,7 +1506,7 @@ TEST_CASE("pointer", "[]" ) {
     REQUIRE(!strcmp(buffer, "0xffffffff"));
   }
 
-  test::sprintf(buffer, "%p", (void*) nullptr);
+  test::sprintf(buffer, "%p", NULL);
   REQUIRE(!strcmp(buffer, "(nil)"));
 }
 
@@ -1539,6 +1539,9 @@ TEST_CASE("string length", "[]" ) {
 
   test::sprintf(buffer, "%.*s", 3, "123456");
   REQUIRE(!strcmp(buffer, "123"));
+
+  test::sprintf(buffer, "%.*s", 3, NULL);
+  REQUIRE(!strcmp(buffer, "(null)"));
 }
 
 #ifdef TEST_WITH_NON_STANDARD_FORMAT_STRINGS
@@ -1571,6 +1574,9 @@ TEST_CASE("buffer length", "[]" ) {
 
   test::snprintf(buffer, 2, "%s", "Hello");
   REQUIRE(!strcmp(buffer, "H"));
+
+  test::snprintf(buffer, 2, "%s", NULL);
+  REQUIRE(!strcmp(buffer, "("));
 }
 
 
@@ -1584,11 +1590,15 @@ TEST_CASE("ret value", "[]" ) {
 
   ret = test::snprintf(buffer, 6, "0%s", "12345");
   REQUIRE(!strcmp(buffer, "01234"));
-  REQUIRE(ret == 6);  // '5' is truncated
+  REQUIRE(ret == 6);  // "5" is truncated
 
   ret = test::snprintf(buffer, 6, "0%s", "1234567");
   REQUIRE(!strcmp(buffer, "01234"));
-  REQUIRE(ret == 8);  // '567' are truncated
+  REQUIRE(ret == 8);  // "567" are truncated
+
+  ret = test::snprintf(buffer, 6, "0%s", NULL);
+  REQUIRE(!strcmp(buffer, "0(nul"));
+  REQUIRE(ret == 7);  // "l)" is truncated
 
   ret = test::snprintf(buffer, 10, "hello, world");
   REQUIRE(ret == 12);

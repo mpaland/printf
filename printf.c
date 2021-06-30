@@ -110,6 +110,8 @@
 #define FLAGS_LONG_LONG (1U <<  9U)
 #define FLAGS_PRECISION (1U << 10U)
 #define FLAGS_ADAPT_EXP (1U << 11U)
+#define FLAGS_POINTER   (1U << 12U)
+	// Note: Similar, but not identical, effect as FLAGS_HASH
 
 
 // import float.h for DBL_MAX
@@ -240,7 +242,7 @@ static size_t _ntoa_format(out_fct_type out, char* buffer, size_t idx, size_t ma
   }
 
   // handle hash
-  if (flags & FLAGS_HASH) {
+  if (flags & (FLAGS_HASH | FLAGS_POINTER)) {
     if (!(flags & FLAGS_PRECISION) && len && ((len == prec) || (len == width))) {
       len--;
       if (len && (base == 16U)) {
@@ -798,24 +800,29 @@ static int _vsnprintf(out_fct_type out, char* buffer, const size_t maxlen, const
 
       case 's' : {
         const char* p = va_arg(va, char*);
-        unsigned int l = _strnlen_s(p, precision ? precision : (size_t)-1);
-        // pre padding
-        if (flags & FLAGS_PRECISION) {
-          l = (l < precision ? l : precision);
-        }
-        if (!(flags & FLAGS_LEFT)) {
-          while (l++ < width) {
-            out(' ', buffer, idx++, maxlen);
+        if (p == NULL) {
+          idx = _out_rev(out, buffer, idx, maxlen, ")llun(", 6, width, flags);
+        } 
+		else {
+          unsigned int l = _strnlen_s(p, precision ? precision : (size_t)-1);
+          // pre padding
+          if (flags & FLAGS_PRECISION) {
+            l = (l < precision ? l : precision);
           }
-        }
-        // string output
-        while ((*p != 0) && (!(flags & FLAGS_PRECISION) || precision--)) {
-          out(*(p++), buffer, idx++, maxlen);
-        }
-        // post padding
-        if (flags & FLAGS_LEFT) {
-          while (l++ < width) {
-            out(' ', buffer, idx++, maxlen);
+          if (!(flags & FLAGS_LEFT)) {
+            while (l++ < width) {
+              out(' ', buffer, idx++, maxlen);
+            }
+          }
+          // string output
+          while ((*p != 0) && (!(flags & FLAGS_PRECISION) || precision--)) {
+            out(*(p++), buffer, idx++, maxlen);
+          }
+          // post padding
+          if (flags & FLAGS_LEFT) {
+            while (l++ < width) {
+              out(' ', buffer, idx++, maxlen);
+            }
           }
         }
         format++;
@@ -824,12 +831,13 @@ static int _vsnprintf(out_fct_type out, char* buffer, const size_t maxlen, const
 
       case 'p' : {
         width = sizeof(void*) * 2U + 2; // 2 hex chars per byte + the "0x" prefix
-        flags |= FLAGS_ZEROPAD | FLAGS_HASH;
+        flags |= FLAGS_ZEROPAD | FLAGS_POINTER;
         uintptr_t value = (uintptr_t)va_arg(va, void*);
 
-        if (value == 0) {
+        if (value == (uintptr_t) NULL) {
           idx = _out_rev(out, buffer, idx, maxlen, ")lin(", 5, width, flags);
-        } else {
+        } 
+		else {
 #if defined(PRINTF_SUPPORT_LONG_LONG)
           const bool is_ll = sizeof(uintptr_t) == sizeof(long long);
           if (is_ll) {
