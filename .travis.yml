@@ -10,8 +10,8 @@ compiler: gcc
 
 env:
   global:
-    # coverity key
-    - secure: "NKZbBnMALGIIQJy/s2kc3EST/stw+gjhtrGq0jkbsWr7Wx3FH+lmLeHNsDXRnD1VbpG02c5YsLllqz9OVu+0yxWGepvKNmCz1cNITIALEHbrax8/Af9LzPRL/QZxS/Qe11sMuySp4X16mFBUyxMd/X+I9i96Xf1vKkZABklYD1Q="
+    # coverity key; see https://scan.coverity.com/
+    - secure: "SSvyBAHzpzlYr8i2yYUmUXVNAZCfmPLkcnSxnKGbQUK7Ba6e7EtN1cSYH0g58kxz0vNRsXBdpyGYKapE1JJWy2tuUrFE9957EdT3PU24Un0u2I+TQ6XTONjMN8D+Rv/0t/hhYnQ0RXnGXbp5l7D1bFWqAZ/Ks6hS5sBSlDHYgeCZCx7J3NgR8JH81bmU595Le8UNuIGxD8ML2NJK4B0/Xl/xxFyHQUTcl/e7YPSYrvrdTbjgzuNOKVXtZGvAu0FbyMdf8lHqF/ivwQ8csdp4AwbkYsgKnDv1afIJ/dII+rxWOuae54Ms4SVQOCrgxCnlr0bPCEm8ptnNhGYqRiPuX6ryt/ycLBBn7ttuOJ0j1QrFWwNRpHYPOAfMsPJ+T6HTz560MwcV+7eJ4HPEA4hMJ0G13Q3bqYSqOXoT/IY9SgdNwPxV9CUBYaWjNQ4iwVg7FYa98cCN1JFBOTcONAQUH/wr6/pFoHAFKeCG1hWjMsbX/O/Ns7G/znVi7NakmhMHPvbpzx9SrCrtFJHfdbDlPhGnILjHmcid8g8bMoqWisaYH6ZgNeJpxJKHw4xDVaNKEc3v/4UBSw4KvpYalY3zjgk/ssyTOMupRbkeCoVeuIXjH0PlMQsYooLA9Sqi4m6uch90lcAY9fZOc+tvTBkLtTUUdUCHNdfupQaSXwhuBTE="
 
 # addons
 addons:
@@ -24,9 +24,9 @@ addons:
 
   coverity_scan:
     project:
-      name: "mpaland/printf"
+      name: "eyalroz/printf"
       description: "Tiny printf implementation"
-    notification_email: marco@paland.com
+    notification_email: eyalroz1@gmx.com
     build_command_prepend: "make clean"
     build_command: "make"
     branch_pattern: master
@@ -39,6 +39,7 @@ before_install:
 branches:
   only:
    - master
+   - develop
 
 script:
   # Link gcc-6 and g++-6 to their standard commands
