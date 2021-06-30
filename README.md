@@ -1,11 +1,14 @@
 # A printf / sprintf Implementation for Embedded Systems
 
-[![Build Status](https://travis-ci.org/mpaland/printf.svg?branch=master)](https://travis-ci.org/mpaland/printf)
-[![codecov](https://codecov.io/gh/mpaland/printf/branch/master/graph/badge.svg)](https://codecov.io/gh/mpaland/printf)
-[![Coverity Status](https://img.shields.io/coverity/scan/14180.svg)](https://scan.coverity.com/projects/mpaland-printf)
-[![Github Issues](https://img.shields.io/github/issues/mpaland/printf.svg)](http://github.com/mpaland/printf/issues)
+[![Build Status](https://travis-ci.com/eyalroz/printf.svg?branch=master)](https://travis-ci.com/eyalroz/printf)
+[![codecov](https://codecov.io/gh/eyalroz/printf/branch/master/graph/badge.svg)](https://codecov.io/gh/eyalroz/printf)
+[![coverity](https://img.shields.io/coverity/scan/23315.svg)](https://scan.coverity.com/projects/eyalroz-printf)
 [![Github Releases](https://img.shields.io/github/release/mpaland/printf.svg)](https://github.com/mpaland/printf/releases)
-[![GitHub license](https://img.shields.io/badge/license-MIT-blue.svg)](https://raw.githubusercontent.com/mpaland/avl_array/master/LICENSE)
+[![GitHub license](https://img.shields.io/badge/license-MIT-blue.svg)](https://raw.githubusercontent.com/eyalroz/printf/master/LICENSE)
+[![Github Issues](https://img.shields.io/github/issues/eyalroz/eyalroz/printf.svg)](http://github.com/eyalroz/printf/issues)
+Parent repo: [![Github Issues (original repo)](https://img.shields.io/github/issues/mpaland/printf.svg)](http://github.com/mpaland/printf/issues)
+
+(This is a fork of the original repo, [mpaland/printf](https://github.com/mpaland/printf).)
 
 This is a tiny but **fully loaded** printf, sprintf and (v)snprintf implementation.
 Primarily designed for usage in embedded systems, where printf is not available due to memory issues or in avoidance of linking against libc.
