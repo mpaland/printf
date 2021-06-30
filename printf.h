@@ -40,6 +40,15 @@
 extern "C" {
 #endif
 
+#ifdef __GNUC__
+# define ATTR_PRINTF(one_based_format_index, first_arg) \
+__attribute__((format(__printf__, (one_based_format_index), (first_arg))))
+# define ATTR_VPRINTF(one_based_format_index) ATTR_PRINTF(one_based_format_index, 0)
+#else
+# define ATTR_PRINTF(one_based_format_index, first_arg)
+# define ATTR_VPRINTF(one_based_format_index)
+#endif
+
 
 /**
  * Output a character to a custom device like UART, used by the printf() function
@@ -58,7 +67,7 @@ void _putchar(char character);
  * \return The number of characters that are written into the array, not counting the terminating null character
  */
 #define printf printf_
-int printf_(const char* format, ...);
+int printf_(const char* format, ...) ATTR_PRINTF(1, 2);
 
 
 /**
@@ -71,8 +80,8 @@ int printf_(const char* format, ...);
  */
 #define sprintf  sprintf_
 #define vsprintf vsprintf_
-int  sprintf_(char* buffer, const char* format, ...);
-int vsprintf_(char* buffer, const char* format, va_list va);
+int  sprintf_(char* buffer, const char* format, ...) ATTR_PRINTF(2, 3);
+int vsprintf_(char* buffer, const char* format, va_list va) ATTR_VPRINTF(2);
 
 
 /**
@@ -87,8 +96,8 @@ int vsprintf_(char* buffer, const char* format, va_list va);
  */
 #define snprintf  snprintf_
 #define vsnprintf vsnprintf_
-int  snprintf_(char* buffer, size_t count, const char* format, ...);
-int vsnprintf_(char* buffer, size_t count, const char* format, va_list va);
+int  snprintf_(char* buffer, size_t count, const char* format, ...) ATTR_PRINTF(3, 4);
+int vsnprintf_(char* buffer, size_t count, const char* format, va_list va) ATTR_VPRINTF(3);
 
 
 /**
@@ -110,8 +119,8 @@ int vprintf_(const char* format, va_list va);
  * \param va A value identifying a variable arguments list
  * \return The number of characters that are sent to the output function, not counting the terminating null character
  */
-int fctprintf(void (*out)(char character, void* arg), void* arg, const char* format, ...);
-int vfctprintf(void (*out)(char character, void* arg), void* arg, const char* format, va_list va);
+int fctprintf(void (*out)(char character, void* arg), void* arg, const char* format, ...) ATTR_PRINTF(3, 4);
+int vfctprintf(void (*out)(char character, void* arg), void* arg, const char* format, va_list va) ATTR_VPRINTF(3);
 
 #ifdef __cplusplus
 }

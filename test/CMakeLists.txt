@@ -12,6 +12,12 @@ set_target_properties(
 	CXX_EXTENSIONS NO
 )
 
+option(TEST_BROKEN_FORMATS "Include tests using non-standard-compliant format strings?" ON)
+# ... don't worry, we'll suppress the compiler warnings for those.
+if (TEST_BROKEN_FORMATS)
+	target_compile_definitions(test_suite PRIVATE TEST_WITH_NON_STANDARD_FORMAT_STRINGS)
+endif()
+
 target_link_libraries(test_suite PRIVATE mpaland-printf)
 
 if (CMAKE_CXX_COMPILER_ID STREQUAL "MSVC")

@@ -42,6 +42,39 @@ namespace test {
 } // namespace test
 
 
+// Multi-compiler-compatible local warning suppression
+
+#if defined(_MSC_VER)
+    #define DISABLE_WARNING_PUSH           __pragma(warning( push ))
+    #define DISABLE_WARNING_POP            __pragma(warning( pop ))
+    #define DISABLE_WARNING(warningNumber) __pragma(warning( disable : warningNumber ))
+
+    // TODO: find the right warning number for this
+    #define DISABLE_WARNING_PRINTF_FORMAT
+    #define DISABLE_WARNING_PRINTF_FORMAT_EXTRA_ARGS
+
+#elif defined(__GNUC__) || defined(__clang__)
+    #define DO_PRAGMA(X) _Pragma(#X)
+    #define DISABLE_WARNING_PUSH           DO_PRAGMA(GCC diagnostic push)
+    #define DISABLE_WARNING_POP            DO_PRAGMA(GCC diagnostic pop)
+    #define DISABLE_WARNING(warningName)   DO_PRAGMA(GCC diagnostic ignored #warningName)
+
+    #define DISABLE_WARNING_PRINTF_FORMAT    DISABLE_WARNING(-Wformat)
+    #define DISABLE_WARNING_PRINTF_FORMAT_EXTRA_ARGS DISABLE_WARNING(-Wformat-extra-args)
+
+#else
+    #define DISABLE_WARNING_PUSH
+    #define DISABLE_WARNING_POP
+    #define DISABLE_WARNING_PRINTF_FORMAT
+    #define DISABLE_WARNING_PRINTF_FORMAT_EXTRA_ARGS
+#endif
+
+#ifdef TEST_WITH_NON_STANDARD_FORMAT_STRINGS
+DISABLE_WARNING_PUSH
+DISABLE_WARNING_PRINTF_FORMAT
+DISABLE_WARNING_PRINTF_FORMAT_EXTRA_ARGS
+#endif
+
 // dummy putchar
 static char   printf_buffer[100];
 static size_t printf_idx = 0U;
@@ -210,9 +243,6 @@ TEST_CASE("space flag", "[]" ) {
   test::sprintf(buffer, "% 15.3f", 42.987);
   REQUIRE(!strcmp(buffer, "         42.987"));
 
-  test::sprintf(buffer, "% s", "Hello testing");
-  REQUIRE(!strcmp(buffer, "Hello testing"));
-
   test::sprintf(buffer, "% d", 1024);
   REQUIRE(!strcmp(buffer, " 1024"));
 
@@ -224,6 +254,17 @@ TEST_CASE("space flag", "[]" ) {
 
   test::sprintf(buffer, "% i", -1024);
   REQUIRE(!strcmp(buffer, "-1024"));
+}
+
+#ifdef TEST_WITH_NON_STANDARD_FORMAT_STRINGS
+TEST_CASE("space flag - non-standard format", "[]" ) {
+  char buffer[100];
+
+  test::sprintf(buffer, "% s", "Hello testing");
+  REQUIRE(!strcmp(buffer, "Hello testing"));
+
+  test::sprintf(buffer, "% s", "Hello testing");
+  REQUIRE(!strcmp(buffer, "Hello testing"));
 
   test::sprintf(buffer, "% u", 1024);
   REQUIRE(!strcmp(buffer, "1024"));
@@ -252,6 +293,7 @@ TEST_CASE("space flag", "[]" ) {
   test::sprintf(buffer, "% c", 'x');
   REQUIRE(!strcmp(buffer, "x"));
 }
+#endif
 
 
 TEST_CASE("+ flag", "[]" ) {
@@ -275,9 +317,6 @@ TEST_CASE("+ flag", "[]" ) {
   test::sprintf(buffer, "%+15d", -42);
   REQUIRE(!strcmp(buffer, "            -42"));
 
-  test::sprintf(buffer, "%+s", "Hello testing");
-  REQUIRE(!strcmp(buffer, "Hello testing"));
-
   test::sprintf(buffer, "%+d", 1024);
   REQUIRE(!strcmp(buffer, "+1024"));
 
@@ -289,6 +328,17 @@ TEST_CASE("+ flag", "[]" ) {
 
   test::sprintf(buffer, "%+i", -1024);
   REQUIRE(!strcmp(buffer, "-1024"));
+
+  test::sprintf(buffer, "%+.0d", 0);
+  REQUIRE(!strcmp(buffer, "+"));
+}
+
+#ifdef TEST_WITH_NON_STANDARD_FORMAT_STRINGS
+TEST_CASE("+ flag - non-standard format", "[]" ) {
+  char buffer[100];
+
+  test::sprintf(buffer, "%+s", "Hello testing");
+  REQUIRE(!strcmp(buffer, "Hello testing"));
 
   test::sprintf(buffer, "%+u", 1024);
   REQUIRE(!strcmp(buffer, "1024"));
@@ -316,10 +366,8 @@ TEST_CASE("+ flag", "[]" ) {
 
   test::sprintf(buffer, "%+c", 'x');
   REQUIRE(!strcmp(buffer, "x"));
-
-  test::sprintf(buffer, "%+.0d", 0);
-  REQUIRE(!strcmp(buffer, "+"));
 }
+#endif
 
 
 TEST_CASE("0 flag", "[]" ) {
@@ -377,6 +425,11 @@ TEST_CASE("- flag", "[]" ) {
 
   test::sprintf(buffer, "%-15d", -42);
   REQUIRE(!strcmp(buffer, "-42            "));
+}
+
+#ifdef TEST_WITH_NON_STANDARD_FORMAT_STRINGS
+TEST_CASE("- flag - non-standard format", "[]" ) {
+  char buffer[100];
 
   test::sprintf(buffer, "%-0d", 42);
   REQUIRE(!strcmp(buffer, "42"));
@@ -428,6 +481,7 @@ TEST_CASE("- flag", "[]" ) {
   REQUIRE(!strcmp(buffer, "g"));
 #endif
 }
+#endif
 
 
 TEST_CASE("# flag", "[]" ) {
@@ -441,10 +495,16 @@ TEST_CASE("# flag", "[]" ) {
   REQUIRE(!strcmp(buffer, ""));
   test::sprintf(buffer, "%#.8x", 0x614e);
   REQUIRE(!strcmp(buffer, "0x0000614e"));
+}
+
+#ifdef TEST_WITH_NON_STANDARD_FORMAT_STRINGS
+TEST_CASE("# flag - non-standard format", "[]" ) {
+  char buffer[100];
+
   test::sprintf(buffer,"%#b", 6);
   REQUIRE(!strcmp(buffer, "0b110"));
 }
-
+#endif
 
 TEST_CASE("specifier", "[]" ) {
   char buffer[100];
@@ -698,7 +758,7 @@ TEST_CASE("width -20", "[]" ) {
   REQUIRE(!strcmp(buffer, "|   10| |10          | |   10|"));
 }
 
-
+#ifdef TEST_WITH_NON_STANDARD_FORMAT_STRINGS
 TEST_CASE("width 0-20", "[]" ) {
   char buffer[100];
 
@@ -744,7 +804,7 @@ TEST_CASE("width 0-20", "[]" ) {
   test::sprintf(buffer, "%0-20c", 'x');
   REQUIRE(!strcmp(buffer, "x                   "));
 }
-
+#endif
 
 TEST_CASE("padding 20", "[]" ) {
   char buffer[100];
@@ -827,8 +887,8 @@ TEST_CASE("padding .20", "[]" ) {
   REQUIRE(!strcmp(buffer, "000000000000EDCB5433"));
 }
 
-
-TEST_CASE("padding #020", "[]" ) {
+#ifdef TEST_WITH_NON_STANDARD_FORMAT_STRINGS
+TEST_CASE("padding #020 - non-standard format", "[]" ) {
   char buffer[100];
 
   test::sprintf(buffer, "%#020d", 1024);
@@ -848,7 +908,11 @@ TEST_CASE("padding #020", "[]" ) {
 
   test::sprintf(buffer, "%#020u", 4294966272U);
   REQUIRE(!strcmp(buffer, "00000000004294966272"));
+}
+#endif
 
+TEST_CASE("padding #020", "[]" ) {
+  char buffer[100];
   test::sprintf(buffer, "%#020o", 511);
   REQUIRE(!strcmp(buffer, "00000000000000000777"));
 
@@ -869,7 +933,8 @@ TEST_CASE("padding #020", "[]" ) {
 }
 
 
-TEST_CASE("padding #20", "[]" ) {
+#ifdef TEST_WITH_NON_STANDARD_FORMAT_STRINGS
+TEST_CASE("padding #20 - non-standard format", "[]" ) {
   char buffer[100];
 
   test::sprintf(buffer, "%#20d", 1024);
@@ -889,6 +954,11 @@ TEST_CASE("padding #20", "[]" ) {
 
   test::sprintf(buffer, "%#20u", 4294966272U);
   REQUIRE(!strcmp(buffer, "          4294966272"));
+}
+#endif
+
+TEST_CASE("padding #20", "[]" ) {
+  char buffer[100];
 
   test::sprintf(buffer, "%#20o", 511);
   REQUIRE(!strcmp(buffer, "                0777"));
@@ -1112,6 +1182,11 @@ TEST_CASE("length", "[]" ) {
 
   test::sprintf(buffer, "%20.X", 0U);
   REQUIRE(!strcmp(buffer, "                    "));
+}
+
+#ifdef TEST_WITH_NON_STANDARD_FORMAT_STRINGS
+TEST_CASE("length - non-standard format", "[]" ) {
+  char buffer[100];
 
   test::sprintf(buffer, "%02.0u", 0U);
   REQUIRE(!strcmp(buffer, "  "));
@@ -1119,6 +1194,7 @@ TEST_CASE("length", "[]" ) {
   test::sprintf(buffer, "%02.0d", 0);
   REQUIRE(!strcmp(buffer, "  "));
 }
+#endif
 
 
 TEST_CASE("float", "[]" ) {
@@ -1330,26 +1406,14 @@ TEST_CASE("types", "[]" ) {
   test::sprintf(buffer, "%llu", 18446744073709551615LLU);
   REQUIRE(!strcmp(buffer, "18446744073709551615"));
 
-  test::sprintf(buffer, "%zu", 2147483647UL);
+  test::sprintf(buffer, "%zu", (size_t)2147483647UL);
   REQUIRE(!strcmp(buffer, "2147483647"));
 
-  test::sprintf(buffer, "%zd", 2147483647UL);
+  test::sprintf(buffer, "%zd", (size_t)2147483647UL);
   REQUIRE(!strcmp(buffer, "2147483647"));
 
-  if (sizeof(size_t) == sizeof(long)) {
-    test::sprintf(buffer, "%zi", -2147483647L);
-    REQUIRE(!strcmp(buffer, "-2147483647"));
-  }
-  else {
-    test::sprintf(buffer, "%zi", -2147483647LL);
-    REQUIRE(!strcmp(buffer, "-2147483647"));
-  }
-
-  test::sprintf(buffer, "%b", 60000);
-  REQUIRE(!strcmp(buffer, "1110101001100000"));
-
-  test::sprintf(buffer, "%lb", 12345678L);
-  REQUIRE(!strcmp(buffer, "101111000110000101001110"));
+  test::sprintf(buffer, "%zi", (ssize_t)-2147483647L);
+  REQUIRE(!strcmp(buffer, "-2147483647"));
 
   test::sprintf(buffer, "%o", 60000);
   REQUIRE(!strcmp(buffer, "165140"));
@@ -1378,29 +1442,33 @@ TEST_CASE("types", "[]" ) {
   test::sprintf(buffer, "%s", "A Test");
   REQUIRE(!strcmp(buffer, "A Test"));
 
-  test::sprintf(buffer, "%hhu", 0xFFFFUL);
+  test::sprintf(buffer, "%hhu", (unsigned char) 0xFFU);
   REQUIRE(!strcmp(buffer, "255"));
 
-  test::sprintf(buffer, "%hu", 0x123456UL);
-  REQUIRE(!strcmp(buffer, "13398"));
+  test::sprintf(buffer, "%hu", (unsigned short) 0x1234u);
+  REQUIRE(!strcmp(buffer, "4660"));
 
-  test::sprintf(buffer, "%s%hhi %hu", "Test", 10000, 0xFFFFFFFF);
-  REQUIRE(!strcmp(buffer, "Test16 65535"));
+  test::sprintf(buffer, "%s%hhi %hu", "Test", (char) 100, (unsigned short) 0xFFFF);
+  REQUIRE(!strcmp(buffer, "Test100 65535"));
 
   test::sprintf(buffer, "%tx", &buffer[10] - &buffer[0]);
   REQUIRE(!strcmp(buffer, "a"));
 
-// TBD
-  if (sizeof(intmax_t) == sizeof(long)) {
-    test::sprintf(buffer, "%ji", -2147483647L);
-    REQUIRE(!strcmp(buffer, "-2147483647"));
-  }
-  else {
-    test::sprintf(buffer, "%ji", -2147483647LL);
-    REQUIRE(!strcmp(buffer, "-2147483647"));
-  }
+  test::sprintf(buffer, "%ji", (intmax_t)-2147483647L);
+  REQUIRE(!strcmp(buffer, "-2147483647"));
 }
 
+#ifdef TEST_WITH_NON_STANDARD_FORMAT_STRINGS
+TEST_CASE("types - non-standard format", "[]" ) {
+  char buffer[100];
+
+  test::sprintf(buffer, "%b", 60000);
+  REQUIRE(!strcmp(buffer, "1110101001100000"));
+
+  test::sprintf(buffer, "%lb", 12345678L);
+  REQUIRE(!strcmp(buffer, "101111000110000101001110"));
+}
+#endif
 
 TEST_CASE("pointer", "[]" ) {
   char buffer[100];
@@ -1438,18 +1506,18 @@ TEST_CASE("pointer", "[]" ) {
     REQUIRE(!strcmp(buffer, "0xffffffff"));
   }
 
-  test::sprintf(buffer, "%p", nullptr);
+  test::sprintf(buffer, "%p", (void*) nullptr);
   REQUIRE(!strcmp(buffer, "(nil)"));
 }
 
-
-TEST_CASE("unknown flag", "[]" ) {
+#ifdef TEST_WITH_NON_STANDARD_FORMAT_STRINGS
+TEST_CASE("unknown flag (non-standard format)", "[]" ) {
   char buffer[100];
 
   test::sprintf(buffer, "%kmarco", 42, 37);
   REQUIRE(!strcmp(buffer, "kmarco"));
 }
-
+#endif
 
 TEST_CASE("string length", "[]" ) {
   char buffer[100];
@@ -1469,12 +1537,18 @@ TEST_CASE("string length", "[]" ) {
   test::sprintf(buffer, "%.4s%.2s", "123456", "abcdef");
   REQUIRE(!strcmp(buffer, "1234ab"));
 
-  test::sprintf(buffer, "%.4.2s", "123456");
-  REQUIRE(!strcmp(buffer, ".2s"));
-
   test::sprintf(buffer, "%.*s", 3, "123456");
   REQUIRE(!strcmp(buffer, "123"));
 }
+
+#ifdef TEST_WITH_NON_STANDARD_FORMAT_STRINGS
+TEST_CASE("string length (non-standard format)", "[]" ) {
+  char buffer[100];
+
+  test::sprintf(buffer, "%.4.2s", "123456");
+  REQUIRE(!strcmp(buffer, ".2s"));
+}
+#endif
 
 
 TEST_CASE("buffer length", "[]" ) {
@@ -1560,3 +1634,8 @@ TEST_CASE("misc", "[]" ) {
   REQUIRE(!strcmp(buffer, "3.33e-01"));
 #endif
 }
+
+#ifdef TEST_WITH_NON_STANDARD_FORMAT_STRINGS
+DISABLE_WARNING_POP
+#endif
+
