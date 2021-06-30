@@ -1,4 +1,4 @@
-# A printf / sprintf Implementation for Embedded Systems
+# printf / sprintf Implementation for Embedded Systems
 
 [![Build Status](https://travis-ci.com/eyalroz/printf.svg?branch=master)](https://travis-ci.com/eyalroz/printf)
 [![codecov](https://codecov.io/gh/eyalroz/printf/branch/master/graph/badge.svg)](https://codecov.io/gh/eyalroz/printf)
@@ -8,7 +8,7 @@
 [![Github Issues](https://img.shields.io/github/issues/eyalroz/eyalroz/printf.svg)](http://github.com/eyalroz/printf/issues)
 Parent repo: [![Github Issues (original repo)](https://img.shields.io/github/issues/mpaland/printf.svg)](http://github.com/mpaland/printf/issues)
 
-(This is a fork of the original repo, [mpaland/printf](https://github.com/mpaland/printf).)
+(This is a fork of the [mpaland/printf](https://github.com/mpaland/printf) repository, with bug fixes and a few more features applied.)
 
 This is a tiny but **fully loaded** printf, sprintf and (v)snprintf implementation.
 Primarily designed for usage in embedded systems, where printf is not available due to memory issues or in avoidance of linking against libc.
@@ -17,13 +17,6 @@ Absolutely **NO dependencies** are required, *printf.c* brings all necessary rou
 
 If memory footprint is really a critical issue, floating point, exponential and 'long long' support and can be turned off via the `PRINTF_DISABLE_SUPPORT_FLOAT`, `PRINTF_DISABLE_SUPPORT_EXPONENTIAL` and `PRINTF_DISABLE_SUPPORT_LONG_LONG` compiler switches.
 When using printf (instead of sprintf/snprintf) you have to provide your own `_putchar()` low level function as console/serial output.
-
-
-## 2020 announcement
-This project is not dead! I just had no time in 2019 for sufficient support, sorry.
-Within the next weeks, I will have a look to all PRs and open issues.  
-Thank you all for supporting this project.
-
 
 ## Highlights and Design Goals
 
