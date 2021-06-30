@@ -107,7 +107,7 @@ int vsnprintf_(char* buffer, size_t count, const char* format, va_list va) ATTR_
  * \return The number of characters that are WRITTEN into the buffer, not counting the terminating null character
  */
 #define vprintf vprintf_
-int vprintf_(const char* format, va_list va);
+int vprintf_(const char* format, va_list va) ATTR_VPRINTF(1);
 
 
 /**
