@@ -1,11 +1,9 @@
 # printf / sprintf Implementation for Embedded Systems
 
 [![Build Status](https://travis-ci.com/eyalroz/printf.svg?branch=master)](https://travis-ci.com/eyalroz/printf)
-[![codecov](https://codecov.io/gh/eyalroz/printf/branch/master/graph/badge.svg)](https://codecov.io/gh/eyalroz/printf)
-[![coverity](https://img.shields.io/coverity/scan/23315.svg)](https://scan.coverity.com/projects/eyalroz-printf)
 [![Github Releases](https://img.shields.io/github/release/mpaland/printf.svg)](https://github.com/mpaland/printf/releases)
 [![GitHub license](https://img.shields.io/badge/license-MIT-blue.svg)](https://raw.githubusercontent.com/eyalroz/printf/master/LICENSE)
-[![Github Issues](https://img.shields.io/github/issues/eyalroz/eyalroz/printf.svg)](http://github.com/eyalroz/printf/issues)
+[![Github Issues](https://img.shields.io/github/issues/eyalroz/printf.svg)](http://github.com/eyalroz/printf/issues)
 Parent repo: [![Github Issues (original repo)](https://img.shields.io/github/issues/mpaland/printf.svg)](http://github.com/mpaland/printf/issues)
 
 (This is a fork of the [mpaland/printf](https://github.com/mpaland/printf) repository, with bug fixes and a few more features applied.)

@@ -1,6 +1,6 @@
-# Use a C++11 distro
-dist: trusty
+dist: focal
 sudo: required
+
 
 # Enable C++ support
 language: cpp
@@ -8,32 +8,6 @@ language: cpp
 # Compiler selection
 compiler: gcc
 
-env:
-  global:
-    # coverity key; see https://scan.coverity.com/
-    - secure: "SSvyBAHzpzlYr8i2yYUmUXVNAZCfmPLkcnSxnKGbQUK7Ba6e7EtN1cSYH0g58kxz0vNRsXBdpyGYKapE1JJWy2tuUrFE9957EdT3PU24Un0u2I+TQ6XTONjMN8D+Rv/0t/hhYnQ0RXnGXbp5l7D1bFWqAZ/Ks6hS5sBSlDHYgeCZCx7J3NgR8JH81bmU595Le8UNuIGxD8ML2NJK4B0/Xl/xxFyHQUTcl/e7YPSYrvrdTbjgzuNOKVXtZGvAu0FbyMdf8lHqF/ivwQ8csdp4AwbkYsgKnDv1afIJ/dII+rxWOuae54Ms4SVQOCrgxCnlr0bPCEm8ptnNhGYqRiPuX6ryt/ycLBBn7ttuOJ0j1QrFWwNRpHYPOAfMsPJ+T6HTz560MwcV+7eJ4HPEA4hMJ0G13Q3bqYSqOXoT/IY9SgdNwPxV9CUBYaWjNQ4iwVg7FYa98cCN1JFBOTcONAQUH/wr6/pFoHAFKeCG1hWjMsbX/O/Ns7G/znVi7NakmhMHPvbpzx9SrCrtFJHfdbDlPhGnILjHmcid8g8bMoqWisaYH6ZgNeJpxJKHw4xDVaNKEc3v/4UBSw4KvpYalY3zjgk/ssyTOMupRbkeCoVeuIXjH0PlMQsYooLA9Sqi4m6uch90lcAY9fZOc+tvTBkLtTUUdUCHNdfupQaSXwhuBTE="
-
-# addons
-addons:
-  apt:
-    packages:
-      - gcc-6
-      - g++-6
-    sources:
-      - ubuntu-toolchain-r-test
-
-  coverity_scan:
-    project:
-      name: "eyalroz/printf"
-      description: "Tiny printf implementation"
-    notification_email: eyalroz1@gmx.com
-    build_command_prepend: "make clean"
-    build_command: "make"
-    branch_pattern: master
-
-before_install:
-  # connect coverity
-  - echo -n | openssl s_client -connect scan.coverity.com:443 | sed -ne '/-BEGIN CERTIFICATE-/,/-END CERTIFICATE-/p' | sudo tee -a /etc/ssl/certs/ca-
 
 # Active branches
 branches:
@@ -41,24 +15,12 @@ branches:
    - master
    - develop
 
+before_script:
+   - mkdir build; cd build; cmake -DCMAKE_BUILD_TYPE=Release -DBUILD_TESTS=ON ..
+
 script:
-  # Link gcc-6 and g++-6 to their standard commands
-  - sudo rm /usr/bin/gcc
-  - sudo rm /usr/bin/g++
-  - sudo ln -s /usr/bin/gcc-6 /usr/bin/gcc
-  - sudo ln -s /usr/bin/g++-6 /usr/bin/g++
-  # Export CC and CXX
-  - export CC=/usr/bin/gcc-6
-  - export CXX=/usr/bin/g++-6
-  # Check versions of gcc, g++
-  - gcc -v && g++ -v
   # Run build commands
   - make
   # execute the text suite
-  - bin/test_suite -d yes
-  # coverall profiling
-  - tmp/cov/test_suite
+  - test/test_suite -d yes
 
-after_success:
-  ## Report to codecov
-  - bash <(curl -s https://codecov.io/bash)
