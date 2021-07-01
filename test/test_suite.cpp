@@ -1225,6 +1225,48 @@ TEST_CASE("float", "[]" ) {
   test::sprintf(buffer, "%.3f", 30343.1415354);
   REQUIRE(!strcmp(buffer, "30343.142"));
 
+  // switch from decimal to exponential representation
+  //
+  test::sprintf(buffer, "%.0f", (double) ((int64_t)1 * 1000 ) );
+  if (PRINTF_MAX_FLOAT < 10e+2) {
+    REQUIRE(!strcmp(buffer, "10e+2"));
+  }
+  else {
+    REQUIRE(!strcmp(buffer, "1000"));
+  }
+
+  test::sprintf(buffer, "%.0f", (double) ((int64_t)1 * 1000 * 1000 ) );
+  if (PRINTF_MAX_FLOAT < 10e+5) {
+    REQUIRE(!strcmp(buffer, "10e+5"));
+  }
+  else {
+    REQUIRE(!strcmp(buffer, "1000000"));
+  }
+
+  test::sprintf(buffer, "%.0f", (double) ((int64_t)1 * 1000 * 1000 * 1000 ) );
+  if (PRINTF_MAX_FLOAT < 10e+8) {
+    REQUIRE(!strcmp(buffer, "10e+8"));
+  }
+  else {
+    REQUIRE(!strcmp(buffer, "1000000000"));
+  }
+
+  test::sprintf(buffer, "%.0f", (double) ((int64_t)1 * 1000 * 1000 * 1000 * 1000) );
+  if (PRINTF_MAX_FLOAT < 10e+11) {
+    REQUIRE(!strcmp(buffer, "10e+11"));
+  }
+  else {
+    REQUIRE(!strcmp(buffer, "1000000000000"));
+  }
+
+  test::sprintf(buffer, "%.0f", (double) ((int64_t)1 * 1000 * 1000 * 1000 * 1000 * 1000) );
+  if (PRINTF_MAX_FLOAT < 10e+14) {
+    REQUIRE(!strcmp(buffer, "10e+14"));
+  }
+  else {
+    REQUIRE(!strcmp(buffer, "1000000000000000"));
+  }
+
   test::sprintf(buffer, "%.0f", 34.1415354);
   REQUIRE(!strcmp(buffer, "34"));
 

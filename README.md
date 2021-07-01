@@ -167,7 +167,7 @@ int length = sprintf(NULL, "Hello, world"); // length is set to 12
 | PRINTF_NTOA_BUFFER_SIZE            | 32        | ntoa (integer) conversion buffer size. This must be big enough to hold one converted numeric number _including_ leading zeros, normally 32 is a sufficient value. Created on the stack |
 | PRINTF_FTOA_BUFFER_SIZE            | 32        | ftoa (float) conversion buffer size. This must be big enough to hold one converted float number _including_ leading zeros, normally 32 is a sufficient value. Created on the stack |
 | PRINTF_DEFAULT_FLOAT_PRECISION     | 6         | Define the default floating point precision |
-| PRINTF_MAX_FLOAT                   | 1e9       | Define the largest suitable value to be printed with %f, before using exponential representation |
+| PRINTF_MAX_FLOAT                   | 1e9       | Define the largest suitable value to be printed with %f, before using exponential representation. Note that this must be set to a value which fits in a 64-bit signed integer (i.e. less than 2^63) |
 | PRINTF_DISABLE_SUPPORT_FLOAT       | undefined | Define this to disable floating point (%f) support |
 | PRINTF_DISABLE_SUPPORT_EXPONENTIAL | undefined | Define this to disable exponential floating point (%e) support |
 | PRINTF_DISABLE_SUPPORT_LONG_LONG   | undefined | Define this to disable long long (%ll) support |
