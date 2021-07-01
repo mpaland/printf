@@ -61,6 +61,7 @@ namespace test {
 
     #define DISABLE_WARNING_PRINTF_FORMAT    DISABLE_WARNING(-Wformat)
     #define DISABLE_WARNING_PRINTF_FORMAT_EXTRA_ARGS DISABLE_WARNING(-Wformat-extra-args)
+    #define DISABLE_WARNING_PRINTF_FORMAT_OVERFLOW DISABLE_WARNING(-Wformat-overflow)
 
 #else
     #define DISABLE_WARNING_PUSH
@@ -512,7 +513,10 @@ TEST_CASE("specifier", "[]" ) {
   test::sprintf(buffer, "%s", "Hello testing");
   REQUIRE(!strcmp(buffer, "Hello testing"));
 
+DISABLE_WARNING_PUSH
+DISABLE_WARNING_PRINTF_FORMAT_OVERFLOW
   test::sprintf(buffer, "%s", NULL);
+DISABLE_WARNING_POP
   REQUIRE(!strcmp(buffer, "(null)"));
 
   test::sprintf(buffer, "%d", 1024);
@@ -1540,7 +1544,10 @@ TEST_CASE("string length", "[]" ) {
   test::sprintf(buffer, "%.*s", 3, "123456");
   REQUIRE(!strcmp(buffer, "123"));
 
+DISABLE_WARNING_PUSH
+DISABLE_WARNING_PRINTF_FORMAT_OVERFLOW
   test::sprintf(buffer, "%.*s", 3, NULL);
+DISABLE_WARNING_POP
   REQUIRE(!strcmp(buffer, "(null)"));
 }
 
@@ -1575,7 +1582,10 @@ TEST_CASE("buffer length", "[]" ) {
   test::snprintf(buffer, 2, "%s", "Hello");
   REQUIRE(!strcmp(buffer, "H"));
 
+DISABLE_WARNING_PUSH
+DISABLE_WARNING_PRINTF_FORMAT_OVERFLOW
   test::snprintf(buffer, 2, "%s", NULL);
+DISABLE_WARNING_POP
   REQUIRE(!strcmp(buffer, "("));
 }
 
@@ -1596,7 +1606,10 @@ TEST_CASE("ret value", "[]" ) {
   REQUIRE(!strcmp(buffer, "01234"));
   REQUIRE(ret == 8);  // "567" are truncated
 
+DISABLE_WARNING_PUSH
+DISABLE_WARNING_PRINTF_FORMAT_OVERFLOW
   ret = test::snprintf(buffer, 6, "0%s", NULL);
+DISABLE_WARNING_POP
   REQUIRE(!strcmp(buffer, "0(nul"));
   REQUIRE(ret == 7);  // "l)" is truncated
 
