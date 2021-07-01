@@ -7,13 +7,6 @@ project(
 	VERSION 0.2.0
 )
 
-#macro(compiler_define_option option_identifier description defined_identifier default_state)
-#	option(option_identifier "${description}" ON)
-#	if (NOT SUPPORT_FLOAT_ARGUMENTS)
-#		add_definitions(-DPRINTF_DISABLE_SUPPORT_FLOAT)
-#	endif()
-#endmacro()
-
 option(BUILD_TESTS "Build test programs for the library" OFF)
 
 option(SUPPORT_FLOAT_ARGUMENTS "Support floating-point arguments (%f)" ON)
@@ -26,8 +19,8 @@ if (NOT SUPPORT_EXPONENTIAL_FLOAT_ARGUMENTS)
 	add_definitions(-DPRINTF_DISABLE_SUPPORT_EXPONENTIAL)
 endif()
 
-option(SUPPORT_LONG_LONG_AND_POINTER_ARGUMENTS "Support long long (%llu or %p)" ON)
-if (NOT SUPPORT_LONG_LONG_AND_POINTER_ARGUMENTS)
+option(SUPPORT_LONG_LONG_INTS_AND_PTR "Support long long integers and pointers (%ll, %llu, %p)" ON)
+if (NOT SUPPORT_LONG_LONG_INTS_AND_PTR)
 	add_definitions(-DPRINTF_DISABLE_SUPPORT_LONG_LONG)
 endif()
 
@@ -38,24 +31,36 @@ endif()
 
 # numeric defines
 
-set(INTEGER_TO_STRING_BUFFER_SIZE "" CACHE STRING "Integer to string (ntoa) conversion buffer size")
-if (NOT "${INTEGER_TO_STRING_BUFFER_SIZE}" STREQUAL "")
-	add_definitions(-DPRINTF_NTOA_BUFFER_SIZE=${INTEGER_TO_STRING_BUFFER_SIZE})
+set(INTEGER_TO_STRING_BUFFER_SIZE "32" CACHE STRING "Integer to string (ntoa) conversion buffer size")
+string(REGEX MATCH "^[0-9]+([eE][0-9]+)?$" PRINTF_NTOA_BUFFER_SIZE "${INTEGER_TO_STRING_BUFFER_SIZE}")
+if ("${PRINTF_NTOA_BUFFER_SIZE}" STREQUAL "")
+	message(FATAL_ERROR "An (integral) buffer size for converting integers to floating-point values must be specified." )
+else()
+	add_definitions(-DPRINTF_NTOA_BUFFER_SIZE=${PRINTF_NTOA_BUFFER_SIZE})
 endif()
 
-set(FLOAT_TO_STRING_BUFFER_SIZE "" CACHE STRING "Float to string (ftoa) conversion buffer size")
-if (NOT ${FLOAT_TO_STRING_BUFFER_SIZE} STREQUAL "")
-	add_definitions(-DPRINTF_FTOA_BUFFER_SIZE=${FLOAT_TO_STRING_BUFFER_SIZE})
+set(FLOAT_TO_STRING_BUFFER_SIZE "32" CACHE STRING "Float to string (ftoa) conversion buffer size")
+string(REGEX MATCH "^[0-9]+([eE][0-9]+)?$" PRINTF_FTOA_BUFFER_SIZE "${FLOAT_TO_STRING_BUFFER_SIZE}")
+if ("${PRINTF_FTOA_BUFFER_SIZE}" STREQUAL "")
+	message(FATAL_ERROR "An (integral) buffer size for converting floating-point values to strings must be specified." )
+else()
+	add_definitions(-DPRINTF_FTOA_BUFFER_SIZE=${PRINTF_FTOA_BUFFER_SIZE})
 endif()
 
-set(DEFAULT_FLOAT_PRECISION "" CACHE STRING "Default precision when printing floating-point values")
-if (NOT "${DEFAULT_FLOAT_PRECISION}" STREQUAL "")
-	add_definitions(-DPRINTF_DEFAULT_FLOAT_PRECISION=${DEFAULT_FLOAT_PRECISION})
+set(DEFAULT_FLOAT_PRECISION "6" CACHE STRING "Default precision when printing floating-point values")
+string(REGEX MATCH "^[0-9]+([eE][0-9]+)?$" DFP_PARSED "${DEFAULT_FLOAT_PRECISION}")
+if ("${DFP_PARSED}" STREQUAL "")
+	message(FATAL_ERROR "An (integral) default floating-point precision value must be specified." )
+else()
+	add_definitions(-DPRINTF_DEFAULT_FLOAT_PRECISION=${DFP_PARSED})
 endif()
 
-set(MAX_FLOAT_IN_NON_EXPONENT_NOTATION "" CACHE STRING "Largest floating-point value for which printing with %f uses non-exponential notation")
-if (NOT "${MAX_FLOAT_IN_NON_EXPONENT_NOTATION}" STREQUAL "")
-	add_definitions(-DPRINTF_MAX_FLOAT=${LARGEST_FLOAT_TYPE})
+set(FLOAT_NOTATION_THRESHOLD "1e9" CACHE STRING "Largest floating-point value for which printing with %f uses non-exponential notation")
+string(REGEX MATCH "^[0-9]+([eE][0-9]+)?$" PRINTF_MAX_FLOAT "${FLOAT_NOTATION_THRESHOLD}")
+if ("${PRINTF_MAX_FLOAT}" STREQUAL "")
+	message(FATAL_ERROR "The %f notation switch threshold must be an integer." )
+else()
+	add_definitions(-DPRINTF_MAX_FLOAT=${PRINTF_MAX_FLOAT})
 endif()
 
 option(BUILD_STATIC_LIBRARY "Build the library as static rather than shared" OFF)
