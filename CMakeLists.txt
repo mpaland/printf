@@ -29,6 +29,16 @@ if (NOT SUPPORT_PTRDIFF_ARGUMENTS)
 	add_definitions(-DPRINTF_DISABLE_SUPPORT_PTRDIFF_T)
 endif()
 
+option(ALIAS_STANDARD_FUNCTION_NAMES "Alias the relevant standard library function (printf, sprintf etc.) to the library's implementations" ON)
+if (NOT ALIAS_STANDARD_FUNCTION_NAMES)
+	add_definitions(-DALIAS_STANDARD_FUNCTION_NAMES)
+endif()
+
+option(ALIAS_STANDARD_FUNCTION_NAMES "Alias the relevant standard library function (printf, sprintf etc.) to the library's implementations" ON)
+if (NOT ALIAS_STANDARD_FUNCTION_NAMES)
+	add_definitions(-DALIAS_STANDARD_FUNCTION_NAMES)
+endif()
+
 # numeric defines
 
 set(INTEGER_TO_STRING_BUFFER_SIZE "32" CACHE STRING "Integer to string (ntoa) conversion buffer size")
