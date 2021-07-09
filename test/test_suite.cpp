@@ -95,7 +95,7 @@ void _out_fct(char character, void* arg)
 TEST_CASE("printf", "[]" ) {
   printf_idx = 0U;
   memset(printf_buffer, 0xCC, 100U);
-  CHECK(test::printf("% d", 4232) == 5);
+  CHECK(test::printf_("% d", 4232) == 5);
   CHECK(printf_buffer[5] == (char)0xCC);
   printf_buffer[5] = 0;
   CHECK(!strcmp(printf_buffer, " 4232"));
@@ -130,13 +130,13 @@ TEST_CASE("vfctprintf", "[]" ) {
   CHECK(printf_buffer[22] == (char)0xCC);
 }
 
-TEST_CASE("snprintf", "[]" ) {
+TEST_CASE("snprintf_", "[]" ) {
   char buffer[100];
 
-  test::snprintf(buffer, 100U, "%d", -1000);
+  test::snprintf_(buffer, 100U, "%d", -1000);
   CHECK(!strcmp(buffer, "-1000"));
 
-  test::snprintf(buffer, 3U, "%d", -1000);
+  test::snprintf_(buffer, 3U, "%d", -1000);
   CHECK(!strcmp(buffer, "-1"));
 }
 
@@ -144,7 +144,7 @@ static void vprintf_builder_1(char* buffer, ...)
 {
   va_list args;
   va_start(args, buffer);
-  test::vprintf("%d", args);
+  test::vprintf_("%d", args);
   va_end(args);
 }
 
@@ -152,7 +152,7 @@ static void vsprintf_builder_1(char* buffer, ...)
 {
   va_list args;
   va_start(args, buffer);
-  test::vsprintf(buffer, "%d", args);
+  test::vsprintf_(buffer, "%d", args);
   va_end(args);
 }
 
@@ -160,7 +160,7 @@ static void vsnprintf_builder_1(char* buffer, ...)
 {
   va_list args;
   va_start(args, buffer);
-  test::vsnprintf(buffer, 100U, "%d", args);
+  test::vsnprintf_(buffer, 100U, "%d", args);
   va_end(args);
 }
 
@@ -168,7 +168,7 @@ static void vsprintf_builder_3(char* buffer, ...)
 {
   va_list args;
   va_start(args, buffer);
-  test::vsprintf(buffer, "%d %d %s", args);
+  test::vsprintf_(buffer, "%d %d %s", args);
   va_end(args);
 }
 
@@ -176,7 +176,7 @@ static void vsnprintf_builder_3(char* buffer, ...)
 {
   va_list args;
   va_start(args, buffer);
-  test::vsnprintf(buffer, 100U, "%d %d %s", args);
+  test::vsnprintf_(buffer, 100U, "%d %d %s", args);
   va_end(args);
 }
 
@@ -203,7 +203,7 @@ TEST_CASE("vsprintf", "[]" ) {
 }
 
 
-TEST_CASE("vsnprintf", "[]" ) {
+TEST_CASE("vsnprintf_", "[]" ) {
   char buffer[100];
 
   vsnprintf_builder_1(buffer, -1);
@@ -217,43 +217,43 @@ TEST_CASE("vsnprintf", "[]" ) {
 TEST_CASE("space flag", "[]" ) {
   char buffer[100];
 
-  test::sprintf(buffer, "% d", 42);
+  test::sprintf_(buffer, "% d", 42);
   CHECK(!strcmp(buffer, " 42"));
 
-  test::sprintf(buffer, "% d", -42);
+  test::sprintf_(buffer, "% d", -42);
   CHECK(!strcmp(buffer, "-42"));
 
-  test::sprintf(buffer, "% 5d", 42);
+  test::sprintf_(buffer, "% 5d", 42);
   CHECK(!strcmp(buffer, "   42"));
 
-  test::sprintf(buffer, "% 5d", -42);
+  test::sprintf_(buffer, "% 5d", -42);
   CHECK(!strcmp(buffer, "  -42"));
 
-  test::sprintf(buffer, "% 15d", 42);
+  test::sprintf_(buffer, "% 15d", 42);
   CHECK(!strcmp(buffer, "             42"));
 
-  test::sprintf(buffer, "% 15d", -42);
+  test::sprintf_(buffer, "% 15d", -42);
   CHECK(!strcmp(buffer, "            -42"));
 
-  test::sprintf(buffer, "% 15d", -42);
+  test::sprintf_(buffer, "% 15d", -42);
   CHECK(!strcmp(buffer, "            -42"));
 
-  test::sprintf(buffer, "% 15.3f", -42.987);
+  test::sprintf_(buffer, "% 15.3f", -42.987);
   CHECK(!strcmp(buffer, "        -42.987"));
 
-  test::sprintf(buffer, "% 15.3f", 42.987);
+  test::sprintf_(buffer, "% 15.3f", 42.987);
   CHECK(!strcmp(buffer, "         42.987"));
 
-  test::sprintf(buffer, "% d", 1024);
+  test::sprintf_(buffer, "% d", 1024);
   CHECK(!strcmp(buffer, " 1024"));
 
-  test::sprintf(buffer, "% d", -1024);
+  test::sprintf_(buffer, "% d", -1024);
   CHECK(!strcmp(buffer, "-1024"));
 
-  test::sprintf(buffer, "% i", 1024);
+  test::sprintf_(buffer, "% i", 1024);
   CHECK(!strcmp(buffer, " 1024"));
 
-  test::sprintf(buffer, "% i", -1024);
+  test::sprintf_(buffer, "% i", -1024);
   CHECK(!strcmp(buffer, "-1024"));
 }
 
@@ -261,34 +261,34 @@ TEST_CASE("space flag", "[]" ) {
 TEST_CASE("space flag - non-standard format", "[]" ) {
   char buffer[100];
 
-  test::sprintf(buffer, "% s", "Hello testing");
+  test::sprintf_(buffer, "% s", "Hello testing");
   CHECK(!strcmp(buffer, "Hello testing"));
 
-  test::sprintf(buffer, "% u", 1024);
+  test::sprintf_(buffer, "% u", 1024);
   CHECK(!strcmp(buffer, "1024"));
 
-  test::sprintf(buffer, "% u", 4294966272U);
+  test::sprintf_(buffer, "% u", 4294966272U);
   CHECK(!strcmp(buffer, "4294966272"));
 
-  test::sprintf(buffer, "% o", 511);
+  test::sprintf_(buffer, "% o", 511);
   CHECK(!strcmp(buffer, "777"));
 
-  test::sprintf(buffer, "% o", 4294966785U);
+  test::sprintf_(buffer, "% o", 4294966785U);
   CHECK(!strcmp(buffer, "37777777001"));
 
-  test::sprintf(buffer, "% x", 305441741);
+  test::sprintf_(buffer, "% x", 305441741);
   CHECK(!strcmp(buffer, "1234abcd"));
 
-  test::sprintf(buffer, "% x", 3989525555U);
+  test::sprintf_(buffer, "% x", 3989525555U);
   CHECK(!strcmp(buffer, "edcb5433"));
 
-  test::sprintf(buffer, "% X", 305441741);
+  test::sprintf_(buffer, "% X", 305441741);
   CHECK(!strcmp(buffer, "1234ABCD"));
 
-  test::sprintf(buffer, "% X", 3989525555U);
+  test::sprintf_(buffer, "% X", 3989525555U);
   CHECK(!strcmp(buffer, "EDCB5433"));
 
-  test::sprintf(buffer, "% c", 'x');
+  test::sprintf_(buffer, "% c", 'x');
   CHECK(!strcmp(buffer, "x"));
 }
 #endif
@@ -297,37 +297,37 @@ TEST_CASE("space flag - non-standard format", "[]" ) {
 TEST_CASE("+ flag", "[]" ) {
   char buffer[100];
 
-  test::sprintf(buffer, "%+d", 42);
+  test::sprintf_(buffer, "%+d", 42);
   CHECK(!strcmp(buffer, "+42"));
 
-  test::sprintf(buffer, "%+d", -42);
+  test::sprintf_(buffer, "%+d", -42);
   CHECK(!strcmp(buffer, "-42"));
 
-  test::sprintf(buffer, "%+5d", 42);
+  test::sprintf_(buffer, "%+5d", 42);
   CHECK(!strcmp(buffer, "  +42"));
 
-  test::sprintf(buffer, "%+5d", -42);
+  test::sprintf_(buffer, "%+5d", -42);
   CHECK(!strcmp(buffer, "  -42"));
 
-  test::sprintf(buffer, "%+15d", 42);
+  test::sprintf_(buffer, "%+15d", 42);
   CHECK(!strcmp(buffer, "            +42"));
 
-  test::sprintf(buffer, "%+15d", -42);
+  test::sprintf_(buffer, "%+15d", -42);
   CHECK(!strcmp(buffer, "            -42"));
 
-  test::sprintf(buffer, "%+d", 1024);
+  test::sprintf_(buffer, "%+d", 1024);
   CHECK(!strcmp(buffer, "+1024"));
 
-  test::sprintf(buffer, "%+d", -1024);
+  test::sprintf_(buffer, "%+d", -1024);
   CHECK(!strcmp(buffer, "-1024"));
 
-  test::sprintf(buffer, "%+i", 1024);
+  test::sprintf_(buffer, "%+i", 1024);
   CHECK(!strcmp(buffer, "+1024"));
 
-  test::sprintf(buffer, "%+i", -1024);
+  test::sprintf_(buffer, "%+i", -1024);
   CHECK(!strcmp(buffer, "-1024"));
 
-  test::sprintf(buffer, "%+.0d", 0);
+  test::sprintf_(buffer, "%+.0d", 0);
   CHECK(!strcmp(buffer, "+"));
 }
 
@@ -335,34 +335,34 @@ TEST_CASE("+ flag", "[]" ) {
 TEST_CASE("+ flag - non-standard format", "[]" ) {
   char buffer[100];
 
-  test::sprintf(buffer, "%+s", "Hello testing");
+  test::sprintf_(buffer, "%+s", "Hello testing");
   CHECK(!strcmp(buffer, "Hello testing"));
 
-  test::sprintf(buffer, "%+u", 1024);
+  test::sprintf_(buffer, "%+u", 1024);
   CHECK(!strcmp(buffer, "1024"));
 
-  test::sprintf(buffer, "%+u", 4294966272U);
+  test::sprintf_(buffer, "%+u", 4294966272U);
   CHECK(!strcmp(buffer, "4294966272"));
 
-  test::sprintf(buffer, "%+o", 511);
+  test::sprintf_(buffer, "%+o", 511);
   CHECK(!strcmp(buffer, "777"));
 
-  test::sprintf(buffer, "%+o", 4294966785U);
+  test::sprintf_(buffer, "%+o", 4294966785U);
   CHECK(!strcmp(buffer, "37777777001"));
 
-  test::sprintf(buffer, "%+x", 305441741);
+  test::sprintf_(buffer, "%+x", 305441741);
   CHECK(!strcmp(buffer, "1234abcd"));
 
-  test::sprintf(buffer, "%+x", 3989525555U);
+  test::sprintf_(buffer, "%+x", 3989525555U);
   CHECK(!strcmp(buffer, "edcb5433"));
 
-  test::sprintf(buffer, "%+X", 305441741);
+  test::sprintf_(buffer, "%+X", 305441741);
   CHECK(!strcmp(buffer, "1234ABCD"));
 
-  test::sprintf(buffer, "%+X", 3989525555U);
+  test::sprintf_(buffer, "%+X", 3989525555U);
   CHECK(!strcmp(buffer, "EDCB5433"));
 
-  test::sprintf(buffer, "%+c", 'x');
+  test::sprintf_(buffer, "%+c", 'x');
   CHECK(!strcmp(buffer, "x"));
 }
 #endif
@@ -371,34 +371,34 @@ TEST_CASE("+ flag - non-standard format", "[]" ) {
 TEST_CASE("0 flag", "[]" ) {
   char buffer[100];
 
-  test::sprintf(buffer, "%0d", 42);
+  test::sprintf_(buffer, "%0d", 42);
   CHECK(!strcmp(buffer, "42"));
 
-  test::sprintf(buffer, "%0ld", 42L);
+  test::sprintf_(buffer, "%0ld", 42L);
   CHECK(!strcmp(buffer, "42"));
 
-  test::sprintf(buffer, "%0d", -42);
+  test::sprintf_(buffer, "%0d", -42);
   CHECK(!strcmp(buffer, "-42"));
 
-  test::sprintf(buffer, "%05d", 42);
+  test::sprintf_(buffer, "%05d", 42);
   CHECK(!strcmp(buffer, "00042"));
 
-  test::sprintf(buffer, "%05d", -42);
+  test::sprintf_(buffer, "%05d", -42);
   CHECK(!strcmp(buffer, "-0042"));
 
-  test::sprintf(buffer, "%015d", 42);
+  test::sprintf_(buffer, "%015d", 42);
   CHECK(!strcmp(buffer, "000000000000042"));
 
-  test::sprintf(buffer, "%015d", -42);
+  test::sprintf_(buffer, "%015d", -42);
   CHECK(!strcmp(buffer, "-00000000000042"));
 
-  test::sprintf(buffer, "%015.2f", 42.1234);
+  test::sprintf_(buffer, "%015.2f", 42.1234);
   CHECK(!strcmp(buffer, "000000000042.12"));
 
-  test::sprintf(buffer, "%015.3f", 42.9876);
+  test::sprintf_(buffer, "%015.3f", 42.9876);
   CHECK(!strcmp(buffer, "00000000042.988"));
 
-  test::sprintf(buffer, "%015.5f", -42.9876);
+  test::sprintf_(buffer, "%015.5f", -42.9876);
   CHECK(!strcmp(buffer, "-00000042.98760"));
 }
 
@@ -406,22 +406,22 @@ TEST_CASE("0 flag", "[]" ) {
 TEST_CASE("- flag", "[]" ) {
   char buffer[100];
 
-  test::sprintf(buffer, "%-d", 42);
+  test::sprintf_(buffer, "%-d", 42);
   CHECK(!strcmp(buffer, "42"));
 
-  test::sprintf(buffer, "%-d", -42);
+  test::sprintf_(buffer, "%-d", -42);
   CHECK(!strcmp(buffer, "-42"));
 
-  test::sprintf(buffer, "%-5d", 42);
+  test::sprintf_(buffer, "%-5d", 42);
   CHECK(!strcmp(buffer, "42   "));
 
-  test::sprintf(buffer, "%-5d", -42);
+  test::sprintf_(buffer, "%-5d", -42);
   CHECK(!strcmp(buffer, "-42  "));
 
-  test::sprintf(buffer, "%-15d", 42);
+  test::sprintf_(buffer, "%-15d", 42);
   CHECK(!strcmp(buffer, "42             "));
 
-  test::sprintf(buffer, "%-15d", -42);
+  test::sprintf_(buffer, "%-15d", -42);
   CHECK(!strcmp(buffer, "-42            "));
 }
 
@@ -429,50 +429,50 @@ TEST_CASE("- flag", "[]" ) {
 TEST_CASE("- flag - non-standard format", "[]" ) {
   char buffer[100];
 
-  test::sprintf(buffer, "%-0d", 42);
+  test::sprintf_(buffer, "%-0d", 42);
   CHECK(!strcmp(buffer, "42"));
 
-  test::sprintf(buffer, "%-0d", -42);
+  test::sprintf_(buffer, "%-0d", -42);
   CHECK(!strcmp(buffer, "-42"));
 
-  test::sprintf(buffer, "%-05d", 42);
+  test::sprintf_(buffer, "%-05d", 42);
   CHECK(!strcmp(buffer, "42   "));
 
-  test::sprintf(buffer, "%-05d", -42);
+  test::sprintf_(buffer, "%-05d", -42);
   CHECK(!strcmp(buffer, "-42  "));
 
-  test::sprintf(buffer, "%-015d", 42);
+  test::sprintf_(buffer, "%-015d", 42);
   CHECK(!strcmp(buffer, "42             "));
 
-  test::sprintf(buffer, "%-015d", -42);
+  test::sprintf_(buffer, "%-015d", -42);
   CHECK(!strcmp(buffer, "-42            "));
 
-  test::sprintf(buffer, "%0-d", 42);
+  test::sprintf_(buffer, "%0-d", 42);
   CHECK(!strcmp(buffer, "42"));
 
-  test::sprintf(buffer, "%0-d", -42);
+  test::sprintf_(buffer, "%0-d", -42);
   CHECK(!strcmp(buffer, "-42"));
 
-  test::sprintf(buffer, "%0-5d", 42);
+  test::sprintf_(buffer, "%0-5d", 42);
   CHECK(!strcmp(buffer, "42   "));
 
-  test::sprintf(buffer, "%0-5d", -42);
+  test::sprintf_(buffer, "%0-5d", -42);
   CHECK(!strcmp(buffer, "-42  "));
 
-  test::sprintf(buffer, "%0-15d", 42);
+  test::sprintf_(buffer, "%0-15d", 42);
   CHECK(!strcmp(buffer, "42             "));
 
-  test::sprintf(buffer, "%0-15d", -42);
+  test::sprintf_(buffer, "%0-15d", -42);
   CHECK(!strcmp(buffer, "-42            "));
 
-  test::sprintf(buffer, "%0-15.3e", -42.);
+  test::sprintf_(buffer, "%0-15.3e", -42.);
 #ifndef PRINTF_DISABLE_SUPPORT_EXPONENTIAL
   CHECK(!strcmp(buffer, "-4.200e+01     "));
 #else
   CHECK(!strcmp(buffer, "e"));
 #endif
 
-  test::sprintf(buffer, "%0-15.3g", -42.);
+  test::sprintf_(buffer, "%0-15.3g", -42.);
 #ifndef PRINTF_DISABLE_SUPPORT_EXPONENTIAL
   CHECK(!strcmp(buffer, "-42.0          "));
 #else
@@ -518,7 +518,7 @@ TEST_CASE("# flag", "[]" ) {
 
   test::sprintf(buffer, "%#.0llx", (long long)0);
   CHECK(!strcmp(buffer, ""));
-  test::sprintf(buffer, "%#.8x", 0x614e);
+  test::sprintf_(buffer, "%#.8x", 0x614e);
   CHECK(!strcmp(buffer, "0x0000614e"));
 }
 
@@ -526,7 +526,7 @@ TEST_CASE("# flag", "[]" ) {
 TEST_CASE("# flag - non-standard format", "[]" ) {
   char buffer[100];
 
-  test::sprintf(buffer,"%#b", 6);
+  test::sprintf_(buffer,"%#b", 6);
   CHECK(!strcmp(buffer, "0b110"));
 }
 #endif
@@ -534,55 +534,55 @@ TEST_CASE("# flag - non-standard format", "[]" ) {
 TEST_CASE("specifier", "[]" ) {
   char buffer[100];
 
-  test::sprintf(buffer, "Hello testing");
+  test::sprintf_(buffer, "Hello testing");
   CHECK(!strcmp(buffer, "Hello testing"));
 
-  test::sprintf(buffer, "%s", "Hello testing");
+  test::sprintf_(buffer, "%s", "Hello testing");
   CHECK(!strcmp(buffer, "Hello testing"));
 
 DISABLE_WARNING_PUSH
 DISABLE_WARNING_PRINTF_FORMAT_OVERFLOW
-  test::sprintf(buffer, "%s", NULL);
+  test::sprintf_(buffer, "%s", NULL);
 DISABLE_WARNING_POP
   CHECK(!strcmp(buffer, "(null)"));
 
-  test::sprintf(buffer, "%d", 1024);
+  test::sprintf_(buffer, "%d", 1024);
   CHECK(!strcmp(buffer, "1024"));
 
-  test::sprintf(buffer, "%d", -1024);
+  test::sprintf_(buffer, "%d", -1024);
   CHECK(!strcmp(buffer, "-1024"));
 
-  test::sprintf(buffer, "%i", 1024);
+  test::sprintf_(buffer, "%i", 1024);
   CHECK(!strcmp(buffer, "1024"));
 
-  test::sprintf(buffer, "%i", -1024);
+  test::sprintf_(buffer, "%i", -1024);
   CHECK(!strcmp(buffer, "-1024"));
 
-  test::sprintf(buffer, "%u", 1024);
+  test::sprintf_(buffer, "%u", 1024);
   CHECK(!strcmp(buffer, "1024"));
 
-  test::sprintf(buffer, "%u", 4294966272U);
+  test::sprintf_(buffer, "%u", 4294966272U);
   CHECK(!strcmp(buffer, "4294966272"));
 
-  test::sprintf(buffer, "%o", 511);
+  test::sprintf_(buffer, "%o", 511);
   CHECK(!strcmp(buffer, "777"));
 
-  test::sprintf(buffer, "%o", 4294966785U);
+  test::sprintf_(buffer, "%o", 4294966785U);
   CHECK(!strcmp(buffer, "37777777001"));
 
-  test::sprintf(buffer, "%x", 305441741);
+  test::sprintf_(buffer, "%x", 305441741);
   CHECK(!strcmp(buffer, "1234abcd"));
 
-  test::sprintf(buffer, "%x", 3989525555U);
+  test::sprintf_(buffer, "%x", 3989525555U);
   CHECK(!strcmp(buffer, "edcb5433"));
 
-  test::sprintf(buffer, "%X", 305441741);
+  test::sprintf_(buffer, "%X", 305441741);
   CHECK(!strcmp(buffer, "1234ABCD"));
 
-  test::sprintf(buffer, "%X", 3989525555U);
+  test::sprintf_(buffer, "%X", 3989525555U);
   CHECK(!strcmp(buffer, "EDCB5433"));
 
-  test::sprintf(buffer, "%%");
+  test::sprintf_(buffer, "%%");
   CHECK(!strcmp(buffer, "%"));
 }
 
@@ -590,46 +590,46 @@ DISABLE_WARNING_POP
 TEST_CASE("width", "[]" ) {
   char buffer[100];
 
-  test::sprintf(buffer, "%1s", "Hello testing");
+  test::sprintf_(buffer, "%1s", "Hello testing");
   CHECK(!strcmp(buffer, "Hello testing"));
 
-  test::sprintf(buffer, "%1d", 1024);
+  test::sprintf_(buffer, "%1d", 1024);
   CHECK(!strcmp(buffer, "1024"));
 
-  test::sprintf(buffer, "%1d", -1024);
+  test::sprintf_(buffer, "%1d", -1024);
   CHECK(!strcmp(buffer, "-1024"));
 
-  test::sprintf(buffer, "%1i", 1024);
+  test::sprintf_(buffer, "%1i", 1024);
   CHECK(!strcmp(buffer, "1024"));
 
-  test::sprintf(buffer, "%1i", -1024);
+  test::sprintf_(buffer, "%1i", -1024);
   CHECK(!strcmp(buffer, "-1024"));
 
-  test::sprintf(buffer, "%1u", 1024);
+  test::sprintf_(buffer, "%1u", 1024);
   CHECK(!strcmp(buffer, "1024"));
 
-  test::sprintf(buffer, "%1u", 4294966272U);
+  test::sprintf_(buffer, "%1u", 4294966272U);
   CHECK(!strcmp(buffer, "4294966272"));
 
-  test::sprintf(buffer, "%1o", 511);
+  test::sprintf_(buffer, "%1o", 511);
   CHECK(!strcmp(buffer, "777"));
 
-  test::sprintf(buffer, "%1o", 4294966785U);
+  test::sprintf_(buffer, "%1o", 4294966785U);
   CHECK(!strcmp(buffer, "37777777001"));
 
-  test::sprintf(buffer, "%1x", 305441741);
+  test::sprintf_(buffer, "%1x", 305441741);
   CHECK(!strcmp(buffer, "1234abcd"));
 
-  test::sprintf(buffer, "%1x", 3989525555U);
+  test::sprintf_(buffer, "%1x", 3989525555U);
   CHECK(!strcmp(buffer, "edcb5433"));
 
-  test::sprintf(buffer, "%1X", 305441741);
+  test::sprintf_(buffer, "%1X", 305441741);
   CHECK(!strcmp(buffer, "1234ABCD"));
 
-  test::sprintf(buffer, "%1X", 3989525555U);
+  test::sprintf_(buffer, "%1X", 3989525555U);
   CHECK(!strcmp(buffer, "EDCB5433"));
 
-  test::sprintf(buffer, "%1c", 'x');
+  test::sprintf_(buffer, "%1c", 'x');
   CHECK(!strcmp(buffer, "x"));
 }
 
@@ -637,46 +637,46 @@ TEST_CASE("width", "[]" ) {
 TEST_CASE("width 20", "[]" ) {
   char buffer[100];
 
-  test::sprintf(buffer, "%20s", "Hello");
+  test::sprintf_(buffer, "%20s", "Hello");
   CHECK(!strcmp(buffer, "               Hello"));
 
-  test::sprintf(buffer, "%20d", 1024);
+  test::sprintf_(buffer, "%20d", 1024);
   CHECK(!strcmp(buffer, "                1024"));
 
-  test::sprintf(buffer, "%20d", -1024);
+  test::sprintf_(buffer, "%20d", -1024);
   CHECK(!strcmp(buffer, "               -1024"));
 
-  test::sprintf(buffer, "%20i", 1024);
+  test::sprintf_(buffer, "%20i", 1024);
   CHECK(!strcmp(buffer, "                1024"));
 
-  test::sprintf(buffer, "%20i", -1024);
+  test::sprintf_(buffer, "%20i", -1024);
   CHECK(!strcmp(buffer, "               -1024"));
 
-  test::sprintf(buffer, "%20u", 1024);
+  test::sprintf_(buffer, "%20u", 1024);
   CHECK(!strcmp(buffer, "                1024"));
 
-  test::sprintf(buffer, "%20u", 4294966272U);
+  test::sprintf_(buffer, "%20u", 4294966272U);
   CHECK(!strcmp(buffer, "          4294966272"));
 
-  test::sprintf(buffer, "%20o", 511);
+  test::sprintf_(buffer, "%20o", 511);
   CHECK(!strcmp(buffer, "                 777"));
 
-  test::sprintf(buffer, "%20o", 4294966785U);
+  test::sprintf_(buffer, "%20o", 4294966785U);
   CHECK(!strcmp(buffer, "         37777777001"));
 
-  test::sprintf(buffer, "%20x", 305441741);
+  test::sprintf_(buffer, "%20x", 305441741);
   CHECK(!strcmp(buffer, "            1234abcd"));
 
-  test::sprintf(buffer, "%20x", 3989525555U);
+  test::sprintf_(buffer, "%20x", 3989525555U);
   CHECK(!strcmp(buffer, "            edcb5433"));
 
-  test::sprintf(buffer, "%20X", 305441741);
+  test::sprintf_(buffer, "%20X", 305441741);
   CHECK(!strcmp(buffer, "            1234ABCD"));
 
-  test::sprintf(buffer, "%20X", 3989525555U);
+  test::sprintf_(buffer, "%20X", 3989525555U);
   CHECK(!strcmp(buffer, "            EDCB5433"));
 
-  test::sprintf(buffer, "%20c", 'x');
+  test::sprintf_(buffer, "%20c", 'x');
   CHECK(!strcmp(buffer, "                   x"));
 }
 
@@ -684,46 +684,46 @@ TEST_CASE("width 20", "[]" ) {
 TEST_CASE("width *20", "[]" ) {
   char buffer[100];
 
-  test::sprintf(buffer, "%*s", 20, "Hello");
+  test::sprintf_(buffer, "%*s", 20, "Hello");
   CHECK(!strcmp(buffer, "               Hello"));
 
-  test::sprintf(buffer, "%*d", 20, 1024);
+  test::sprintf_(buffer, "%*d", 20, 1024);
   CHECK(!strcmp(buffer, "                1024"));
 
-  test::sprintf(buffer, "%*d", 20, -1024);
+  test::sprintf_(buffer, "%*d", 20, -1024);
   CHECK(!strcmp(buffer, "               -1024"));
 
-  test::sprintf(buffer, "%*i", 20, 1024);
+  test::sprintf_(buffer, "%*i", 20, 1024);
   CHECK(!strcmp(buffer, "                1024"));
 
-  test::sprintf(buffer, "%*i", 20, -1024);
+  test::sprintf_(buffer, "%*i", 20, -1024);
   CHECK(!strcmp(buffer, "               -1024"));
 
-  test::sprintf(buffer, "%*u", 20, 1024);
+  test::sprintf_(buffer, "%*u", 20, 1024);
   CHECK(!strcmp(buffer, "                1024"));
 
-  test::sprintf(buffer, "%*u", 20, 4294966272U);
+  test::sprintf_(buffer, "%*u", 20, 4294966272U);
   CHECK(!strcmp(buffer, "          4294966272"));
 
-  test::sprintf(buffer, "%*o", 20, 511);
+  test::sprintf_(buffer, "%*o", 20, 511);
   CHECK(!strcmp(buffer, "                 777"));
 
-  test::sprintf(buffer, "%*o", 20, 4294966785U);
+  test::sprintf_(buffer, "%*o", 20, 4294966785U);
   CHECK(!strcmp(buffer, "         37777777001"));
 
-  test::sprintf(buffer, "%*x", 20, 305441741);
+  test::sprintf_(buffer, "%*x", 20, 305441741);
   CHECK(!strcmp(buffer, "            1234abcd"));
 
-  test::sprintf(buffer, "%*x", 20, 3989525555U);
+  test::sprintf_(buffer, "%*x", 20, 3989525555U);
   CHECK(!strcmp(buffer, "            edcb5433"));
 
-  test::sprintf(buffer, "%*X", 20, 305441741);
+  test::sprintf_(buffer, "%*X", 20, 305441741);
   CHECK(!strcmp(buffer, "            1234ABCD"));
 
-  test::sprintf(buffer, "%*X", 20, 3989525555U);
+  test::sprintf_(buffer, "%*X", 20, 3989525555U);
   CHECK(!strcmp(buffer, "            EDCB5433"));
 
-  test::sprintf(buffer, "%*c", 20,'x');
+  test::sprintf_(buffer, "%*c", 20,'x');
   CHECK(!strcmp(buffer, "                   x"));
 }
 
@@ -731,61 +731,61 @@ TEST_CASE("width *20", "[]" ) {
 TEST_CASE("width -20", "[]" ) {
   char buffer[100];
 
-  test::sprintf(buffer, "%-20s", "Hello");
+  test::sprintf_(buffer, "%-20s", "Hello");
   CHECK(!strcmp(buffer, "Hello               "));
 
-  test::sprintf(buffer, "%-20d", 1024);
+  test::sprintf_(buffer, "%-20d", 1024);
   CHECK(!strcmp(buffer, "1024                "));
 
-  test::sprintf(buffer, "%-20d", -1024);
+  test::sprintf_(buffer, "%-20d", -1024);
   CHECK(!strcmp(buffer, "-1024               "));
 
-  test::sprintf(buffer, "%-20i", 1024);
+  test::sprintf_(buffer, "%-20i", 1024);
   CHECK(!strcmp(buffer, "1024                "));
 
-  test::sprintf(buffer, "%-20i", -1024);
+  test::sprintf_(buffer, "%-20i", -1024);
   CHECK(!strcmp(buffer, "-1024               "));
 
-  test::sprintf(buffer, "%-20u", 1024);
+  test::sprintf_(buffer, "%-20u", 1024);
   CHECK(!strcmp(buffer, "1024                "));
 
-  test::sprintf(buffer, "%-20.4f", 1024.1234);
+  test::sprintf_(buffer, "%-20.4f", 1024.1234);
   CHECK(!strcmp(buffer, "1024.1234           "));
 
-  test::sprintf(buffer, "%-20u", 4294966272U);
+  test::sprintf_(buffer, "%-20u", 4294966272U);
   CHECK(!strcmp(buffer, "4294966272          "));
 
-  test::sprintf(buffer, "%-20o", 511);
+  test::sprintf_(buffer, "%-20o", 511);
   CHECK(!strcmp(buffer, "777                 "));
 
-  test::sprintf(buffer, "%-20o", 4294966785U);
+  test::sprintf_(buffer, "%-20o", 4294966785U);
   CHECK(!strcmp(buffer, "37777777001         "));
 
-  test::sprintf(buffer, "%-20x", 305441741);
+  test::sprintf_(buffer, "%-20x", 305441741);
   CHECK(!strcmp(buffer, "1234abcd            "));
 
-  test::sprintf(buffer, "%-20x", 3989525555U);
+  test::sprintf_(buffer, "%-20x", 3989525555U);
   CHECK(!strcmp(buffer, "edcb5433            "));
 
-  test::sprintf(buffer, "%-20X", 305441741);
+  test::sprintf_(buffer, "%-20X", 305441741);
   CHECK(!strcmp(buffer, "1234ABCD            "));
 
-  test::sprintf(buffer, "%-20X", 3989525555U);
+  test::sprintf_(buffer, "%-20X", 3989525555U);
   CHECK(!strcmp(buffer, "EDCB5433            "));
 
-  test::sprintf(buffer, "%-20c", 'x');
+  test::sprintf_(buffer, "%-20c", 'x');
   CHECK(!strcmp(buffer, "x                   "));
 
-  test::sprintf(buffer, "|%5d| |%-2d| |%5d|", 9, 9, 9);
+  test::sprintf_(buffer, "|%5d| |%-2d| |%5d|", 9, 9, 9);
   CHECK(!strcmp(buffer, "|    9| |9 | |    9|"));
 
-  test::sprintf(buffer, "|%5d| |%-2d| |%5d|", 10, 10, 10);
+  test::sprintf_(buffer, "|%5d| |%-2d| |%5d|", 10, 10, 10);
   CHECK(!strcmp(buffer, "|   10| |10| |   10|"));
 
-  test::sprintf(buffer, "|%5d| |%-12d| |%5d|", 9, 9, 9);
+  test::sprintf_(buffer, "|%5d| |%-12d| |%5d|", 9, 9, 9);
   CHECK(!strcmp(buffer, "|    9| |9           | |    9|"));
 
-  test::sprintf(buffer, "|%5d| |%-12d| |%5d|", 10, 10, 10);
+  test::sprintf_(buffer, "|%5d| |%-12d| |%5d|", 10, 10, 10);
   CHECK(!strcmp(buffer, "|   10| |10          | |   10|"));
 }
 
@@ -793,46 +793,46 @@ TEST_CASE("width -20", "[]" ) {
 TEST_CASE("width 0-20", "[]" ) {
   char buffer[100];
 
-  test::sprintf(buffer, "%0-20s", "Hello");
+  test::sprintf_(buffer, "%0-20s", "Hello");
   CHECK(!strcmp(buffer, "Hello               "));
 
-  test::sprintf(buffer, "%0-20d", 1024);
+  test::sprintf_(buffer, "%0-20d", 1024);
   CHECK(!strcmp(buffer, "1024                "));
 
-  test::sprintf(buffer, "%0-20d", -1024);
+  test::sprintf_(buffer, "%0-20d", -1024);
   CHECK(!strcmp(buffer, "-1024               "));
 
-  test::sprintf(buffer, "%0-20i", 1024);
+  test::sprintf_(buffer, "%0-20i", 1024);
   CHECK(!strcmp(buffer, "1024                "));
 
-  test::sprintf(buffer, "%0-20i", -1024);
+  test::sprintf_(buffer, "%0-20i", -1024);
   CHECK(!strcmp(buffer, "-1024               "));
 
-  test::sprintf(buffer, "%0-20u", 1024);
+  test::sprintf_(buffer, "%0-20u", 1024);
   CHECK(!strcmp(buffer, "1024                "));
 
-  test::sprintf(buffer, "%0-20u", 4294966272U);
+  test::sprintf_(buffer, "%0-20u", 4294966272U);
   CHECK(!strcmp(buffer, "4294966272          "));
 
-  test::sprintf(buffer, "%0-20o", 511);
+  test::sprintf_(buffer, "%0-20o", 511);
   CHECK(!strcmp(buffer, "777                 "));
 
-  test::sprintf(buffer, "%0-20o", 4294966785U);
+  test::sprintf_(buffer, "%0-20o", 4294966785U);
   CHECK(!strcmp(buffer, "37777777001         "));
 
-  test::sprintf(buffer, "%0-20x", 305441741);
+  test::sprintf_(buffer, "%0-20x", 305441741);
   CHECK(!strcmp(buffer, "1234abcd            "));
 
-  test::sprintf(buffer, "%0-20x", 3989525555U);
+  test::sprintf_(buffer, "%0-20x", 3989525555U);
   CHECK(!strcmp(buffer, "edcb5433            "));
 
-  test::sprintf(buffer, "%0-20X", 305441741);
+  test::sprintf_(buffer, "%0-20X", 305441741);
   CHECK(!strcmp(buffer, "1234ABCD            "));
 
-  test::sprintf(buffer, "%0-20X", 3989525555U);
+  test::sprintf_(buffer, "%0-20X", 3989525555U);
   CHECK(!strcmp(buffer, "EDCB5433            "));
 
-  test::sprintf(buffer, "%0-20c", 'x');
+  test::sprintf_(buffer, "%0-20c", 'x');
   CHECK(!strcmp(buffer, "x                   "));
 }
 #endif
@@ -840,40 +840,40 @@ TEST_CASE("width 0-20", "[]" ) {
 TEST_CASE("padding 20", "[]" ) {
   char buffer[100];
 
-  test::sprintf(buffer, "%020d", 1024);
+  test::sprintf_(buffer, "%020d", 1024);
   CHECK(!strcmp(buffer, "00000000000000001024"));
 
-  test::sprintf(buffer, "%020d", -1024);
+  test::sprintf_(buffer, "%020d", -1024);
   CHECK(!strcmp(buffer, "-0000000000000001024"));
 
-  test::sprintf(buffer, "%020i", 1024);
+  test::sprintf_(buffer, "%020i", 1024);
   CHECK(!strcmp(buffer, "00000000000000001024"));
 
-  test::sprintf(buffer, "%020i", -1024);
+  test::sprintf_(buffer, "%020i", -1024);
   CHECK(!strcmp(buffer, "-0000000000000001024"));
 
-  test::sprintf(buffer, "%020u", 1024);
+  test::sprintf_(buffer, "%020u", 1024);
   CHECK(!strcmp(buffer, "00000000000000001024"));
 
-  test::sprintf(buffer, "%020u", 4294966272U);
+  test::sprintf_(buffer, "%020u", 4294966272U);
   CHECK(!strcmp(buffer, "00000000004294966272"));
 
-  test::sprintf(buffer, "%020o", 511);
+  test::sprintf_(buffer, "%020o", 511);
   CHECK(!strcmp(buffer, "00000000000000000777"));
 
-  test::sprintf(buffer, "%020o", 4294966785U);
+  test::sprintf_(buffer, "%020o", 4294966785U);
   CHECK(!strcmp(buffer, "00000000037777777001"));
 
-  test::sprintf(buffer, "%020x", 305441741);
+  test::sprintf_(buffer, "%020x", 305441741);
   CHECK(!strcmp(buffer, "0000000000001234abcd"));
 
-  test::sprintf(buffer, "%020x", 3989525555U);
+  test::sprintf_(buffer, "%020x", 3989525555U);
   CHECK(!strcmp(buffer, "000000000000edcb5433"));
 
-  test::sprintf(buffer, "%020X", 305441741);
+  test::sprintf_(buffer, "%020X", 305441741);
   CHECK(!strcmp(buffer, "0000000000001234ABCD"));
 
-  test::sprintf(buffer, "%020X", 3989525555U);
+  test::sprintf_(buffer, "%020X", 3989525555U);
   CHECK(!strcmp(buffer, "000000000000EDCB5433"));
 }
 
@@ -881,40 +881,40 @@ TEST_CASE("padding 20", "[]" ) {
 TEST_CASE("padding .20", "[]" ) {
   char buffer[100];
 
-  test::sprintf(buffer, "%.20d", 1024);
+  test::sprintf_(buffer, "%.20d", 1024);
   CHECK(!strcmp(buffer, "00000000000000001024"));
 
-  test::sprintf(buffer, "%.20d", -1024);
+  test::sprintf_(buffer, "%.20d", -1024);
   CHECK(!strcmp(buffer, "-00000000000000001024"));
 
-  test::sprintf(buffer, "%.20i", 1024);
+  test::sprintf_(buffer, "%.20i", 1024);
   CHECK(!strcmp(buffer, "00000000000000001024"));
 
-  test::sprintf(buffer, "%.20i", -1024);
+  test::sprintf_(buffer, "%.20i", -1024);
   CHECK(!strcmp(buffer, "-00000000000000001024"));
 
-  test::sprintf(buffer, "%.20u", 1024);
+  test::sprintf_(buffer, "%.20u", 1024);
   CHECK(!strcmp(buffer, "00000000000000001024"));
 
-  test::sprintf(buffer, "%.20u", 4294966272U);
+  test::sprintf_(buffer, "%.20u", 4294966272U);
   CHECK(!strcmp(buffer, "00000000004294966272"));
 
-  test::sprintf(buffer, "%.20o", 511);
+  test::sprintf_(buffer, "%.20o", 511);
   CHECK(!strcmp(buffer, "00000000000000000777"));
 
-  test::sprintf(buffer, "%.20o", 4294966785U);
+  test::sprintf_(buffer, "%.20o", 4294966785U);
   CHECK(!strcmp(buffer, "00000000037777777001"));
 
-  test::sprintf(buffer, "%.20x", 305441741);
+  test::sprintf_(buffer, "%.20x", 305441741);
   CHECK(!strcmp(buffer, "0000000000001234abcd"));
 
-  test::sprintf(buffer, "%.20x", 3989525555U);
+  test::sprintf_(buffer, "%.20x", 3989525555U);
   CHECK(!strcmp(buffer, "000000000000edcb5433"));
 
-  test::sprintf(buffer, "%.20X", 305441741);
+  test::sprintf_(buffer, "%.20X", 305441741);
   CHECK(!strcmp(buffer, "0000000000001234ABCD"));
 
-  test::sprintf(buffer, "%.20X", 3989525555U);
+  test::sprintf_(buffer, "%.20X", 3989525555U);
   CHECK(!strcmp(buffer, "000000000000EDCB5433"));
 }
 
@@ -922,44 +922,44 @@ TEST_CASE("padding .20", "[]" ) {
 TEST_CASE("padding #020 - non-standard format", "[]" ) {
   char buffer[100];
 
-  test::sprintf(buffer, "%#020d", 1024);
+  test::sprintf_(buffer, "%#020d", 1024);
   CHECK(!strcmp(buffer, "00000000000000001024"));
 
-  test::sprintf(buffer, "%#020d", -1024);
+  test::sprintf_(buffer, "%#020d", -1024);
   CHECK(!strcmp(buffer, "-0000000000000001024"));
 
-  test::sprintf(buffer, "%#020i", 1024);
+  test::sprintf_(buffer, "%#020i", 1024);
   CHECK(!strcmp(buffer, "00000000000000001024"));
 
-  test::sprintf(buffer, "%#020i", -1024);
+  test::sprintf_(buffer, "%#020i", -1024);
   CHECK(!strcmp(buffer, "-0000000000000001024"));
 
-  test::sprintf(buffer, "%#020u", 1024);
+  test::sprintf_(buffer, "%#020u", 1024);
   CHECK(!strcmp(buffer, "00000000000000001024"));
 
-  test::sprintf(buffer, "%#020u", 4294966272U);
+  test::sprintf_(buffer, "%#020u", 4294966272U);
   CHECK(!strcmp(buffer, "00000000004294966272"));
 }
 #endif
 
 TEST_CASE("padding #020", "[]" ) {
   char buffer[100];
-  test::sprintf(buffer, "%#020o", 511);
+  test::sprintf_(buffer, "%#020o", 511);
   CHECK(!strcmp(buffer, "00000000000000000777"));
 
-  test::sprintf(buffer, "%#020o", 4294966785U);
+  test::sprintf_(buffer, "%#020o", 4294966785U);
   CHECK(!strcmp(buffer, "00000000037777777001"));
 
-  test::sprintf(buffer, "%#020x", 305441741);
+  test::sprintf_(buffer, "%#020x", 305441741);
   CHECK(!strcmp(buffer, "0x00000000001234abcd"));
 
-  test::sprintf(buffer, "%#020x", 3989525555U);
+  test::sprintf_(buffer, "%#020x", 3989525555U);
   CHECK(!strcmp(buffer, "0x0000000000edcb5433"));
 
-  test::sprintf(buffer, "%#020X", 305441741);
+  test::sprintf_(buffer, "%#020X", 305441741);
   CHECK(!strcmp(buffer, "0X00000000001234ABCD"));
 
-  test::sprintf(buffer, "%#020X", 3989525555U);
+  test::sprintf_(buffer, "%#020X", 3989525555U);
   CHECK(!strcmp(buffer, "0X0000000000EDCB5433"));
 }
 
@@ -968,22 +968,22 @@ TEST_CASE("padding #020", "[]" ) {
 TEST_CASE("padding #20 - non-standard format", "[]" ) {
   char buffer[100];
 
-  test::sprintf(buffer, "%#20d", 1024);
+  test::sprintf_(buffer, "%#20d", 1024);
   CHECK(!strcmp(buffer, "                1024"));
 
-  test::sprintf(buffer, "%#20d", -1024);
+  test::sprintf_(buffer, "%#20d", -1024);
   CHECK(!strcmp(buffer, "               -1024"));
 
-  test::sprintf(buffer, "%#20i", 1024);
+  test::sprintf_(buffer, "%#20i", 1024);
   CHECK(!strcmp(buffer, "                1024"));
 
-  test::sprintf(buffer, "%#20i", -1024);
+  test::sprintf_(buffer, "%#20i", -1024);
   CHECK(!strcmp(buffer, "               -1024"));
 
-  test::sprintf(buffer, "%#20u", 1024);
+  test::sprintf_(buffer, "%#20u", 1024);
   CHECK(!strcmp(buffer, "                1024"));
 
-  test::sprintf(buffer, "%#20u", 4294966272U);
+  test::sprintf_(buffer, "%#20u", 4294966272U);
   CHECK(!strcmp(buffer, "          4294966272"));
 }
 #endif
@@ -991,22 +991,22 @@ TEST_CASE("padding #20 - non-standard format", "[]" ) {
 TEST_CASE("padding #20", "[]" ) {
   char buffer[100];
 
-  test::sprintf(buffer, "%#20o", 511);
+  test::sprintf_(buffer, "%#20o", 511);
   CHECK(!strcmp(buffer, "                0777"));
 
-  test::sprintf(buffer, "%#20o", 4294966785U);
+  test::sprintf_(buffer, "%#20o", 4294966785U);
   CHECK(!strcmp(buffer, "        037777777001"));
 
-  test::sprintf(buffer, "%#20x", 305441741);
+  test::sprintf_(buffer, "%#20x", 305441741);
   CHECK(!strcmp(buffer, "          0x1234abcd"));
 
-  test::sprintf(buffer, "%#20x", 3989525555U);
+  test::sprintf_(buffer, "%#20x", 3989525555U);
   CHECK(!strcmp(buffer, "          0xedcb5433"));
 
-  test::sprintf(buffer, "%#20X", 305441741);
+  test::sprintf_(buffer, "%#20X", 305441741);
   CHECK(!strcmp(buffer, "          0X1234ABCD"));
 
-  test::sprintf(buffer, "%#20X", 3989525555U);
+  test::sprintf_(buffer, "%#20X", 3989525555U);
   CHECK(!strcmp(buffer, "          0XEDCB5433"));
 }
 
@@ -1014,40 +1014,40 @@ TEST_CASE("padding #20", "[]" ) {
 TEST_CASE("padding 20.5", "[]" ) {
   char buffer[100];
 
-  test::sprintf(buffer, "%20.5d", 1024);
+  test::sprintf_(buffer, "%20.5d", 1024);
   CHECK(!strcmp(buffer, "               01024"));
 
-  test::sprintf(buffer, "%20.5d", -1024);
+  test::sprintf_(buffer, "%20.5d", -1024);
   CHECK(!strcmp(buffer, "              -01024"));
 
-  test::sprintf(buffer, "%20.5i", 1024);
+  test::sprintf_(buffer, "%20.5i", 1024);
   CHECK(!strcmp(buffer, "               01024"));
 
-  test::sprintf(buffer, "%20.5i", -1024);
+  test::sprintf_(buffer, "%20.5i", -1024);
   CHECK(!strcmp(buffer, "              -01024"));
 
-  test::sprintf(buffer, "%20.5u", 1024);
+  test::sprintf_(buffer, "%20.5u", 1024);
   CHECK(!strcmp(buffer, "               01024"));
 
-  test::sprintf(buffer, "%20.5u", 4294966272U);
+  test::sprintf_(buffer, "%20.5u", 4294966272U);
   CHECK(!strcmp(buffer, "          4294966272"));
 
-  test::sprintf(buffer, "%20.5o", 511);
+  test::sprintf_(buffer, "%20.5o", 511);
   CHECK(!strcmp(buffer, "               00777"));
 
-  test::sprintf(buffer, "%20.5o", 4294966785U);
+  test::sprintf_(buffer, "%20.5o", 4294966785U);
   CHECK(!strcmp(buffer, "         37777777001"));
 
-  test::sprintf(buffer, "%20.5x", 305441741);
+  test::sprintf_(buffer, "%20.5x", 305441741);
   CHECK(!strcmp(buffer, "            1234abcd"));
 
-  test::sprintf(buffer, "%20.10x", 3989525555U);
+  test::sprintf_(buffer, "%20.10x", 3989525555U);
   CHECK(!strcmp(buffer, "          00edcb5433"));
 
-  test::sprintf(buffer, "%20.5X", 305441741);
+  test::sprintf_(buffer, "%20.5X", 305441741);
   CHECK(!strcmp(buffer, "            1234ABCD"));
 
-  test::sprintf(buffer, "%20.10X", 3989525555U);
+  test::sprintf_(buffer, "%20.10X", 3989525555U);
   CHECK(!strcmp(buffer, "          00EDCB5433"));
 }
 
@@ -1056,29 +1056,29 @@ TEST_CASE("padding neg numbers", "[]" ) {
   char buffer[100];
 
   // space padding
-  test::sprintf(buffer, "% 1d", -5);
+  test::sprintf_(buffer, "% 1d", -5);
   CHECK(!strcmp(buffer, "-5"));
 
-  test::sprintf(buffer, "% 2d", -5);
+  test::sprintf_(buffer, "% 2d", -5);
   CHECK(!strcmp(buffer, "-5"));
 
-  test::sprintf(buffer, "% 3d", -5);
+  test::sprintf_(buffer, "% 3d", -5);
   CHECK(!strcmp(buffer, " -5"));
 
-  test::sprintf(buffer, "% 4d", -5);
+  test::sprintf_(buffer, "% 4d", -5);
   CHECK(!strcmp(buffer, "  -5"));
 
   // zero padding
-  test::sprintf(buffer, "%01d", -5);
+  test::sprintf_(buffer, "%01d", -5);
   CHECK(!strcmp(buffer, "-5"));
 
-  test::sprintf(buffer, "%02d", -5);
+  test::sprintf_(buffer, "%02d", -5);
   CHECK(!strcmp(buffer, "-5"));
 
-  test::sprintf(buffer, "%03d", -5);
+  test::sprintf_(buffer, "%03d", -5);
   CHECK(!strcmp(buffer, "-05"));
 
-  test::sprintf(buffer, "%04d", -5);
+  test::sprintf_(buffer, "%04d", -5);
   CHECK(!strcmp(buffer, "-005"));
 }
 
@@ -1087,54 +1087,54 @@ TEST_CASE("float padding neg numbers", "[]" ) {
   char buffer[100];
 
   // space padding
-  test::sprintf(buffer, "% 3.1f", -5.);
+  test::sprintf_(buffer, "% 3.1f", -5.);
   CHECK(!strcmp(buffer, "-5.0"));
 
-  test::sprintf(buffer, "% 4.1f", -5.);
+  test::sprintf_(buffer, "% 4.1f", -5.);
   CHECK(!strcmp(buffer, "-5.0"));
 
-  test::sprintf(buffer, "% 5.1f", -5.);
+  test::sprintf_(buffer, "% 5.1f", -5.);
   CHECK(!strcmp(buffer, " -5.0"));
 
 #ifndef PRINTF_DISABLE_SUPPORT_EXPONENTIAL
-  test::sprintf(buffer, "% 6.1g", -5.);
+  test::sprintf_(buffer, "% 6.1g", -5.);
   CHECK(!strcmp(buffer, "    -5"));
 
-  test::sprintf(buffer, "% 6.1e", -5.);
+  test::sprintf_(buffer, "% 6.1e", -5.);
   CHECK(!strcmp(buffer, "-5.0e+00"));
 
-  test::sprintf(buffer, "% 10.1e", -5.);
+  test::sprintf_(buffer, "% 10.1e", -5.);
   CHECK(!strcmp(buffer, "  -5.0e+00"));
 #endif
 
   // zero padding
-  test::sprintf(buffer, "%03.1f", -5.);
+  test::sprintf_(buffer, "%03.1f", -5.);
   CHECK(!strcmp(buffer, "-5.0"));
 
-  test::sprintf(buffer, "%04.1f", -5.);
+  test::sprintf_(buffer, "%04.1f", -5.);
   CHECK(!strcmp(buffer, "-5.0"));
 
-  test::sprintf(buffer, "%05.1f", -5.);
+  test::sprintf_(buffer, "%05.1f", -5.);
   CHECK(!strcmp(buffer, "-05.0"));
 
   // zero padding no decimal point
-  test::sprintf(buffer, "%01.0f", -5.);
+  test::sprintf_(buffer, "%01.0f", -5.);
   CHECK(!strcmp(buffer, "-5"));
 
-  test::sprintf(buffer, "%02.0f", -5.);
+  test::sprintf_(buffer, "%02.0f", -5.);
   CHECK(!strcmp(buffer, "-5"));
 
-  test::sprintf(buffer, "%03.0f", -5.);
+  test::sprintf_(buffer, "%03.0f", -5.);
   CHECK(!strcmp(buffer, "-05"));
 
 #ifndef PRINTF_DISABLE_SUPPORT_EXPONENTIAL
-  test::sprintf(buffer, "%010.1e", -5.);
+  test::sprintf_(buffer, "%010.1e", -5.);
   CHECK(!strcmp(buffer, "-005.0e+00"));
 
-  test::sprintf(buffer, "%07.0E", -5.);
+  test::sprintf_(buffer, "%07.0E", -5.);
   CHECK(!strcmp(buffer, "-05E+00"));
 
-  test::sprintf(buffer, "%03.0g", -5.);
+  test::sprintf_(buffer, "%03.0g", -5.);
   CHECK(!strcmp(buffer, "-05"));
 #endif
 }
@@ -1142,76 +1142,76 @@ TEST_CASE("float padding neg numbers", "[]" ) {
 TEST_CASE("length", "[]" ) {
   char buffer[100];
 
-  test::sprintf(buffer, "%.0s", "Hello testing");
+  test::sprintf_(buffer, "%.0s", "Hello testing");
   CHECK(!strcmp(buffer, ""));
 
-  test::sprintf(buffer, "%20.0s", "Hello testing");
+  test::sprintf_(buffer, "%20.0s", "Hello testing");
   CHECK(!strcmp(buffer, "                    "));
 
-  test::sprintf(buffer, "%.s", "Hello testing");
+  test::sprintf_(buffer, "%.s", "Hello testing");
   CHECK(!strcmp(buffer, ""));
 
-  test::sprintf(buffer, "%20.s", "Hello testing");
+  test::sprintf_(buffer, "%20.s", "Hello testing");
   CHECK(!strcmp(buffer, "                    "));
 
-  test::sprintf(buffer, "%20.0d", 1024);
+  test::sprintf_(buffer, "%20.0d", 1024);
   CHECK(!strcmp(buffer, "                1024"));
 
-  test::sprintf(buffer, "%20.0d", -1024);
+  test::sprintf_(buffer, "%20.0d", -1024);
   CHECK(!strcmp(buffer, "               -1024"));
 
-  test::sprintf(buffer, "%20.d", 0);
+  test::sprintf_(buffer, "%20.d", 0);
   CHECK(!strcmp(buffer, "                    "));
 
-  test::sprintf(buffer, "%20.0i", 1024);
+  test::sprintf_(buffer, "%20.0i", 1024);
   CHECK(!strcmp(buffer, "                1024"));
 
-  test::sprintf(buffer, "%20.i", -1024);
+  test::sprintf_(buffer, "%20.i", -1024);
   CHECK(!strcmp(buffer, "               -1024"));
 
-  test::sprintf(buffer, "%20.i", 0);
+  test::sprintf_(buffer, "%20.i", 0);
   CHECK(!strcmp(buffer, "                    "));
 
-  test::sprintf(buffer, "%20.u", 1024);
+  test::sprintf_(buffer, "%20.u", 1024);
   CHECK(!strcmp(buffer, "                1024"));
 
-  test::sprintf(buffer, "%20.0u", 4294966272U);
+  test::sprintf_(buffer, "%20.0u", 4294966272U);
   CHECK(!strcmp(buffer, "          4294966272"));
 
-  test::sprintf(buffer, "%20.u", 0U);
+  test::sprintf_(buffer, "%20.u", 0U);
   CHECK(!strcmp(buffer, "                    "));
 
-  test::sprintf(buffer, "%20.o", 511);
+  test::sprintf_(buffer, "%20.o", 511);
   CHECK(!strcmp(buffer, "                 777"));
 
-  test::sprintf(buffer, "%20.0o", 4294966785U);
+  test::sprintf_(buffer, "%20.0o", 4294966785U);
   CHECK(!strcmp(buffer, "         37777777001"));
 
-  test::sprintf(buffer, "%20.o", 0U);
+  test::sprintf_(buffer, "%20.o", 0U);
   CHECK(!strcmp(buffer, "                    "));
 
-  test::sprintf(buffer, "%20.x", 305441741);
+  test::sprintf_(buffer, "%20.x", 305441741);
   CHECK(!strcmp(buffer, "            1234abcd"));
 
-  test::sprintf(buffer, "%50.x", 305441741);
+  test::sprintf_(buffer, "%50.x", 305441741);
   CHECK(!strcmp(buffer, "                                          1234abcd"));
 
-  test::sprintf(buffer, "%50.x%10.u", 305441741, 12345);
+  test::sprintf_(buffer, "%50.x%10.u", 305441741, 12345);
   CHECK(!strcmp(buffer, "                                          1234abcd     12345"));
 
-  test::sprintf(buffer, "%20.0x", 3989525555U);
+  test::sprintf_(buffer, "%20.0x", 3989525555U);
   CHECK(!strcmp(buffer, "            edcb5433"));
 
-  test::sprintf(buffer, "%20.x", 0U);
+  test::sprintf_(buffer, "%20.x", 0U);
   CHECK(!strcmp(buffer, "                    "));
 
-  test::sprintf(buffer, "%20.X", 305441741);
+  test::sprintf_(buffer, "%20.X", 305441741);
   CHECK(!strcmp(buffer, "            1234ABCD"));
 
-  test::sprintf(buffer, "%20.0X", 3989525555U);
+  test::sprintf_(buffer, "%20.0X", 3989525555U);
   CHECK(!strcmp(buffer, "            EDCB5433"));
 
-  test::sprintf(buffer, "%20.X", 0U);
+  test::sprintf_(buffer, "%20.X", 0U);
   CHECK(!strcmp(buffer, "                    "));
 }
 
@@ -1219,10 +1219,10 @@ TEST_CASE("length", "[]" ) {
 TEST_CASE("length - non-standard format", "[]" ) {
   char buffer[100];
 
-  test::sprintf(buffer, "%02.0u", 0U);
+  test::sprintf_(buffer, "%02.0u", 0U);
   CHECK(!strcmp(buffer, "  "));
 
-  test::sprintf(buffer, "%02.0d", 0);
+  test::sprintf_(buffer, "%02.0d", 0);
   CHECK(!strcmp(buffer, "  "));
 }
 #endif
@@ -1232,29 +1232,29 @@ TEST_CASE("float", "[]" ) {
   char buffer[100];
 
   // test special-case floats using math.h macros
-  test::sprintf(buffer, "%8f", (double) NAN);
+  test::sprintf_(buffer, "%8f", (double) NAN);
   CHECK(!strcmp(buffer, "     nan"));
 
-  test::sprintf(buffer, "%8f", (double) INFINITY);
+  test::sprintf_(buffer, "%8f", (double) INFINITY);
   CHECK(!strcmp(buffer, "     inf"));
 
-  test::sprintf(buffer, "%-8f", (double) -INFINITY);
+  test::sprintf_(buffer, "%-8f", (double) -INFINITY);
   CHECK(!strcmp(buffer, "-inf    "));
 
 #ifndef PRINTF_DISABLE_SUPPORT_EXPONENTIAL
-  test::sprintf(buffer, "%+8e", (double) INFINITY);
+  test::sprintf_(buffer, "%+8e", (double) INFINITY);
   CHECK(!strcmp(buffer, "    +inf"));
 #endif
 
-  test::sprintf(buffer, "%.4f", 3.1415354);
+  test::sprintf_(buffer, "%.4f", 3.1415354);
   CHECK(!strcmp(buffer, "3.1415"));
 
-  test::sprintf(buffer, "%.3f", 30343.1415354);
+  test::sprintf_(buffer, "%.3f", 30343.1415354);
   CHECK(!strcmp(buffer, "30343.142"));
 
   // switch from decimal to exponential representation
   //
-  test::sprintf(buffer, "%.0f", (double) ((int64_t)1 * 1000 ) );
+  test::sprintf_(buffer, "%.0f", (double) ((int64_t)1 * 1000 ) );
   if (PRINTF_MAX_FLOAT < 10e+2) {
     CHECK(!strcmp(buffer, "10e+2"));
   }
@@ -1262,7 +1262,7 @@ TEST_CASE("float", "[]" ) {
     CHECK(!strcmp(buffer, "1000"));
   }
 
-  test::sprintf(buffer, "%.0f", (double) ((int64_t)1 * 1000 * 1000 ) );
+  test::sprintf_(buffer, "%.0f", (double) ((int64_t)1 * 1000 * 1000 ) );
   if (PRINTF_MAX_FLOAT < 10e+5) {
     CHECK(!strcmp(buffer, "10e+5"));
   }
@@ -1270,7 +1270,7 @@ TEST_CASE("float", "[]" ) {
     CHECK(!strcmp(buffer, "1000000"));
   }
 
-  test::sprintf(buffer, "%.0f", (double) ((int64_t)1 * 1000 * 1000 * 1000 ) );
+  test::sprintf_(buffer, "%.0f", (double) ((int64_t)1 * 1000 * 1000 * 1000 ) );
   if (PRINTF_MAX_FLOAT < 10e+8) {
     CHECK(!strcmp(buffer, "10e+8"));
   }
@@ -1278,7 +1278,7 @@ TEST_CASE("float", "[]" ) {
     CHECK(!strcmp(buffer, "1000000000"));
   }
 
-  test::sprintf(buffer, "%.0f", (double) ((int64_t)1 * 1000 * 1000 * 1000 * 1000) );
+  test::sprintf_(buffer, "%.0f", (double) ((int64_t)1 * 1000 * 1000 * 1000 * 1000) );
   if (PRINTF_MAX_FLOAT < 10e+11) {
     CHECK(!strcmp(buffer, "10e+11"));
   }
@@ -1286,7 +1286,7 @@ TEST_CASE("float", "[]" ) {
     CHECK(!strcmp(buffer, "1000000000000"));
   }
 
-  test::sprintf(buffer, "%.0f", (double) ((int64_t)1 * 1000 * 1000 * 1000 * 1000 * 1000) );
+  test::sprintf_(buffer, "%.0f", (double) ((int64_t)1 * 1000 * 1000 * 1000 * 1000 * 1000) );
   if (PRINTF_MAX_FLOAT < 10e+14) {
     CHECK(!strcmp(buffer, "10e+14"));
   }
@@ -1294,116 +1294,116 @@ TEST_CASE("float", "[]" ) {
     CHECK(!strcmp(buffer, "1000000000000000"));
   }
 
-  test::sprintf(buffer, "%.0f", 34.1415354);
+  test::sprintf_(buffer, "%.0f", 34.1415354);
   CHECK(!strcmp(buffer, "34"));
 
-  test::sprintf(buffer, "%.0f", 1.3);
+  test::sprintf_(buffer, "%.0f", 1.3);
   CHECK(!strcmp(buffer, "1"));
 
-  test::sprintf(buffer, "%.0f", 1.55);
+  test::sprintf_(buffer, "%.0f", 1.55);
   CHECK(!strcmp(buffer, "2"));
 
-  test::sprintf(buffer, "%.1f", 1.64);
+  test::sprintf_(buffer, "%.1f", 1.64);
   CHECK(!strcmp(buffer, "1.6"));
 
-  test::sprintf(buffer, "%.2f", 42.8952);
+  test::sprintf_(buffer, "%.2f", 42.8952);
   CHECK(!strcmp(buffer, "42.90"));
 
-  test::sprintf(buffer, "%.9f", 42.8952);
+  test::sprintf_(buffer, "%.9f", 42.8952);
   CHECK(!strcmp(buffer, "42.895200000"));
 
-  test::sprintf(buffer, "%.10f", 42.895223);
+  test::sprintf_(buffer, "%.10f", 42.895223);
   CHECK(!strcmp(buffer, "42.8952230000"));
 
   // this testcase checks, that the precision is truncated to 9 digits.
   // a perfect working float should return the whole number
-  test::sprintf(buffer, "%.12f", 42.89522312345678);
+  test::sprintf_(buffer, "%.12f", 42.89522312345678);
   CHECK(!strcmp(buffer, "42.895223123000"));
 
   // this testcase checks, that the precision is truncated AND rounded to 9 digits.
   // a perfect working float should return the whole number
-  test::sprintf(buffer, "%.12f", 42.89522387654321);
+  test::sprintf_(buffer, "%.12f", 42.89522387654321);
   CHECK(!strcmp(buffer, "42.895223877000"));
 
-  test::sprintf(buffer, "%6.2f", 42.8952);
+  test::sprintf_(buffer, "%6.2f", 42.8952);
   CHECK(!strcmp(buffer, " 42.90"));
 
-  test::sprintf(buffer, "%+6.2f", 42.8952);
+  test::sprintf_(buffer, "%+6.2f", 42.8952);
   CHECK(!strcmp(buffer, "+42.90"));
 
-  test::sprintf(buffer, "%+5.1f", 42.9252);
+  test::sprintf_(buffer, "%+5.1f", 42.9252);
   CHECK(!strcmp(buffer, "+42.9"));
 
-  test::sprintf(buffer, "%f", 42.5);
+  test::sprintf_(buffer, "%f", 42.5);
   CHECK(!strcmp(buffer, "42.500000"));
 
-  test::sprintf(buffer, "%.1f", 42.5);
+  test::sprintf_(buffer, "%.1f", 42.5);
   CHECK(!strcmp(buffer, "42.5"));
 
-  test::sprintf(buffer, "%f", 42167.0);
+  test::sprintf_(buffer, "%f", 42167.0);
   CHECK(!strcmp(buffer, "42167.000000"));
 
-  test::sprintf(buffer, "%.9f", -12345.987654321);
+  test::sprintf_(buffer, "%.9f", -12345.987654321);
   CHECK(!strcmp(buffer, "-12345.987654321"));
 
-  test::sprintf(buffer, "%.1f", 3.999);
+  test::sprintf_(buffer, "%.1f", 3.999);
   CHECK(!strcmp(buffer, "4.0"));
 
-  test::sprintf(buffer, "%.0f", 3.5);
+  test::sprintf_(buffer, "%.0f", 3.5);
   CHECK(!strcmp(buffer, "4"));
 
-  test::sprintf(buffer, "%.0f", 4.5);
+  test::sprintf_(buffer, "%.0f", 4.5);
   CHECK(!strcmp(buffer, "4"));
 
-  test::sprintf(buffer, "%.0f", 3.49);
+  test::sprintf_(buffer, "%.0f", 3.49);
   CHECK(!strcmp(buffer, "3"));
 
-  test::sprintf(buffer, "%.1f", 3.49);
+  test::sprintf_(buffer, "%.1f", 3.49);
   CHECK(!strcmp(buffer, "3.5"));
 
-  test::sprintf(buffer, "a%-5.1f", 0.5);
+  test::sprintf_(buffer, "a%-5.1f", 0.5);
   CHECK(!strcmp(buffer, "a0.5  "));
 
-  test::sprintf(buffer, "a%-5.1fend", 0.5);
+  test::sprintf_(buffer, "a%-5.1fend", 0.5);
   CHECK(!strcmp(buffer, "a0.5  end"));
 
 #ifndef PRINTF_DISABLE_SUPPORT_EXPONENTIAL
   test::sprintf(buffer, "%.4g", 1.0);
   CHECK(!strcmp(buffer, "1"));
   
-  test::sprintf(buffer, "%G", 12345.678);
+  test::sprintf_(buffer, "%G", 12345.678);
   CHECK(!strcmp(buffer, "12345.7"));
 
-  test::sprintf(buffer, "%.7G", 12345.678);
+  test::sprintf_(buffer, "%.7G", 12345.678);
   CHECK(!strcmp(buffer, "12345.68"));
 
-  test::sprintf(buffer, "%.5G", 123456789.);
+  test::sprintf_(buffer, "%.5G", 123456789.);
   CHECK(!strcmp(buffer, "1.2346E+08"));
 
-  test::sprintf(buffer, "%.6G", 12345.);
+  test::sprintf_(buffer, "%.6G", 12345.);
   CHECK(!strcmp(buffer, "12345.0"));
 
-  test::sprintf(buffer, "%+12.4g", 123456789.);
+  test::sprintf_(buffer, "%+12.4g", 123456789.);
   CHECK(!strcmp(buffer, "  +1.235e+08"));
 
-  test::sprintf(buffer, "%.2G", 0.001234);
+  test::sprintf_(buffer, "%.2G", 0.001234);
   CHECK(!strcmp(buffer, "0.0012"));
 
-  test::sprintf(buffer, "%+10.4G", 0.001234);
+  test::sprintf_(buffer, "%+10.4G", 0.001234);
   CHECK(!strcmp(buffer, " +0.001234"));
 
-  test::sprintf(buffer, "%+012.4g", 0.00001234);
+  test::sprintf_(buffer, "%+012.4g", 0.00001234);
   CHECK(!strcmp(buffer, "+001.234e-05"));
 
-  test::sprintf(buffer, "%.3g", -1.2345e-308);
+  test::sprintf_(buffer, "%.3g", -1.2345e-308);
   CHECK(!strcmp(buffer, "-1.23e-308"));
 
-  test::sprintf(buffer, "%+.3E", 1.23e+308);
+  test::sprintf_(buffer, "%+.3E", 1.23e+308);
   CHECK(!strcmp(buffer, "+1.230E+308"));
 #endif
 
   // out of range for float: should switch to exp notation if supported, else empty
-  test::sprintf(buffer, "%.1f", 1E20);
+  test::sprintf_(buffer, "%.1f", 1E20);
 #ifndef PRINTF_DISABLE_SUPPORT_EXPONENTIAL
   CHECK(!strcmp(buffer, "1.0e+20"));
 #else
@@ -1415,7 +1415,7 @@ TEST_CASE("float", "[]" ) {
   std::stringstream str;
   str.precision(5);
   for (float i = -100000; i < 100000; i += 1) {
-    test::sprintf(buffer, "%.5f", (double)(i / 10000));
+    test::sprintf_(buffer, "%.5f", (double)(i / 10000));
     str.str("");
     str << std::fixed << i / 10000;
     fail = fail || !!strcmp(buffer, str.str().c_str());
@@ -1427,7 +1427,7 @@ TEST_CASE("float", "[]" ) {
   // brute force exp
   str.setf(std::ios::scientific, std::ios::floatfield);
   for (float i = -1e20; i < (float) 1e20; i += (float) 1e15) {
-    test::sprintf(buffer, "%.5f", (double) i);
+    test::sprintf_(buffer, "%.5f", (double) i);
     str.str("");
     str << i;
     fail = fail || !!strcmp(buffer, str.str().c_str());
@@ -1440,97 +1440,97 @@ TEST_CASE("float", "[]" ) {
 TEST_CASE("types", "[]" ) {
   char buffer[100];
 
-  test::sprintf(buffer, "%i", 0);
+  test::sprintf_(buffer, "%i", 0);
   CHECK(!strcmp(buffer, "0"));
 
-  test::sprintf(buffer, "%i", 1234);
+  test::sprintf_(buffer, "%i", 1234);
   CHECK(!strcmp(buffer, "1234"));
 
-  test::sprintf(buffer, "%i", 32767);
+  test::sprintf_(buffer, "%i", 32767);
   CHECK(!strcmp(buffer, "32767"));
 
-  test::sprintf(buffer, "%i", -32767);
+  test::sprintf_(buffer, "%i", -32767);
   CHECK(!strcmp(buffer, "-32767"));
 
-  test::sprintf(buffer, "%li", 30L);
+  test::sprintf_(buffer, "%li", 30L);
   CHECK(!strcmp(buffer, "30"));
 
-  test::sprintf(buffer, "%li", -2147483647L);
+  test::sprintf_(buffer, "%li", -2147483647L);
   CHECK(!strcmp(buffer, "-2147483647"));
 
-  test::sprintf(buffer, "%li", 2147483647L);
+  test::sprintf_(buffer, "%li", 2147483647L);
   CHECK(!strcmp(buffer, "2147483647"));
 
-  test::sprintf(buffer, "%lli", 30LL);
+  test::sprintf_(buffer, "%lli", 30LL);
   CHECK(!strcmp(buffer, "30"));
 
-  test::sprintf(buffer, "%lli", -9223372036854775807LL);
+  test::sprintf_(buffer, "%lli", -9223372036854775807LL);
   CHECK(!strcmp(buffer, "-9223372036854775807"));
 
-  test::sprintf(buffer, "%lli", 9223372036854775807LL);
+  test::sprintf_(buffer, "%lli", 9223372036854775807LL);
   CHECK(!strcmp(buffer, "9223372036854775807"));
 
-  test::sprintf(buffer, "%lu", 100000L);
+  test::sprintf_(buffer, "%lu", 100000L);
   CHECK(!strcmp(buffer, "100000"));
 
-  test::sprintf(buffer, "%lu", 0xFFFFFFFFL);
+  test::sprintf_(buffer, "%lu", 0xFFFFFFFFL);
   CHECK(!strcmp(buffer, "4294967295"));
 
-  test::sprintf(buffer, "%llu", 281474976710656LLU);
+  test::sprintf_(buffer, "%llu", 281474976710656LLU);
   CHECK(!strcmp(buffer, "281474976710656"));
 
-  test::sprintf(buffer, "%llu", 18446744073709551615LLU);
+  test::sprintf_(buffer, "%llu", 18446744073709551615LLU);
   CHECK(!strcmp(buffer, "18446744073709551615"));
 
-  test::sprintf(buffer, "%zu", (size_t)2147483647UL);
+  test::sprintf_(buffer, "%zu", (size_t)2147483647UL);
   CHECK(!strcmp(buffer, "2147483647"));
 
-  test::sprintf(buffer, "%zd", (size_t)2147483647UL);
+  test::sprintf_(buffer, "%zd", (size_t)2147483647UL);
   CHECK(!strcmp(buffer, "2147483647"));
 
-  test::sprintf(buffer, "%zi", (ssize_t)-2147483647L);
+  test::sprintf_(buffer, "%zi", (ssize_t)-2147483647L);
   CHECK(!strcmp(buffer, "-2147483647"));
 
-  test::sprintf(buffer, "%o", 60000);
+  test::sprintf_(buffer, "%o", 60000);
   CHECK(!strcmp(buffer, "165140"));
 
-  test::sprintf(buffer, "%lo", 12345678L);
+  test::sprintf_(buffer, "%lo", 12345678L);
   CHECK(!strcmp(buffer, "57060516"));
 
-  test::sprintf(buffer, "%lx", 0x12345678L);
+  test::sprintf_(buffer, "%lx", 0x12345678L);
   CHECK(!strcmp(buffer, "12345678"));
 
-  test::sprintf(buffer, "%llx", 0x1234567891234567LLU);
+  test::sprintf_(buffer, "%llx", 0x1234567891234567LLU);
   CHECK(!strcmp(buffer, "1234567891234567"));
 
-  test::sprintf(buffer, "%lx", 0xabcdefabL);
+  test::sprintf_(buffer, "%lx", 0xabcdefabL);
   CHECK(!strcmp(buffer, "abcdefab"));
 
-  test::sprintf(buffer, "%lX", 0xabcdefabL);
+  test::sprintf_(buffer, "%lX", 0xabcdefabL);
   CHECK(!strcmp(buffer, "ABCDEFAB"));
 
-  test::sprintf(buffer, "%c", 'v');
+  test::sprintf_(buffer, "%c", 'v');
   CHECK(!strcmp(buffer, "v"));
 
-  test::sprintf(buffer, "%cv", 'w');
+  test::sprintf_(buffer, "%cv", 'w');
   CHECK(!strcmp(buffer, "wv"));
 
-  test::sprintf(buffer, "%s", "A Test");
+  test::sprintf_(buffer, "%s", "A Test");
   CHECK(!strcmp(buffer, "A Test"));
 
-  test::sprintf(buffer, "%hhu", (unsigned char) 0xFFU);
+  test::sprintf_(buffer, "%hhu", (unsigned char) 0xFFU);
   CHECK(!strcmp(buffer, "255"));
 
-  test::sprintf(buffer, "%hu", (unsigned short) 0x1234u);
+  test::sprintf_(buffer, "%hu", (unsigned short) 0x1234u);
   CHECK(!strcmp(buffer, "4660"));
 
-  test::sprintf(buffer, "%s%hhi %hu", "Test", (char) 100, (unsigned short) 0xFFFF);
+  test::sprintf_(buffer, "%s%hhi %hu", "Test", (char) 100, (unsigned short) 0xFFFF);
   CHECK(!strcmp(buffer, "Test100 65535"));
 
-  test::sprintf(buffer, "%tx", &buffer[10] - &buffer[0]);
+  test::sprintf_(buffer, "%tx", &buffer[10] - &buffer[0]);
   CHECK(!strcmp(buffer, "a"));
 
-  test::sprintf(buffer, "%ji", (intmax_t)-2147483647L);
+  test::sprintf_(buffer, "%ji", (intmax_t)-2147483647L);
   CHECK(!strcmp(buffer, "-2147483647"));
 }
 
@@ -1538,10 +1538,10 @@ TEST_CASE("types", "[]" ) {
 TEST_CASE("types - non-standard format", "[]" ) {
   char buffer[100];
 
-  test::sprintf(buffer, "%b", 60000);
+  test::sprintf_(buffer, "%b", 60000);
   CHECK(!strcmp(buffer, "1110101001100000"));
 
-  test::sprintf(buffer, "%lb", 12345678L);
+  test::sprintf_(buffer, "%lb", 12345678L);
   CHECK(!strcmp(buffer, "101111000110000101001110"));
 }
 #endif
@@ -1549,7 +1549,7 @@ TEST_CASE("types - non-standard format", "[]" ) {
 TEST_CASE("pointer", "[]" ) {
   char buffer[100];
 
-  test::sprintf(buffer, "%p", (void*)0x1234U);
+  test::sprintf_(buffer, "%p", (void*)0x1234U);
   if (sizeof(void*) == 4U) {
     CHECK(!strcmp(buffer, "0x00001234"));
   }
@@ -1557,7 +1557,7 @@ TEST_CASE("pointer", "[]" ) {
     CHECK(!strcmp(buffer, "0x0000000000001234"));
   }
 
-  test::sprintf(buffer, "%p", (void*)0x12345678U);
+  test::sprintf_(buffer, "%p", (void*)0x12345678U);
   if (sizeof(void*) == 4U) {
     CHECK(!strcmp(buffer, "0x12345678"));
   }
@@ -1565,7 +1565,7 @@ TEST_CASE("pointer", "[]" ) {
     CHECK(!strcmp(buffer, "0x0000000012345678"));
   }
 
-  test::sprintf(buffer, "%p-%p", (void*)0x12345678U, (void*)0x7EDCBA98U);
+  test::sprintf_(buffer, "%p-%p", (void*)0x12345678U, (void*)0x7EDCBA98U);
   if (sizeof(void*) == 4U) {
     CHECK(!strcmp(buffer, "0x12345678-0x7edcba98"));
   }
@@ -1574,15 +1574,15 @@ TEST_CASE("pointer", "[]" ) {
   }
 
   if (sizeof(uintptr_t) == sizeof(uint64_t)) {
-    test::sprintf(buffer, "%p", (void*)(uintptr_t)0xFFFFFFFFU);
+    test::sprintf_(buffer, "%p", (void*)(uintptr_t)0xFFFFFFFFU);
     CHECK(!strcmp(buffer, "0x00000000ffffffff"));
   }
   else {
-    test::sprintf(buffer, "%p", (void*)(uintptr_t)0xFFFFFFFFU);
+    test::sprintf_(buffer, "%p", (void*)(uintptr_t)0xFFFFFFFFU);
     CHECK(!strcmp(buffer, "0xffffffff"));
   }
 
-  test::sprintf(buffer, "%p", NULL);
+  test::sprintf_(buffer, "%p", NULL);
   CHECK(!strcmp(buffer, "(nil)"));
 }
 
@@ -1590,7 +1590,7 @@ TEST_CASE("pointer", "[]" ) {
 TEST_CASE("unknown flag (non-standard format)", "[]" ) {
   char buffer[100];
 
-  test::sprintf(buffer, "%kmarco", 42, 37);
+  test::sprintf_(buffer, "%kmarco", 42, 37);
   CHECK(!strcmp(buffer, "kmarco"));
 }
 #endif
@@ -1598,27 +1598,27 @@ TEST_CASE("unknown flag (non-standard format)", "[]" ) {
 TEST_CASE("string length", "[]" ) {
   char buffer[100];
 
-  test::sprintf(buffer, "%.4s", "This is a test");
+  test::sprintf_(buffer, "%.4s", "This is a test");
   CHECK(!strcmp(buffer, "This"));
 
-  test::sprintf(buffer, "%.4s", "test");
+  test::sprintf_(buffer, "%.4s", "test");
   CHECK(!strcmp(buffer, "test"));
 
-  test::sprintf(buffer, "%.7s", "123");
+  test::sprintf_(buffer, "%.7s", "123");
   CHECK(!strcmp(buffer, "123"));
 
-  test::sprintf(buffer, "%.7s", "");
+  test::sprintf_(buffer, "%.7s", "");
   CHECK(!strcmp(buffer, ""));
 
-  test::sprintf(buffer, "%.4s%.2s", "123456", "abcdef");
+  test::sprintf_(buffer, "%.4s%.2s", "123456", "abcdef");
   CHECK(!strcmp(buffer, "1234ab"));
 
-  test::sprintf(buffer, "%.*s", 3, "123456");
+  test::sprintf_(buffer, "%.*s", 3, "123456");
   CHECK(!strcmp(buffer, "123"));
 
 DISABLE_WARNING_PUSH
 DISABLE_WARNING_PRINTF_FORMAT_OVERFLOW
-  test::sprintf(buffer, "%.*s", 3, NULL);
+  test::sprintf_(buffer, "%.*s", 3, NULL);
 DISABLE_WARNING_POP
   CHECK(!strcmp(buffer, "(null)"));
 }
@@ -1627,7 +1627,7 @@ DISABLE_WARNING_POP
 TEST_CASE("string length (non-standard format)", "[]" ) {
   char buffer[100];
 
-  test::sprintf(buffer, "%.4.2s", "123456");
+  test::sprintf_(buffer, "%.4.2s", "123456");
   CHECK(!strcmp(buffer, ".2s"));
 }
 #endif
@@ -1637,26 +1637,26 @@ TEST_CASE("buffer length", "[]" ) {
   char buffer[100];
   int ret;
 
-  ret = test::snprintf(nullptr, 10, "%s", "Test");
+  ret = test::snprintf_(nullptr, 10, "%s", "Test");
   CHECK(ret == 4);
-  ret = test::snprintf(nullptr, 0, "%s", "Test");
+  ret = test::snprintf_(nullptr, 0, "%s", "Test");
   CHECK(ret == 4);
 
   buffer[0] = (char)0xA5;
-  ret = test::snprintf(buffer, 0, "%s", "Test");
+  ret = test::snprintf_(buffer, 0, "%s", "Test");
   CHECK(buffer[0] == (char)0xA5);
   CHECK(ret == 4);
 
   buffer[0] = (char)0xCC;
-  test::snprintf(buffer, 1, "%s", "Test");
+  test::snprintf_(buffer, 1, "%s", "Test");
   CHECK(buffer[0] == '\0');
 
-  test::snprintf(buffer, 2, "%s", "Hello");
+  test::snprintf_(buffer, 2, "%s", "Hello");
   CHECK(!strcmp(buffer, "H"));
 
 DISABLE_WARNING_PUSH
 DISABLE_WARNING_PRINTF_FORMAT_OVERFLOW
-  test::snprintf(buffer, 2, "%s", NULL);
+  test::snprintf_(buffer, 2, "%s", NULL);
 DISABLE_WARNING_POP
   CHECK(!strcmp(buffer, "("));
 }
@@ -1666,29 +1666,29 @@ TEST_CASE("ret value", "[]" ) {
   char buffer[100] ;
   int ret;
 
-  ret = test::snprintf(buffer, 6, "0%s", "1234");
+  ret = test::snprintf_(buffer, 6, "0%s", "1234");
   CHECK(!strcmp(buffer, "01234"));
   CHECK(ret == 5);
 
-  ret = test::snprintf(buffer, 6, "0%s", "12345");
+  ret = test::snprintf_(buffer, 6, "0%s", "12345");
   CHECK(!strcmp(buffer, "01234"));
   CHECK(ret == 6);  // "5" is truncated
 
-  ret = test::snprintf(buffer, 6, "0%s", "1234567");
+  ret = test::snprintf_(buffer, 6, "0%s", "1234567");
   CHECK(!strcmp(buffer, "01234"));
   CHECK(ret == 8);  // "567" are truncated
 
 DISABLE_WARNING_PUSH
 DISABLE_WARNING_PRINTF_FORMAT_OVERFLOW
-  ret = test::snprintf(buffer, 6, "0%s", NULL);
+  ret = test::snprintf_(buffer, 6, "0%s", NULL);
 DISABLE_WARNING_POP
   CHECK(!strcmp(buffer, "0(nul"));
   CHECK(ret == 7);  // "l)" is truncated
 
-  ret = test::snprintf(buffer, 10, "hello, world");
+  ret = test::snprintf_(buffer, 10, "hello, world");
   CHECK(ret == 12);
 
-  ret = test::snprintf(buffer, 3, "%d", 10000);
+  ret = test::snprintf_(buffer, 3, "%d", 10000);
   CHECK(ret == 5);
   CHECK(strlen(buffer) == 2U);
   CHECK(buffer[0] == '1');
@@ -1700,32 +1700,32 @@ DISABLE_WARNING_POP
 TEST_CASE("misc", "[]" ) {
   char buffer[100];
 
-  test::sprintf(buffer, "%u%u%ctest%d %s", 5, 3000, 'a', -20, "bit");
+  test::sprintf_(buffer, "%u%u%ctest%d %s", 5, 3000, 'a', -20, "bit");
   CHECK(!strcmp(buffer, "53000atest-20 bit"));
 
-  test::sprintf(buffer, "%.*f", 2, 0.33333333);
+  test::sprintf_(buffer, "%.*f", 2, 0.33333333);
   CHECK(!strcmp(buffer, "0.33"));
 
-  test::sprintf(buffer, "%.*d", -1, 1);
+  test::sprintf_(buffer, "%.*d", -1, 1);
   CHECK(!strcmp(buffer, "1"));
 
-  test::sprintf(buffer, "%.3s", "foobar");
+  test::sprintf_(buffer, "%.3s", "foobar");
   CHECK(!strcmp(buffer, "foo"));
 
-  test::sprintf(buffer, "% .0d", 0);
+  test::sprintf_(buffer, "% .0d", 0);
   CHECK(!strcmp(buffer, " "));
 
-  test::sprintf(buffer, "%10.5d", 4);
+  test::sprintf_(buffer, "%10.5d", 4);
   CHECK(!strcmp(buffer, "     00004"));
 
-  test::sprintf(buffer, "%*sx", -3, "hi");
+  test::sprintf_(buffer, "%*sx", -3, "hi");
   CHECK(!strcmp(buffer, "hi x"));
 
 #ifndef PRINTF_DISABLE_SUPPORT_EXPONENTIAL
-  test::sprintf(buffer, "%.*g", 2, 0.33333333);
+  test::sprintf_(buffer, "%.*g", 2, 0.33333333);
   CHECK(!strcmp(buffer, "0.33"));
 
-  test::sprintf(buffer, "%.*e", 2, 0.33333333);
+  test::sprintf_(buffer, "%.*e", 2, 0.33333333);
   CHECK(!strcmp(buffer, "3.33e-01"));
 #endif
 }
