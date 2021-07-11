@@ -96,6 +96,7 @@ elseif (CMAKE_CXX_COMPILER_ID STREQUAL "GNU" OR
 endif()
 
 if (BUILD_TESTS)
+	enable_testing()
 	add_subdirectory(test)
 endif()
 
