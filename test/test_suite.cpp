@@ -1613,6 +1613,9 @@ TEST_CASE("string length", "[]" ) {
   test::sprintf_(buffer, "%.4s%.2s", "123456", "abcdef");
   CHECK(!strcmp(buffer, "1234ab"));
 
+  test::sprintf_(buffer, "%.4.2s", "123456");
+  REQUIRE(!strcmp(buffer, ".2s"));
+
   test::sprintf_(buffer, "%.*s", 3, "123456");
   CHECK(!strcmp(buffer, "123"));
 
