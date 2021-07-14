@@ -12,6 +12,12 @@ set_target_properties(
 	CXX_EXTENSIONS NO
 )
 
+# These two lines are necessary, since the test suite does not actually use the
+# compiled library - it includes the library's source .c file; and that means we
+# need to include the generated config.h file.
+target_compile_definitions(test_suite PRIVATE PRINTF_INCLUDE_CONFIG_H)
+target_include_directories(test_suite PRIVATE "${GENERATED_INCLUDE_DIR}")
+
 option(TEST_BROKEN_FORMATS "Include tests using non-standard-compliant format strings?" ON)
 # ... don't worry, we'll suppress the compiler warnings for those.
 if (TEST_BROKEN_FORMATS)
@@ -22,7 +28,7 @@ target_link_libraries(test_suite PRIVATE mpaland-printf)
 
 if (CMAKE_CXX_COMPILER_ID STREQUAL "MSVC")
 	target_compile_options(test_suite PRIVATE /W4)
-elseif (CMAKE_CXX_COMPILER_ID STREQUAL "GNU" OR 
+elseif (CMAKE_CXX_COMPILER_ID STREQUAL "GNU" OR
         CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
 	# lots of warnings and all warnings as errors
 	target_compile_options(test_suite PRIVATE
