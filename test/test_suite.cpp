@@ -485,10 +485,37 @@ TEST_CASE("- flag - non-standard format", "[]" ) {
 TEST_CASE("# flag", "[]" ) {
   char buffer[100];
 
-  test::sprintf(buffer, "%#.0x", 0);
-  REQUIRE(!strcmp(buffer, ""));
-  test::sprintf(buffer, "%#.1x", 0);
+  test::sprintf(buffer, "%#o", 0);
   REQUIRE(!strcmp(buffer, "0"));
+  test::sprintf(buffer, "%#0o", 0);
+  REQUIRE(!strcmp(buffer, "0"));
+  test::sprintf(buffer, "%#.0o", 0);
+  REQUIRE(!strcmp(buffer, "0"));
+  test::sprintf(buffer, "%#.1o", 0);
+  REQUIRE(!strcmp(buffer, "0"));
+  test::sprintf(buffer, "%#4o", 0);
+  REQUIRE(!strcmp(buffer, "   0"));
+  test::sprintf(buffer, "%#.4o", 0);
+  REQUIRE(!strcmp(buffer, "0000"));
+
+  test::sprintf(buffer, "%#o", 1);
+  REQUIRE(!strcmp(buffer, "01"));
+  test::sprintf(buffer, "%#0o", 1);
+  REQUIRE(!strcmp(buffer, "01"));
+  test::sprintf(buffer, "%#.0o", 1);
+  REQUIRE(!strcmp(buffer, "01"));
+  test::sprintf(buffer, "%#.1o", 1);
+  REQUIRE(!strcmp(buffer, "01"));
+  test::sprintf(buffer, "%#4o", 1);
+  REQUIRE(!strcmp(buffer, "  01"));
+  test::sprintf(buffer, "%#.4o", 1);
+  REQUIRE(!strcmp(buffer, "0001"));
+
+  test::sprintf(buffer, "%#04x", 0x1001);
+  REQUIRE(!strcmp(buffer, "0x1001"));
+  test::sprintf(buffer, "%#04o", 01001);
+  REQUIRE(!strcmp(buffer, "01001"));
+
   test::sprintf(buffer, "%#.0llx", (long long)0);
   REQUIRE(!strcmp(buffer, ""));
   test::sprintf(buffer, "%#.8x", 0x614e);
@@ -1341,6 +1368,9 @@ TEST_CASE("float", "[]" ) {
   REQUIRE(!strcmp(buffer, "a0.5  end"));
 
 #ifndef PRINTF_DISABLE_SUPPORT_EXPONENTIAL
+  test::sprintf(buffer, "%.4g", 1.0);
+  REQUIRE(!strcmp(buffer, "1"));
+  
   test::sprintf(buffer, "%G", 12345.678);
   REQUIRE(!strcmp(buffer, "12345.7"));
 
