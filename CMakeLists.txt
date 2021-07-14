@@ -67,9 +67,9 @@ option(BUILD_STATIC_LIBRARY "Build the library as static rather than shared" OFF
 
 
 if (BUILD_STATIC_LIBRARY)
-	add_library(mpaland-printf SHARED printf.c)
-else()
 	add_library(mpaland-printf STATIC printf.c)
+else()
+	add_library(mpaland-printf SHARED printf.c)
 endif()
 
 set_property(TARGET mpaland-printf PROPERTY C_STANDARD 99)
