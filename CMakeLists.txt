@@ -2,7 +2,7 @@ cmake_minimum_required (VERSION 3.13)
 project(
 	mpaland-printf
 	LANGUAGES C
-	DESCRIPTION "Mostly- stand-alone C implementation of sprintf and printf functions"
+	DESCRIPTION "Mostly-stand-alone C implementation of printf, vprintf, sprintf and related functions"
 	HOMEPAGE_URL https://github.com/eyalroz/printf
 	VERSION 0.2.0
 )
