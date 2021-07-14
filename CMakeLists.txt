@@ -7,75 +7,34 @@ project(
 	VERSION 0.2.0
 )
 
-option(BUILD_TESTS "Build test programs for the library" OFF)
-
-option(SUPPORT_FLOAT_SPECIFIERS "Support decimal notation floating-point conversion specifiers (%f,%F)" ON)
-if (NOT SUPPORT_FLOAT_SPECIFIERS)
-	add_definitions(-DPRINTF_DISABLE_FLOAT_SPECIFIERS)
-endif()
-
-option(SUPPORT_EXPONENTIAL_SPECIFIERS "Support exponential floating point format conversion specifiers (%e,%E,%g,%G)" ON)
-if (NOT SUPPORT_EXPONENTIAL_SPECIFIERS)
-	add_definitions(-DPRINTF_DISABLE_EXPONENTIAL_SPECIFIERS)
-endif()
-
-option(SUPPORT_LONG_LONG "Support long long integral types (allows for the ll length modifier and affects %p)" ON)
-if (NOT SUPPORT_LONG_LONG)
-	add_definitions(-DPRINTF_DISABLE_LONG_LONG)
-endif()
-
-option(SUPPORT_PTRDIFF_LENGTH_MODIFIER "Support the pointer difference specifier (%t)" ON)
-if (NOT SUPPORT_PTRDIFF_LENGTH_MODIFIER)
-	add_definitions(-DPRINTF_DISABLE_PTRDIFF_LENGTH_MODIFIER)
-endif()
-
-option(ALIAS_STANDARD_FUNCTION_NAMES "Alias the standard library function names (printf, sprintf etc.) to the library's functions" ON)
-if (NOT ALIAS_STANDARD_FUNCTION_NAMES)
-	add_definitions(-DPRINTF_ALIAS_STANDARD_FUNCTION_NAMES)
-endif()
-
-# Numeric defines
-
-set(NTOA_BUFFER_SIZE "32" CACHE STRING "Integer to string (ntoa) conversion buffer size")
-string(REGEX MATCH "^[0-9]+([eE][0-9]+)?$" NTOA_BUFFER_SIZE "${NTOA_BUFFER_SIZE}")
-if ("${NTOA_BUFFER_SIZE}" STREQUAL "")
-	message(FATAL_ERROR "An (integral) buffer size for converting integers to floating-point values must be specified." )
-else()
-	add_definitions(-DPRINTF_NTOA_BUFFER_SIZE=${NTOA_BUFFER_SIZE})
-endif()
-
-set(PRINTF_FTOA_BUFFER_SIZE "32" CACHE STRING "Float to string (ftoa) conversion buffer size")
-string(REGEX MATCH "^[0-9]+$" PRINTF_FTOA_BUFFER_SIZE "${PRINTF_FTOA_BUFFER_SIZE}")
-if ("${PRINTF_FTOA_BUFFER_SIZE}" STREQUAL "")
-	message(FATAL_ERROR "An (integral) buffer size for converting floating-point values to strings must be specified." )
-else()
-	add_definitions(-DPRINTF_FTOA_BUFFER_SIZE=${PRINTF_FTOA_BUFFER_SIZE})
-endif()
-
-set(DEFAULT_FLOAT_PRECISION "6" CACHE STRING "Default precision when printing floating-point values")
-string(REGEX MATCH "^[0-9]+$" DEFAULT_FLOAT_PRECISION "${DEFAULT_FLOAT_PRECISION}")
-if ("${DEFAULT_FLOAT_PRECISION}" STREQUAL "")
-	message(FATAL_ERROR "An (integral) default floating-point precision value must be specified." )
-else()
-	add_definitions(-DPRINTF_DEFAULT_FLOAT_PRECISION=${DEFAULT_FLOAT_PRECISION})
-endif()
-
-set(FLOAT_NOTATION_THRESHOLD "1e9" CACHE STRING "Largest floating-point value for which printing with %f uses non-exponential notation")
-string(REGEX MATCH "^[0-9]+([eE][0-9]+)?$" FLOAT_NOTATION_THRESHOLD "${FLOAT_NOTATION_THRESHOLD}")
-if ("${FLOAT_NOTATION_THRESHOLD}" STREQUAL "")
-	message(FATAL_ERROR "The %f notation switch threshold must be an integer." )
-else()
-	add_definitions(-DPRINTF_FLOAT_NOTATION_THRESHOLD=${FLOAT_NOTATION_THRESHOLD})
-endif()
-
+option(BUILD_TESTS          "Build test programs for the library" OFF)
 option(BUILD_STATIC_LIBRARY "Build the library as static rather than shared" OFF)
 
+# Boolean options which go into config.h
+
+option(SUPPORT_FLOAT_SPECIFIERS        "Support decimal notation floating-point conversion specifiers (%f,%F)" ON)
+option(SUPPORT_EXPONENTIAL_SPECIFIERS  "Support exponential floating point format conversion specifiers (%e,%E,%g,%G)" ON)
+option(SUPPORT_LONG_LONG               "Support long long integral types (allows for the ll length modifier and affects %p)" ON)
+option(SUPPORT_PTRDIFF_LENGTH_MODIFIER "Support the pointer difference specifier (%t)" ON)
+option(ALIAS_STANDARD_FUNCTION_NAMES   "Alias the standard library function names (printf, sprintf etc.) to the library's functions" ON)
+
+# Numeric defines which go into config.h
+
+set(NTOA_BUFFER_SIZE "32" CACHE STRING          "Integer to string (ntoa) conversion buffer size")
+set(PRINTF_FTOA_BUFFER_SIZE "32" CACHE STRING   "Float to string (ftoa) conversion buffer size")
+set(DEFAULT_FLOAT_PRECISION "6" CACHE STRING    "Default precision when printing floating-point values")
+set(FLOAT_NOTATION_THRESHOLD "1e9" CACHE STRING "Largest floating-point value for which printing with %f uses non-exponential notation")
 
 if (BUILD_STATIC_LIBRARY)
 	add_library(mpaland-printf STATIC printf.c)
 else()
 	add_library(mpaland-printf SHARED printf.c)
 endif()
+
+set(GENERATED_INCLUDE_DIR "${CMAKE_CURRENT_BINARY_DIR}/include")
+configure_file("printf_config.h.in" "${GENERATED_INCLUDE_DIR}/printf_config.h" @ONLY)
+target_compile_definitions(mpaland-printf PRIVATE PRINTF_INCLUDE_CONFIG_H)
+target_include_directories(mpaland-printf PRIVATE "$<BUILD_INTERFACE:${GENERATED_INCLUDE_DIR}>")
 
 set_property(TARGET mpaland-printf PROPERTY C_STANDARD 99)
 set_property(TARGET mpaland-printf PROPERTY C_STANDARD_REQUIRED ON)
@@ -95,7 +54,7 @@ set_target_properties(mpaland-printf PROPERTIES
 
 if (CMAKE_CXX_COMPILER_ID STREQUAL "MSVC")
 	target_compile_options(mpaland-printf PRIVATE /W4)
-elseif (CMAKE_CXX_COMPILER_ID STREQUAL "GNU" OR 
+elseif (CMAKE_CXX_COMPILER_ID STREQUAL "GNU" OR
         CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
 	target_compile_options(mpaland-printf PRIVATE -Wall -Wextra -pedantic)
 endif()
@@ -106,15 +65,15 @@ if (BUILD_TESTS)
 endif()
 
 if (UNIX)
-	add_custom_target(mpaland-printf-sizes 
+	add_custom_target(mpaland-printf-sizes
 		COMMAND size -A -t $<TARGET_FILE:mpaland-printf>  > mpaland-printf_sizes.txt
 		DEPENDS mpaland-printf
 		BYPRODUCTS mpaland-printf_sizes.txt
 		COMMENT Prints the sizes of the different sections of the ELF file: text, dat, vss etc.)
 
-	add_custom_target(mpaland-printf-symbols 
+	add_custom_target(mpaland-printf-symbols
 		COMMAND nm --numeric-sort --print-size "$<TARGET_FILE:mpaland-printf>" > mpaland-printf_symbols.txt
-		COMMAND bash -c "nm --numeric-sort --print-size $<TARGET_FILE:mpaland-printf> | c++filt > mpaland-printf_cpp_symbols.txt" 
+		COMMAND bash -c "nm --numeric-sort --print-size $<TARGET_FILE:mpaland-printf> | c++filt > mpaland-printf_cpp_symbols.txt"
 		VERBATIM
 		DEPENDS mpaland-printf
 		BYPRODUCTS mpaland-printf_symbols.txt mpaland-printf_cpp_symbols.txt
