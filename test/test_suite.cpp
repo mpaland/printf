@@ -466,14 +466,14 @@ TEST_CASE("- flag - non-standard format", "[]" ) {
   CHECK(!strcmp(buffer, "-42            "));
 
   test::sprintf_(buffer, "%0-15.3e", -42.);
-#ifndef PRINTF_DISABLE_SUPPORT_EXPONENTIAL
+#if PRINTF_SUPPORT_EXPONENTIAL_SPECIFIERS
   CHECK(!strcmp(buffer, "-4.200e+01     "));
 #else
   CHECK(!strcmp(buffer, "e"));
 #endif
 
   test::sprintf_(buffer, "%0-15.3g", -42.);
-#ifndef PRINTF_DISABLE_SUPPORT_EXPONENTIAL
+#if PRINTF_SUPPORT_EXPONENTIAL_SPECIFIERS
   CHECK(!strcmp(buffer, "-42.0          "));
 #else
   CHECK(!strcmp(buffer, "g"));
@@ -485,38 +485,38 @@ TEST_CASE("- flag - non-standard format", "[]" ) {
 TEST_CASE("# flag", "[]" ) {
   char buffer[100];
 
-  test::sprintf(buffer, "%#o", 0);
+  test::sprintf_(buffer, "%#o", 0);
   CHECK(!strcmp(buffer, "0"));
-  test::sprintf(buffer, "%#0o", 0);
+  test::sprintf_(buffer, "%#0o", 0);
   CHECK(!strcmp(buffer, "0"));
-  test::sprintf(buffer, "%#.0o", 0);
+  test::sprintf_(buffer, "%#.0o", 0);
   CHECK(!strcmp(buffer, "0"));
-  test::sprintf(buffer, "%#.1o", 0);
+  test::sprintf_(buffer, "%#.1o", 0);
   CHECK(!strcmp(buffer, "0"));
-  test::sprintf(buffer, "%#4o", 0);
+  test::sprintf_(buffer, "%#4o", 0);
   CHECK(!strcmp(buffer, "   0"));
-  test::sprintf(buffer, "%#.4o", 0);
+  test::sprintf_(buffer, "%#.4o", 0);
   CHECK(!strcmp(buffer, "0000"));
 
-  test::sprintf(buffer, "%#o", 1);
+  test::sprintf_(buffer, "%#o", 1);
   CHECK(!strcmp(buffer, "01"));
-  test::sprintf(buffer, "%#0o", 1);
+  test::sprintf_(buffer, "%#0o", 1);
   CHECK(!strcmp(buffer, "01"));
-  test::sprintf(buffer, "%#.0o", 1);
+  test::sprintf_(buffer, "%#.0o", 1);
   CHECK(!strcmp(buffer, "01"));
-  test::sprintf(buffer, "%#.1o", 1);
+  test::sprintf_(buffer, "%#.1o", 1);
   CHECK(!strcmp(buffer, "01"));
-  test::sprintf(buffer, "%#4o", 1);
+  test::sprintf_(buffer, "%#4o", 1);
   CHECK(!strcmp(buffer, "  01"));
-  test::sprintf(buffer, "%#.4o", 1);
+  test::sprintf_(buffer, "%#.4o", 1);
   CHECK(!strcmp(buffer, "0001"));
 
   test::sprintf(buffer, "%#04x", 0x1001);
   CHECK(!strcmp(buffer, "0x1001"));
-  test::sprintf(buffer, "%#04o", 01001);
+  test::sprintf_(buffer, "%#04o", 01001);
   CHECK(!strcmp(buffer, "01001"));
 
-  test::sprintf(buffer, "%#.0llx", (long long)0);
+  test::sprintf_(buffer, "%#.0llx", (long long)0);
   CHECK(!strcmp(buffer, ""));
   test::sprintf_(buffer, "%#.8x", 0x614e);
   CHECK(!strcmp(buffer, "0x0000614e"));
@@ -1096,7 +1096,7 @@ TEST_CASE("float padding neg numbers", "[]" ) {
   test::sprintf_(buffer, "% 5.1f", -5.);
   CHECK(!strcmp(buffer, " -5.0"));
 
-#ifndef PRINTF_DISABLE_SUPPORT_EXPONENTIAL
+#if PRINTF_SUPPORT_EXPONENTIAL_SPECIFIERS
   test::sprintf_(buffer, "% 6.1g", -5.);
   CHECK(!strcmp(buffer, "    -5"));
 
@@ -1127,7 +1127,7 @@ TEST_CASE("float padding neg numbers", "[]" ) {
   test::sprintf_(buffer, "%03.0f", -5.);
   CHECK(!strcmp(buffer, "-05"));
 
-#ifndef PRINTF_DISABLE_SUPPORT_EXPONENTIAL
+#if PRINTF_SUPPORT_EXPONENTIAL_SPECIFIERS
   test::sprintf_(buffer, "%010.1e", -5.);
   CHECK(!strcmp(buffer, "-005.0e+00"));
 
@@ -1241,7 +1241,7 @@ TEST_CASE("float", "[]" ) {
   test::sprintf_(buffer, "%-8f", (double) -INFINITY);
   CHECK(!strcmp(buffer, "-inf    "));
 
-#ifndef PRINTF_DISABLE_SUPPORT_EXPONENTIAL
+#if PRINTF_SUPPORT_EXPONENTIAL_SPECIFIERS
   test::sprintf_(buffer, "%+8e", (double) INFINITY);
   CHECK(!strcmp(buffer, "    +inf"));
 #endif
@@ -1255,7 +1255,7 @@ TEST_CASE("float", "[]" ) {
   // switch from decimal to exponential representation
   //
   test::sprintf_(buffer, "%.0f", (double) ((int64_t)1 * 1000 ) );
-  if (PRINTF_MAX_FLOAT < 10e+2) {
+  if (PRINTF_FLOAT_NOTATION_THRESHOLD < 10e+2) {
     CHECK(!strcmp(buffer, "10e+2"));
   }
   else {
@@ -1263,7 +1263,7 @@ TEST_CASE("float", "[]" ) {
   }
 
   test::sprintf_(buffer, "%.0f", (double) ((int64_t)1 * 1000 * 1000 ) );
-  if (PRINTF_MAX_FLOAT < 10e+5) {
+  if (PRINTF_FLOAT_NOTATION_THRESHOLD < 10e+5) {
     CHECK(!strcmp(buffer, "10e+5"));
   }
   else {
@@ -1271,7 +1271,7 @@ TEST_CASE("float", "[]" ) {
   }
 
   test::sprintf_(buffer, "%.0f", (double) ((int64_t)1 * 1000 * 1000 * 1000 ) );
-  if (PRINTF_MAX_FLOAT < 10e+8) {
+  if (PRINTF_FLOAT_NOTATION_THRESHOLD < 10e+8) {
     CHECK(!strcmp(buffer, "10e+8"));
   }
   else {
@@ -1279,7 +1279,7 @@ TEST_CASE("float", "[]" ) {
   }
 
   test::sprintf_(buffer, "%.0f", (double) ((int64_t)1 * 1000 * 1000 * 1000 * 1000) );
-  if (PRINTF_MAX_FLOAT < 10e+11) {
+  if (PRINTF_FLOAT_NOTATION_THRESHOLD < 10e+11) {
     CHECK(!strcmp(buffer, "10e+11"));
   }
   else {
@@ -1287,7 +1287,7 @@ TEST_CASE("float", "[]" ) {
   }
 
   test::sprintf_(buffer, "%.0f", (double) ((int64_t)1 * 1000 * 1000 * 1000 * 1000 * 1000) );
-  if (PRINTF_MAX_FLOAT < 10e+14) {
+  if (PRINTF_FLOAT_NOTATION_THRESHOLD < 10e+14) {
     CHECK(!strcmp(buffer, "10e+14"));
   }
   else {
@@ -1367,8 +1367,8 @@ TEST_CASE("float", "[]" ) {
   test::sprintf_(buffer, "a%-5.1fend", 0.5);
   CHECK(!strcmp(buffer, "a0.5  end"));
 
-#ifndef PRINTF_DISABLE_SUPPORT_EXPONENTIAL
-  test::sprintf(buffer, "%.4g", 1.0);
+#if PRINTF_SUPPORT_EXPONENTIAL_SPECIFIERS
+  test::sprintf_(buffer, "%.4g", 1.0);
   CHECK(!strcmp(buffer, "1"));
   
   test::sprintf_(buffer, "%G", 12345.678);
@@ -1404,7 +1404,7 @@ TEST_CASE("float", "[]" ) {
 
   // out of range for float: should switch to exp notation if supported, else empty
   test::sprintf_(buffer, "%.1f", 1E20);
-#ifndef PRINTF_DISABLE_SUPPORT_EXPONENTIAL
+#if PRINTF_SUPPORT_EXPONENTIAL_SPECIFIERS
   CHECK(!strcmp(buffer, "1.0e+20"));
 #else
   CHECK(!strcmp(buffer, ""));
@@ -1423,7 +1423,7 @@ TEST_CASE("float", "[]" ) {
   CHECK(!fail);
 
 
-#ifndef PRINTF_DISABLE_SUPPORT_EXPONENTIAL
+#if PRINTF_SUPPORT_EXPONENTIAL_SPECIFIERS
   // brute force exp
   str.setf(std::ios::scientific, std::ios::floatfield);
   for (float i = -1e20; i < (float) 1e20; i += (float) 1e15) {
@@ -1614,7 +1614,7 @@ TEST_CASE("string length", "[]" ) {
   CHECK(!strcmp(buffer, "1234ab"));
 
   test::sprintf_(buffer, "%.4.2s", "123456");
-  REQUIRE(!strcmp(buffer, ".2s"));
+  CHECK(!strcmp(buffer, ".2s"));
 
   test::sprintf_(buffer, "%.*s", 3, "123456");
   CHECK(!strcmp(buffer, "123"));
@@ -1724,7 +1724,7 @@ TEST_CASE("misc", "[]" ) {
   test::sprintf_(buffer, "%*sx", -3, "hi");
   CHECK(!strcmp(buffer, "hi x"));
 
-#ifndef PRINTF_DISABLE_SUPPORT_EXPONENTIAL
+#if PRINTF_SUPPORT_EXPONENTIAL_SPECIFIERS
   test::sprintf_(buffer, "%.*g", 2, 0.33333333);
   CHECK(!strcmp(buffer, "0.33"));
 
