@@ -23,7 +23,7 @@ option(ALIAS_STANDARD_FUNCTION_NAMES   "Alias the standard library function name
 set(NTOA_BUFFER_SIZE "32" CACHE STRING          "Integer to string (ntoa) conversion buffer size")
 set(PRINTF_FTOA_BUFFER_SIZE "32" CACHE STRING   "Float to string (ftoa) conversion buffer size")
 set(DEFAULT_FLOAT_PRECISION "6" CACHE STRING    "Default precision when printing floating-point values")
-set(FLOAT_NOTATION_THRESHOLD "1e9" CACHE STRING "Largest floating-point value for which printing with %f uses non-exponential notation")
+set(MAX_INTEGRAL_DIGITS_FOR_DECIMAL "9" CACHE STRING "Maximum number of integral-part digits of a floating-point value for which printing with %f uses decimal (non-exponential) notation")
 
 if (BUILD_STATIC_LIBRARY)
 	add_library(mpaland-printf STATIC printf.c)
