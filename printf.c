@@ -73,10 +73,10 @@
 
 // According to the C languages standard, printf() and related functions must be able to print any
 // integral number in floating-point notation, regardless of length, when using the %f specifier -
-// possibly hundreds of characters, potentially overflowing your buffers. In this implementation, 
+// possibly hundreds of characters, potentially overflowing your buffers. In this implementation,
 // all values beyond this threshold are switched to exponential notation.
-#ifndef PRINTF_FLOAT_NOTATION_THRESHOLD
-#define PRINTF_FLOAT_NOTATION_THRESHOLD  1e9
+#ifndef PRINTF_MAX_INTEGRAL_DIGITS_FOR_DECIMAL
+#define PRINTF_MAX_INTEGRAL_DIGITS_FOR_DECIMAL 9
 #endif
 
 // Support for the long long integral types (with the ll, z and t length modifiers for specifiers
@@ -92,6 +92,11 @@
 #endif
 
 ///////////////////////////////////////////////////////////////////////////////
+
+// The following will convert the number-of-digits into an exponential-notation literal
+#define PRINTF_CONCATENATE(s1, s2) s1##s2
+#define PRINTF_EXPAND_THEN_CONCATENATE(s1, s2) PRINTF_CONCATENATE(s1, s2)
+#define PRINTF_FLOAT_NOTATION_THRESHOLD PRINTF_EXPAND_THEN_CONCATENATE(1e,PRINTF_MAX_INTEGRAL_DIGITS_FOR_DECIMAL)
 
 // internal flag definitions
 #define FLAGS_ZEROPAD   (1U <<  0U)
