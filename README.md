@@ -170,17 +170,19 @@ int length = sprintf(NULL, "Hello, world"); // length is set to 12
 
 ## Compiler Switches/Defines
 
-| Name | Default value | Description |
-|------|---------------|-------------|
-| PRINTF_INCLUDE_CONFIG_H            | undefined | Define this as compiler switch (e.g. `gcc -DPRINTF_INCLUDE_CONFIG_H`) to include a "printf_config.h" definition file |
-| PRINTF_NTOA_BUFFER_SIZE            | 32        | ntoa (integer) conversion buffer size. This must be big enough to hold one converted numeric number _including_ leading zeros, normally 32 is a sufficient value. Created on the stack |
-| PRINTF_FTOA_BUFFER_SIZE            | 32        | ftoa (float) conversion buffer size. This must be big enough to hold one converted float number _including_ leading zeros, normally 32 is a sufficient value. Created on the stack |
-| PRINTF_DEFAULT_FLOAT_PRECISION     | 6         | Define the default floating point precision |
-| PRINTF_MAX_FLOAT                   | 1e9       | Define the largest suitable value to be printed with %f, before using exponential representation. Note that this must be set to a value which fits in a 64-bit signed integer (i.e. less than 2^63) |
-| PRINTF_DISABLE_SUPPORT_FLOAT       | undefined | Define this to disable floating point (%f) support |
-| PRINTF_DISABLE_SUPPORT_EXPONENTIAL | undefined | Define this to disable exponential floating point (%e) support |
-| PRINTF_DISABLE_SUPPORT_LONG_LONG   | undefined | Define this to disable long long (%ll) support |
-| PRINTF_DISABLE_SUPPORT_PTRDIFF_T   | undefined | Define this to disable ptrdiff_t (%t) support |
+| CMake option name               | Preprocessor definition                | Default value | Description |
+|---------------------------------|----------------------------------------|---------------|-------------|
+| (always on)                     | PRINTF_INCLUDE_CONFIG_H                | undefined     | Define this as compiler switch (e.g. `gcc -DPRINTF_INCLUDE_CONFIG_H`) to include a "printf_config.h" definition file |
+| ALIAS_STANDARD_FUNCTION_NAMES   | PRINTF_ALIAS_STANDARD_FUNCTION_NAMES   | No            | Alias the standard library function names (`printf()`, `sprintf()` etc.) to the library's functions |
+| NTOA_BUFFER_SIZE                | PRINTF_NTOA_BUFFER_SIZE                | 32            | ntoa (integer) conversion buffer size. This must be big enough to hold one converted numeric number _including_ leading zeros, normally 32 is a sufficient value. Created on the stack. |
+| FTOA_BUFFER_SIZE                | PRINTF_FTOA_BUFFER_SIZE                | 32            | ftoa (float) conversion buffer size. This must be big enough to hold one converted float number _including_ leading zeros, normally 32 is a sufficient value. Created on the stack. |
+| DEFAULT_FLOAT_PRECISION         | PRINTF_DEFAULT_FLOAT_PRECISION         | 6             | Define the default floating point precision|
+| MAX_INTEGRAL_DIGITS_FOR_DECIMAL | PRINTF_MAX_INTEGRAL_DIGITS_FOR_DECIMAL | 9             | Maximum number of integral-part digits of a floating-point value for which printing with %f uses decimal (non-exponential) notation |
+| SUPPORT_FLOAT_SPECIFIERS        | PRINTF_SUPPORT_FLOAT_SPECIFIERS        | Yes           | Support decimal notation floating-point conversion specifiers (%f,%F) |
+| SUPPORT_EXPONENTIAL_SPECIFIERS  | PRINTF_SUPPORT_EXPONENTIAL_SPECIFIERS  | Yes           | Support exponential floating point format conversion specifiers (%e,%E,%g,%G)" |
+| SUPPORT_LONG_LONG               | PRINTF_SUPPORT_LONG_LONG               | Yes           | Support long long integral types (allows for the ll length modifier and affects %p) |
+| SUPPORT_PTRDIFF_LENGTH_MODIFIER | PRINTF_SUPPORT_PTRDIFF_LENGTH_MODIFIER | Yes           | Support the pointer difference specifier (%t), used for `ptrdiff_t` variables" |
+| BUILD_STATIC_LIBRARY            | (none)                                 | No            | Build a library out of a shared object (dynamically linked at load time) rather than a static one (baked into the executables you build)|
 
 
 ## Test Suite
@@ -212,4 +214,4 @@ The following assumes Marco Paland's original repository remains mostly-inactive
 
 
 ## License
-Both Macro Paland's original `printf` and this fork are published under the [MIT license](http://www.opensource.org/licenses/MIT).
+Both Macro Paland's [original `printf`](https://github.com/mpaland/printf/) and this fork are published under the [MIT license](http://www.opensource.org/licenses/MIT).
