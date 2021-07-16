@@ -26,13 +26,13 @@ set(DEFAULT_FLOAT_PRECISION "6" CACHE STRING    "Default precision when printing
 set(MAX_INTEGRAL_DIGITS_FOR_DECIMAL "9" CACHE STRING "Maximum number of integral-part digits of a floating-point value for which printing with %f uses decimal (non-exponential) notation")
 
 if (BUILD_STATIC_LIBRARY)
-	add_library(mpaland-printf STATIC printf.c)
+	add_library(mpaland-printf STATIC)
 else()
-	add_library(mpaland-printf SHARED printf.c)
+	add_library(mpaland-printf SHARED)
 endif()
-
 set(GENERATED_INCLUDE_DIR "${CMAKE_CURRENT_BINARY_DIR}/include")
 configure_file("printf_config.h.in" "${GENERATED_INCLUDE_DIR}/printf_config.h" @ONLY)
+target_sources(mpaland-printf PRIVATE printf.c "${GENERATED_INCLUDE_DIR}/printf_config.h" printf.h)
 target_compile_definitions(mpaland-printf PRIVATE PRINTF_INCLUDE_CONFIG_H)
 target_include_directories(mpaland-printf PRIVATE "$<BUILD_INTERFACE:${GENERATED_INCLUDE_DIR}>")
 
