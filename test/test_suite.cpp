@@ -511,7 +511,7 @@ TEST_CASE("# flag", "[]" ) {
   test::sprintf_(buffer, "%#.4o", 1);
   CHECK(!strcmp(buffer, "0001"));
 
-  test::sprintf(buffer, "%#04x", 0x1001);
+  test::sprintf_(buffer, "%#04x", 0x1001);
   CHECK(!strcmp(buffer, "0x1001"));
   test::sprintf_(buffer, "%#04o", 01001);
   CHECK(!strcmp(buffer, "01001"));
@@ -652,6 +652,9 @@ TEST_CASE("width 20", "[]" ) {
   test::sprintf_(buffer, "%20i", -1024);
   CHECK(!strcmp(buffer, "               -1024"));
 
+  test::sprintf(buffer, "%20i", 0);
+  CHECK(!strcmp(buffer, "                   0"));
+
   test::sprintf_(buffer, "%20u", 1024);
   CHECK(!strcmp(buffer, "                1024"));
 
@@ -675,6 +678,15 @@ TEST_CASE("width 20", "[]" ) {
 
   test::sprintf_(buffer, "%20X", 3989525555U);
   CHECK(!strcmp(buffer, "            EDCB5433"));
+
+  test::sprintf_(buffer, "%20X", 0);
+  CHECK(!strcmp(buffer, "                   0"));
+
+  test::sprintf_(buffer, "%20X", 0U);
+  CHECK(!strcmp(buffer, "                   0"));
+
+  test::sprintf_(buffer, "%20llX", 0U);
+  CHECK(!strcmp(buffer, "                   0"));
 
   test::sprintf_(buffer, "%20c", 'x');
   CHECK(!strcmp(buffer, "                   x"));
