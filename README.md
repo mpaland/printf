@@ -3,10 +3,10 @@
 [![Build Status](https://travis-ci.com/eyalroz/printf.svg?branch=master)](https://travis-ci.com/eyalroz/printf)
 [![Github Releases](https://img.shields.io/github/release/mpaland/printf.svg)](https://github.com/mpaland/printf/releases)
 [![GitHub license](https://img.shields.io/badge/license-MIT-blue.svg)](https://raw.githubusercontent.com/eyalroz/printf/master/LICENSE)
-[![Github Issues](https://img.shields.io/github/issues/eyalroz/printf.svg)](http://github.com/eyalroz/printf/issues)
-Parent repo: [![Github Issues (original repo)](https://img.shields.io/github/issues/mpaland/printf.svg)](http://github.com/mpaland/printf/issues)
+[![Github Bug-type issues](https://shields.io/github/issues-search/eyalroz/printf?query=is:open%20is:issue%20label:bug&label=open%20bugs)](http://github.com/eyalroz/printf/issues)
+Parent repo: [![Github issues (original repo)](https://img.shields.io/github/issues/mpaland/printf.svg)](http://github.com/mpaland/printf/issues)
 
-(This is a fork of the [mpaland/printf](https://github.com/mpaland/printf) repository, with bug fixes and a few more features applied.)
+(This is a fork of the [mpaland/printf](https://github.com/mpaland/printf) repository, with multiple bug fixes and a few more features applied.)
 
 This is a tiny but **fully loaded** printf, sprintf and (v)snprintf implementation.
 Primarily designed for usage in embedded systems, where printf is not available due to memory issues or in avoidance of linking against libc.
