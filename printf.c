@@ -229,9 +229,9 @@ static size_t _out_rev(out_fct_type out, char* buffer, size_t idx, size_t maxlen
 // internal itoa format
 static size_t _ntoa_format(out_fct_type out, char* buffer, size_t idx, size_t maxlen, char* buf, size_t len, bool negative, unsigned int base, unsigned int precision, unsigned int width, unsigned int flags)
 {
+  size_t unpadded_len = len;
   // pad leading zeros
   if (!(flags & FLAGS_LEFT)) {
-    size_t initial_len = len;
     if (width && (flags & FLAGS_ZEROPAD) && (negative || (flags & (FLAGS_PLUS | FLAGS_SPACE)))) {
       width--;
     }
@@ -250,9 +250,15 @@ static size_t _ntoa_format(out_fct_type out, char* buffer, size_t idx, size_t ma
   // handle hash
   if (flags & (FLAGS_HASH | FLAGS_POINTER)) {
     if (!(flags & FLAGS_PRECISION) && len && ((len == precision) || (len == width))) {
-      len--;
-      if (len && (base == 16U)) {
+      // Let's take back some padding digits to fit in what will eventually
+      // be the format-specific prefix
+      if (unpadded_len < len) {
         len--;
+      }
+      if (len && (base == 16U)) {
+        if (unpadded_len < len) {
+          len--;
+        }
       }
     }
     if ((base == 16U) && !(flags & FLAGS_UPPERCASE) && (len < PRINTF_NTOA_BUFFER_SIZE)) {
