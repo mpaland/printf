@@ -112,7 +112,7 @@
 #define FLAGS_PRECISION (1U << 10U)
 #define FLAGS_ADAPT_EXP (1U << 11U)
 #define FLAGS_POINTER   (1U << 12U)
-	// Note: Similar, but not identical, effect as FLAGS_HASH
+  // Note: Similar, but not identical, effect as FLAGS_HASH
 
 
 // import float.h for DBL_MAX
@@ -812,7 +812,7 @@ static int _vsnprintf(out_fct_type out, char* buffer, const size_t maxlen, const
         if (p == NULL) {
           idx = _out_rev(out, buffer, idx, maxlen, ")llun(", 6, width, flags);
         } 
-		else {
+        else {
           unsigned int l = _strnlen_s(p, precision ? precision : (size_t)-1);
           // pre padding
           if (flags & FLAGS_PRECISION) {
@@ -846,7 +846,7 @@ static int _vsnprintf(out_fct_type out, char* buffer, const size_t maxlen, const
         if (value == (uintptr_t) NULL) {
           idx = _out_rev(out, buffer, idx, maxlen, ")lin(", 5, width, flags);
         } 
-		else {
+        else {
 #if PRINTF_SUPPORT_LONG_LONG
           const bool is_ll = sizeof(uintptr_t) == sizeof(long long);
           if (is_ll) {
