@@ -376,7 +376,7 @@ static size_t _ftoa(out_fct_type out, char* buffer, size_t idx, size_t maxlen, d
     return _out_rev(out, buffer, idx, maxlen, (flags & FLAGS_PLUS) ? "fni+" : "fni", (flags & FLAGS_PLUS) ? 4U : 3U, width, flags);
 
   // test for very large values
-  // standard printf behavior is to print EVERY whole number digit -- which could be 100s of characters overflowing your buffers == bad
+  // standard printf behavior is to print EVERY integral-part digit -- which could be 100s of characters overflowing your buffers == bad
   if ((value > PRINTF_FLOAT_NOTATION_THRESHOLD) || (value < -PRINTF_FLOAT_NOTATION_THRESHOLD)) {
 #if PRINTF_SUPPORT_EXPONENTIAL_SPECIFIERS
     return _etoa(out, buffer, idx, maxlen, value, precision, width, flags);
@@ -402,32 +402,32 @@ static size_t _ftoa(out_fct_type out, char* buffer, size_t idx, size_t maxlen, d
     precision--;
   }
 
-  int_fast64_t whole = (int_fast64_t)value;
-  double tmp = (value - whole) * pow10[precision];
-  unsigned long frac = (unsigned long)tmp;
-  diff = tmp - (double)frac;
+  int_fast64_t integral_part = (int_fast64_t)value;
+  double tmp = (value - integral_part) * pow10[precision];
+  unsigned long fractional_part = (unsigned long)tmp;
+  diff = tmp - (double)fractional_part;
 
   if (diff > 0.5) {
-    ++frac;
+    ++fractional_part;
     // handle rollover, e.g. case 0.99 with precision 1 is 1.0
-    if ((double)frac >= pow10[precision]) {
-      frac = 0;
-      ++whole;
+    if ((double)fractional_part >= pow10[precision]) {
+      fractional_part = 0;
+      ++integral_part;
     }
   }
-  else if (diff < 0.5) {
-  }
-  else if ((frac == 0U) || (frac & 1U)) {
-    // if halfway, round up if odd OR if last digit is 0
-    ++frac;
+  else if (diff == 0.5) {
+	if ((fractional_part == 0U) || (fractional_part & 1U)) {
+      // if halfway, round up if odd OR if last digit is 0
+      ++fractional_part;
+	}
   }
 
   if (precision == 0U) {
-    diff = value - (double)whole;
-    if ((!(diff < 0.5) || (diff > 0.5)) && (whole & 1)) {
+    diff = value - (double)integral_part;
+    if ((!(diff < 0.5) || (diff > 0.5)) && (integral_part & 1)) {
       // exactly 0.5 and ODD, then round up
       // 1.5 -> 2, but 2.5 -> 2
-      ++whole;
+      ++integral_part;
     }
   }
   else {
@@ -435,17 +435,16 @@ static size_t _ftoa(out_fct_type out, char* buffer, size_t idx, size_t maxlen, d
 
     unsigned int count = precision;
 
-
     if (flags & FLAGS_ADAPT_EXP && !(flags & FLAGS_HASH)) {
       // %g/%G mandates we skip the trailing 0 digits...
-      if (frac > 0) {
+      if (fractional_part > 0) {
         while(true) {
-          unsigned long digit = frac % 10U;
+          unsigned long digit = fractional_part % 10U;
           if (digit != 0) {
             break;
           }
           --count;
-          frac /= 10U;
+          fractional_part /= 10U;
         }
 
       }
@@ -453,11 +452,11 @@ static size_t _ftoa(out_fct_type out, char* buffer, size_t idx, size_t maxlen, d
       // non-zero fractional part digits (see below)
     }
 
-    if (frac > 0 || !(flags & FLAGS_ADAPT_EXP) || (flags & FLAGS_HASH) ) {
+    if (fractional_part > 0 || !(flags & FLAGS_ADAPT_EXP) || (flags & FLAGS_HASH) ) {
       while (len < PRINTF_FTOA_BUFFER_SIZE) {
         --count;
-        buf[len++] = (char)('0' + frac % 10U);
-        if (!(frac /= 10U)) {
+        buf[len++] = (char)('0' + fractional_part % 10U);
+        if (!(fractional_part /= 10U)) {
           break;
         }
       }
@@ -471,10 +470,11 @@ static size_t _ftoa(out_fct_type out, char* buffer, size_t idx, size_t maxlen, d
     }
   }
 
-  // do whole part, number is reversed
+  // Write the integer part of the number (it comes after the fractional
+  // since the character order is reversed)
   while (len < PRINTF_FTOA_BUFFER_SIZE) {
-    buf[len++] = (char)('0' + (whole % 10));
-    if (!(whole /= 10)) {
+    buf[len++] = (char)('0' + (integral_part % 10));
+    if (!(integral_part /= 10)) {
       break;
     }
   }
@@ -569,7 +569,7 @@ static size_t _etoa(out_fct_type out, char* buffer, size_t idx, size_t maxlen, d
       expval   = 0;
     }
     else {
-      // we use one sigfig for the whole part
+      // we use one sigfig for the integer part
       if ((precision > 0) && (flags & FLAGS_PRECISION)) {
         --precision;
       }
