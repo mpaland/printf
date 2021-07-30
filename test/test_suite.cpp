@@ -1010,13 +1010,15 @@ DISABLE_WARNING_POP
 
 TEST_CASE("misc", "[]" ) {
   char buffer[100];
-  PRINTING_CHECK("53000atest-20 bit", ==, test::sprintf_, buffer, "%u%u%ctest%d %s", 5, 3000, 'a', -20, "bit");
-  PRINTING_CHECK("0.33",              ==, test::sprintf_, buffer, "%.*f", 2, 0.33333333);
-  PRINTING_CHECK("1",                 ==, test::sprintf_, buffer, "%.*d", -1, 1);
-  PRINTING_CHECK("foo",               ==, test::sprintf_, buffer, "%.3s", "foobar");
-  PRINTING_CHECK(" ",                 ==, test::sprintf_, buffer, "% .0d", 0);
-  PRINTING_CHECK("     00004",        ==, test::sprintf_, buffer, "%10.5d", 4);
-  PRINTING_CHECK("hi x",              ==, test::sprintf_, buffer, "%*sx", -3, "hi");
+  PRINTING_CHECK("53000atest-20 bit",    ==, test::sprintf_, buffer, "%u%u%ctest%d %s", 5, 3000, 'a', -20, "bit");
+  PRINTING_CHECK("0.33",                 ==, test::sprintf_, buffer, "%.*f", 2, 0.33333333);
+  PRINTING_CHECK("1",                    ==, test::sprintf_, buffer, "%.*d", -1, 1);
+  PRINTING_CHECK("foo",                  ==, test::sprintf_, buffer, "%.3s", "foobar");
+  PRINTING_CHECK(" ",                    ==, test::sprintf_, buffer, "% .0d", 0);
+  PRINTING_CHECK("     00004",           ==, test::sprintf_, buffer, "%10.5d", 4);
+  PRINTING_CHECK("hi x",                 ==, test::sprintf_, buffer, "%*sx", -3, "hi");
+  PRINTING_CHECK("00123               ", ==, test::sprintf_, buffer, "%-20.5i", 123);
+
 
 #if PRINTF_SUPPORT_EXPONENTIAL_SPECIFIERS
   PRINTING_CHECK("0.33",              ==, test::sprintf_, buffer, "%.*g", 2, 0.33333333);

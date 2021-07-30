@@ -230,17 +230,22 @@ static size_t _out_rev(out_fct_type out, char* buffer, size_t idx, size_t maxlen
 static size_t _ntoa_format(out_fct_type out, char* buffer, size_t idx, size_t maxlen, char* buf, size_t len, bool negative, unsigned int base, unsigned int precision, unsigned int width, unsigned int flags)
 {
   size_t unpadded_len = len;
-  // pad leading zeros
-  if (!(flags & FLAGS_LEFT)) {
-    if (width && (flags & FLAGS_ZEROPAD) && (negative || (flags & (FLAGS_PLUS | FLAGS_SPACE)))) {
-      width--;
+
+  // pad with leading zeros
+  {
+    if (!(flags & FLAGS_LEFT)) {
+      if (width && (flags & FLAGS_ZEROPAD) && (negative || (flags & (FLAGS_PLUS | FLAGS_SPACE)))) {
+        width--;
+      }
+      while ((flags & FLAGS_ZEROPAD) && (len < width) && (len < PRINTF_NTOA_BUFFER_SIZE)) {
+        buf[len++] = '0';
+      }
     }
+
     while ((len < precision) && (len < PRINTF_NTOA_BUFFER_SIZE)) {
       buf[len++] = '0';
     }
-    while ((flags & FLAGS_ZEROPAD) && (len < width) && (len < PRINTF_NTOA_BUFFER_SIZE)) {
-      buf[len++] = '0';
-    }
+
     if (base == 8U && (len > unpadded_len)) {
       // Since we've written some zeros, we've satisfied the alternative format leading space requirement
       flags &= ~FLAGS_HASH;
