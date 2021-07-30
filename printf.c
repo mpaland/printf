@@ -431,28 +431,49 @@ static size_t _ftoa(out_fct_type out, char* buffer, size_t idx, size_t maxlen, d
     }
   }
   else {
+    // do fractional part, as an unsigned number
+
     unsigned int count = precision;
-    // now do fractional part, as an unsigned number
-    while (len < PRINTF_FTOA_BUFFER_SIZE) {
-      --count;
-      buf[len++] = (char)(48U + (frac % 10U));
-      if (!(frac /= 10U)) {
-        break;
+
+
+    if (flags & FLAGS_ADAPT_EXP && !(flags & FLAGS_HASH)) {
+      // %g/%G mandates we skip the trailing 0 digits...
+      if (frac > 0) {
+        while(true) {
+          unsigned long digit = frac % 10U;
+          if (digit != 0) {
+            break;
+          }
+          --count;
+          frac /= 10U;
+        }
+
       }
+      // ... and even the decimal point if there are no
+      // non-zero fractional part digits (see below)
     }
-    // add extra 0s
-    while ((len < PRINTF_FTOA_BUFFER_SIZE) && (count-- > 0U)) {
-      buf[len++] = '0';
-    }
-    if (len < PRINTF_FTOA_BUFFER_SIZE) {
-      // add decimal
-      buf[len++] = '.';
+
+    if (frac > 0 || !(flags & FLAGS_ADAPT_EXP) || (flags & FLAGS_HASH) ) {
+      while (len < PRINTF_FTOA_BUFFER_SIZE) {
+        --count;
+        buf[len++] = (char)('0' + frac % 10U);
+        if (!(frac /= 10U)) {
+          break;
+        }
+      }
+      // add extra 0s
+      while ((len < PRINTF_FTOA_BUFFER_SIZE) && (count-- > 0U)) {
+        buf[len++] = '0';
+      }
+      if (len < PRINTF_FTOA_BUFFER_SIZE) {
+        buf[len++] = '.';
+      }
     }
   }
 
   // do whole part, number is reversed
   while (len < PRINTF_FTOA_BUFFER_SIZE) {
-    buf[len++] = (char)(48 + (whole % 10));
+    buf[len++] = (char)('0' + (whole % 10));
     if (!(whole /= 10)) {
       break;
     }
@@ -576,7 +597,7 @@ static size_t _etoa(out_fct_type out, char* buffer, size_t idx, size_t maxlen, d
 
   // output the floating part
   const size_t start_idx = idx;
-  idx = _ftoa(out, buffer, idx, maxlen, negative ? -value : value, precision, fwidth, flags & ~FLAGS_ADAPT_EXP);
+  idx = _ftoa(out, buffer, idx, maxlen, negative ? -value : value, precision, fwidth, flags);
 
   // output the exponent part
   if (minwidth) {
