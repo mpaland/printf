@@ -231,6 +231,7 @@ static size_t _ntoa_format(out_fct_type out, char* buffer, size_t idx, size_t ma
 {
   // pad leading zeros
   if (!(flags & FLAGS_LEFT)) {
+    size_t initial_len = len;
     if (width && (flags & FLAGS_ZEROPAD) && (negative || (flags & (FLAGS_PLUS | FLAGS_SPACE)))) {
       width--;
     }
@@ -239,6 +240,10 @@ static size_t _ntoa_format(out_fct_type out, char* buffer, size_t idx, size_t ma
     }
     while ((flags & FLAGS_ZEROPAD) && (len < width) && (len < PRINTF_NTOA_BUFFER_SIZE)) {
       buf[len++] = '0';
+    }
+    if (base == 8U && (len > unpadded_len)) {
+      // Since we've written some zeros, we've satisfied the alternative format leading space requirement
+      flags &= ~FLAGS_HASH;
     }
   }
 
@@ -286,13 +291,16 @@ static size_t _ntoa_long(out_fct_type out, char* buffer, size_t idx, size_t maxl
   char buf[PRINTF_NTOA_BUFFER_SIZE];
   size_t len = 0U;
 
-  // no hash for 0 values
   if (!value) {
+    if ( !(flags & FLAGS_PRECISION) ) {
+      buf[len++] = '0';
     flags &= ~FLAGS_HASH;
+      // We drop this flag this since either the alternative and regular modes of the specifier
+      // don't differ on 0 values, or (in the case of octal) we've already provided the special
+      // handling for this mode.
+    }
   }
-
-  // write if precision != 0 and value is != 0
-  if (!(flags & FLAGS_PRECISION) || value) {
+  else {
     do {
       const char digit = (char)(value % base);
       buf[len++] = (char)(digit < 10 ? '0' + digit : (flags & FLAGS_UPPERCASE ? 'A' : 'a') + digit - 10);
