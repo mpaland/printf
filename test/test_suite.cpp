@@ -355,7 +355,7 @@ TEST_CASE("- flag - non-standard format", "[]" ) {
 #endif
 
 #if PRINTF_SUPPORT_EXPONENTIAL_SPECIFIERS
-  PRINTING_CHECK("-42.0          ", ==, test::sprintf_, buffer,  "%0-15.3g", -42.);
+  PRINTING_CHECK("-42            ", ==, test::sprintf_, buffer,  "%0-15.3g", -42.);
 #else
   PRINTING_CHECK("g",               ==, test::sprintf_, buffer,  "%0-15.3g", -42.);
 #endif
@@ -786,11 +786,12 @@ TEST_CASE("float", "[]" ) {
   PRINTING_CHECK("a0.5  end",        ==, test::sprintf_, buffer, "a%-5.1fend", 0.5);
 
 #if PRINTF_SUPPORT_EXPONENTIAL_SPECIFIERS
+  PRINTING_CHECK("0.5",              ==, test::sprintf_, buffer, "%.4g", 0.5);
   PRINTING_CHECK("1",                ==, test::sprintf_, buffer, "%.4g", 1.0);
   PRINTING_CHECK("12345.7",          ==, test::sprintf_, buffer, "%G", 12345.678);
   PRINTING_CHECK("12345.68",         ==, test::sprintf_, buffer, "%.7G", 12345.678);
   PRINTING_CHECK("1.2346E+08",       ==, test::sprintf_, buffer, "%.5G", 123456789.);
-  PRINTING_CHECK("12345.0",          ==, test::sprintf_, buffer, "%.6G", 12345.);
+  PRINTING_CHECK("12345",            ==, test::sprintf_, buffer, "%.6G", 12345.);
   PRINTING_CHECK("  +1.235e+08",     ==, test::sprintf_, buffer, "%+12.4g", 123456789.);
   PRINTING_CHECK("0.0012",           ==, test::sprintf_, buffer, "%.2G", 0.001234);
   PRINTING_CHECK(" +0.001234",       ==, test::sprintf_, buffer, "%+10.4G", 0.001234);
