@@ -91,6 +91,12 @@
 #define PRINTF_SUPPORT_PTRDIFF_LENGTH_MODIFIER 1
 #endif
 
+#if PRINTF_SUPPORT_LONG_LONG
+#define NTOA_VALUE_TYPE unsigned long long
+#else
+#define NTOA_VALUE_TYPE unsigned long
+#endif
+
 ///////////////////////////////////////////////////////////////////////////////
 
 // The following will convert the number-of-digits into an exponential-notation literal
@@ -120,6 +126,7 @@
 #include <float.h>
 #endif
 
+#define NTOA_ABS(_x) ( (_x) > 0 ? (NTOA_VALUE_TYPE)(_x) : -((NTOA_VALUE_TYPE)_x) )
 
 // output function type
 typedef void (*out_fct_type)(char character, void* buffer, size_t idx, size_t maxlen);
@@ -296,41 +303,8 @@ static size_t _ntoa_format(out_fct_type out, char* buffer, size_t idx, size_t ma
 }
 
 
-// internal itoa for 'long' type
-static size_t _ntoa_long(out_fct_type out, char* buffer, size_t idx, size_t maxlen, unsigned long value, bool negative, unsigned long base, unsigned int precision, unsigned int width, unsigned int flags)
-{
-  char buf[PRINTF_NTOA_BUFFER_SIZE];
-  size_t len = 0U;
-
-  if (!value) {
-    if ( !(flags & FLAGS_PRECISION) ) {
-      buf[len++] = '0';
-      flags &= ~FLAGS_HASH;
-        // We drop this flag this since either the alternative and regular modes of the specifier
-        // don't differ on 0 values, or (in the case of octal) we've already provided the special
-        // handling for this mode.
-	}
-	else if (base != 8U) {
-	  flags &= ~FLAGS_HASH;
-        // We drop this flag this since either the alternative and regular modes of the specifier
-        // don't differ on 0 values
-	}
-  }
-  else {
-    do {
-      const char digit = (char)(value % base);
-      buf[len++] = (char)(digit < 10 ? '0' + digit : (flags & FLAGS_UPPERCASE ? 'A' : 'a') + digit - 10);
-      value /= base;
-    } while (value && (len < PRINTF_NTOA_BUFFER_SIZE));
-  }
-
-  return _ntoa_format(out, buffer, idx, maxlen, buf, len, negative, (unsigned int)base, precision, width, flags);
-}
-
-
-// internal itoa for 'long long' type
-#if PRINTF_SUPPORT_LONG_LONG
-static size_t _ntoa_long_long(out_fct_type out, char* buffer, size_t idx, size_t maxlen, unsigned long long value, bool negative, unsigned long long base, unsigned int precision, unsigned int width, unsigned int flags)
+// internal itoa
+static size_t _ntoa(out_fct_type out, char* buffer, size_t idx, size_t maxlen, NTOA_VALUE_TYPE value, bool negative, NTOA_VALUE_TYPE base, unsigned int precision, unsigned int width, unsigned int flags)
 {
   char buf[PRINTF_NTOA_BUFFER_SIZE];
   size_t len = 0U;
@@ -359,7 +333,6 @@ static size_t _ntoa_long_long(out_fct_type out, char* buffer, size_t idx, size_t
 
   return _ntoa_format(out, buffer, idx, maxlen, buf, len, negative, (unsigned int)base, precision, width, flags);
 }
-#endif  // PRINTF_SUPPORT_LONG_LONG
 
 
 #if PRINTF_SUPPORT_FLOAT_SPECIFIERS
@@ -617,10 +590,10 @@ static size_t _etoa(out_fct_type out, char* buffer, size_t idx, size_t maxlen, d
     // output the exponential symbol
     out((flags & FLAGS_UPPERCASE) ? 'E' : 'e', buffer, idx++, maxlen);
     // output the exponent value
-    idx = _ntoa_long(out, buffer, idx, maxlen,
-                    (unsigned long)((expval < 0) ? -expval : expval),
-                    expval < 0, 10, 0, minwidth-1,
-                    FLAGS_ZEROPAD | FLAGS_PLUS);
+    idx = _ntoa(out, buffer, idx, maxlen,
+                NTOA_ABS(expval),
+                expval < 0, 10, 0, minwidth-1,
+                FLAGS_ZEROPAD | FLAGS_PLUS);
     // might need to right-pad spaces
     if (flags & FLAGS_LEFT) {
       while (idx - start_idx < width) out(' ', buffer, idx++, maxlen);
@@ -783,31 +756,31 @@ static int _vsnprintf(out_fct_type out, char* buffer, const size_t maxlen, const
           if (flags & FLAGS_LONG_LONG) {
 #if PRINTF_SUPPORT_LONG_LONG
             const long long value = va_arg(va, long long);
-            idx = _ntoa_long_long(out, buffer, idx, maxlen, (unsigned long long)(value > 0 ? value : 0 - value), value < 0, base, precision, width, flags);
+            idx = _ntoa(out, buffer, idx, maxlen, NTOA_ABS(value), value < 0, base, precision, width, flags);
 #endif
           }
           else if (flags & FLAGS_LONG) {
             const long value = va_arg(va, long);
-            idx = _ntoa_long(out, buffer, idx, maxlen, (unsigned long)(value > 0 ? value : 0 - value), value < 0, base, precision, width, flags);
+            idx = _ntoa(out, buffer, idx, maxlen, NTOA_ABS(value), value < 0, base, precision, width, flags);
           }
           else {
             const int value = (flags & FLAGS_CHAR) ? (signed char)va_arg(va, int) : (flags & FLAGS_SHORT) ? (short int)va_arg(va, int) : va_arg(va, int);
-            idx = _ntoa_long(out, buffer, idx, maxlen, (unsigned int)(value > 0 ? value : 0 - value), value < 0, base, precision, width, flags);
+            idx = _ntoa(out, buffer, idx, maxlen, NTOA_ABS(value), value < 0, base, precision, width, flags);
           }
         }
         else {
           // unsigned
           if (flags & FLAGS_LONG_LONG) {
 #if PRINTF_SUPPORT_LONG_LONG
-            idx = _ntoa_long_long(out, buffer, idx, maxlen, va_arg(va, unsigned long long), false, base, precision, width, flags);
+            idx = _ntoa(out, buffer, idx, maxlen, (NTOA_VALUE_TYPE) va_arg(va, unsigned long long), false, base, precision, width, flags);
 #endif
           }
           else if (flags & FLAGS_LONG) {
-            idx = _ntoa_long(out, buffer, idx, maxlen, va_arg(va, unsigned long), false, base, precision, width, flags);
+            idx = _ntoa(out, buffer, idx, maxlen, (NTOA_VALUE_TYPE) va_arg(va, unsigned long), false, base, precision, width, flags);
           }
           else {
             const unsigned int value = (flags & FLAGS_CHAR) ? (unsigned char)va_arg(va, unsigned int) : (flags & FLAGS_SHORT) ? (unsigned short int)va_arg(va, unsigned int) : va_arg(va, unsigned int);
-            idx = _ntoa_long(out, buffer, idx, maxlen, value, false, base, precision, width, flags);
+            idx = _ntoa(out, buffer, idx, maxlen, (NTOA_VALUE_TYPE) value, false, base, precision, width, flags);
           }
         }
         format++;
@@ -895,11 +868,11 @@ static int _vsnprintf(out_fct_type out, char* buffer, const size_t maxlen, const
 #if PRINTF_SUPPORT_LONG_LONG
           const bool is_ll = sizeof(uintptr_t) == sizeof(long long);
           if (is_ll) {
-            idx = _ntoa_long_long(out, buffer, idx, maxlen, value, false, 16U, precision, width, flags);
+            idx = _ntoa(out, buffer, idx, maxlen, (NTOA_VALUE_TYPE) value, false, 16U, precision, width, flags);
           }
           else {
 #endif
-            idx = _ntoa_long(out, buffer, idx, maxlen, (unsigned long)((uintptr_t)va_arg(va, void*)), false, 16U, precision, width, flags);
+            idx = _ntoa(out, buffer, idx, maxlen, (NTOA_VALUE_TYPE)((uintptr_t)va_arg(va, void*)), false, 16U, precision, width, flags);
 #if PRINTF_SUPPORT_LONG_LONG
           }
 #endif
