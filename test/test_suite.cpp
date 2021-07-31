@@ -1052,6 +1052,8 @@ TEST_CASE("misc", "[]" ) {
 #if PRINTF_SUPPORT_EXPONENTIAL_SPECIFIERS
   PRINTING_CHECK("0.33",              ==, test::sprintf_, buffer, "%.*g", 2, 0.33333333);
   PRINTING_CHECK("3.33e-01",          ==, test::sprintf_, buffer, "%.*e", 2, 0.33333333);
+  PRINTING_CHECK("0.000000e+00",      ==, test::sprintf_, buffer, "%e", 0.0);
+  PRINTING_CHECK("-0.000000e+00",     ==, test::sprintf_, buffer, "%e", -0.0);
 #endif
 }
 
