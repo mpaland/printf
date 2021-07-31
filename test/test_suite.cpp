@@ -379,7 +379,7 @@ TEST_CASE("# flag", "[]" ) {
   PRINTING_CHECK("0001",       ==, test::sprintf_, buffer, "%#.4o",        1 );
   PRINTING_CHECK("0x1001",     ==, test::sprintf_, buffer, "%#04x",   0x1001 );
   PRINTING_CHECK("01001",      ==, test::sprintf_, buffer, "%#04o",    01001 );
-  PRINTING_CHECK("",           ==, test::sprintf_, buffer, "%#.0llx", (long long) 0);
+  PRINTING_CHECK("",           ==, test::sprintf_, buffer, "%#.0x",        0 );
   PRINTING_CHECK("0x0000614e", ==, test::sprintf_, buffer, "%#.8x",   0x614e );
 }
 
@@ -389,6 +389,34 @@ TEST_CASE("# flag - non-standard format", "[]" ) {
   PRINTING_CHECK("0b110", ==, test::sprintf_, buffer, "%#b", 6);
 }
 #endif
+
+TEST_CASE("# flag with long-long", "[]" ) {
+  char buffer[100];
+  PRINTING_CHECK("0",          ==, test::sprintf_, buffer, "%#llo",   (long long)        0 );
+  PRINTING_CHECK("0",          ==, test::sprintf_, buffer, "%#0llo",  (long long)        0 );
+  PRINTING_CHECK("0",          ==, test::sprintf_, buffer, "%#.0llo", (long long)        0 );
+  PRINTING_CHECK("0",          ==, test::sprintf_, buffer, "%#.1llo", (long long)        0 );
+  PRINTING_CHECK("   0",       ==, test::sprintf_, buffer, "%#4llo",  (long long)        0 );
+  PRINTING_CHECK("0000",       ==, test::sprintf_, buffer, "%#.4llo", (long long)        0 );
+  PRINTING_CHECK("01",         ==, test::sprintf_, buffer, "%#llo",   (long long)        1 );
+  PRINTING_CHECK("01",         ==, test::sprintf_, buffer, "%#0llo",  (long long)        1 );
+  PRINTING_CHECK("01",         ==, test::sprintf_, buffer, "%#.0llo", (long long)        1 );
+  PRINTING_CHECK("01",         ==, test::sprintf_, buffer, "%#.1llo", (long long)        1 );
+  PRINTING_CHECK("  01",       ==, test::sprintf_, buffer, "%#4llo",  (long long)        1 );
+  PRINTING_CHECK("0001",       ==, test::sprintf_, buffer, "%#.4llo", (long long)        1 );
+  PRINTING_CHECK("0x1001",     ==, test::sprintf_, buffer, "%#04llx", (long long)   0x1001 );
+  PRINTING_CHECK("01001",      ==, test::sprintf_, buffer, "%#04llo", (long long)    01001 );
+  PRINTING_CHECK("",           ==, test::sprintf_, buffer, "%#.0llx", (long long)        0 );
+  PRINTING_CHECK("0x0000614e", ==, test::sprintf_, buffer, "%#.8llx", (long long)   0x614e );
+}
+
+#ifdef TEST_WITH_NON_STANDARD_FORMAT_STRINGS
+TEST_CASE("# flag with long-long - non-standard format", "[]" ) {
+  char buffer[100];
+  PRINTING_CHECK("0b110", ==, test::sprintf_, buffer, "%#llb", (long long) 6);
+}
+#endif
+
 
 TEST_CASE("specifier", "[]" ) {
   char buffer[100];

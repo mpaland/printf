@@ -305,11 +305,16 @@ static size_t _ntoa_long(out_fct_type out, char* buffer, size_t idx, size_t maxl
   if (!value) {
     if ( !(flags & FLAGS_PRECISION) ) {
       buf[len++] = '0';
-    flags &= ~FLAGS_HASH;
-      // We drop this flag this since either the alternative and regular modes of the specifier
-      // don't differ on 0 values, or (in the case of octal) we've already provided the special
-      // handling for this mode.
-    }
+      flags &= ~FLAGS_HASH;
+        // We drop this flag this since either the alternative and regular modes of the specifier
+        // don't differ on 0 values, or (in the case of octal) we've already provided the special
+        // handling for this mode.
+	}
+	else if (base != 8U) {
+	  flags &= ~FLAGS_HASH;
+        // We drop this flag this since either the alternative and regular modes of the specifier
+        // don't differ on 0 values
+	}
   }
   else {
     do {
@@ -330,13 +335,21 @@ static size_t _ntoa_long_long(out_fct_type out, char* buffer, size_t idx, size_t
   char buf[PRINTF_NTOA_BUFFER_SIZE];
   size_t len = 0U;
 
-  // no hash for 0 values
   if (!value) {
-    flags &= ~FLAGS_HASH;
+    if ( !(flags & FLAGS_PRECISION) ) {
+      buf[len++] = '0';
+      flags &= ~FLAGS_HASH;
+        // We drop this flag this since either the alternative and regular modes of the specifier
+        // don't differ on 0 values, or (in the case of octal) we've already provided the special
+        // handling for this mode.
+	}
+	else if (base == 16U) {
+	  flags &= ~FLAGS_HASH;
+        // We drop this flag this since either the alternative and regular modes of the specifier
+        // don't differ on 0 values
+	}
   }
-
-  // write if precision != 0 and value is != 0
-  if (!(flags & FLAGS_PRECISION) || value) {
+  else {
     do {
       const char digit = (char)(value % base);
       buf[len++] = (char)(digit < 10 ? '0' + digit : (flags & FLAGS_UPPERCASE ? 'A' : 'a') + digit - 10);
