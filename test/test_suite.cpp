@@ -333,7 +333,7 @@ TEST_CASE("- flag", "[]" ) {
 }
 
 #ifdef TEST_WITH_NON_STANDARD_FORMAT_STRINGS
-TEST_CASE("- flag - non-standard format", "[]" ) {
+TEST_CASE("- flag and non-standard 0 modifier for integers", "[]" ) {
   char buffer[100];
   PRINTING_CHECK("42",              ==, test::sprintf_, buffer, "%-0d", 42);
   PRINTING_CHECK("-42",             ==, test::sprintf_, buffer, "%-0d", -42);
