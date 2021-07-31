@@ -1,0 +1,131 @@
+cmake_minimum_required (VERSION 3.13)
+project(
+	mpaland-printf
+	LANGUAGES C
+	DESCRIPTION "Mostly-stand-alone C implementation of printf, vprintf, sprintf and related functions"
+	HOMEPAGE_URL https://github.com/eyalroz/printf
+	VERSION 0.2.0
+)
+
+option(BUILD_TESTS          "Build test programs for the library" OFF)
+option(BUILD_STATIC_LIBRARY "Build the library as static rather than shared" OFF)
+
+# Boolean options which go into config.h
+
+option(SUPPORT_FLOAT_SPECIFIERS        "Support decimal notation floating-point conversion specifiers (%f,%F)" ON)
+option(SUPPORT_EXPONENTIAL_SPECIFIERS  "Support exponential floating point format conversion specifiers (%e,%E,%g,%G)" ON)
+option(SUPPORT_LONG_LONG               "Support long long integral types (allows for the ll length modifier and affects %p)" ON)
+option(SUPPORT_PTRDIFF_LENGTH_MODIFIER "Support the pointer difference specifier (%t)" ON)
+option(ALIAS_STANDARD_FUNCTION_NAMES   "Alias the standard library function names (printf, sprintf etc.) to the library's functions" ON)
+
+# Numeric defines which go into config.h
+
+set(NTOA_BUFFER_SIZE "32" CACHE STRING          "Integer to string (ntoa) conversion buffer size")
+set(PRINTF_FTOA_BUFFER_SIZE "32" CACHE STRING   "Float to string (ftoa) conversion buffer size")
+set(DEFAULT_FLOAT_PRECISION "6" CACHE STRING    "Default precision when printing floating-point values")
+set(MAX_INTEGRAL_DIGITS_FOR_DECIMAL "9" CACHE STRING "Maximum number of integral-part digits of a floating-point value for which printing with %f uses decimal (non-exponential) notation")
+
+if (BUILD_STATIC_LIBRARY)
+	add_library(mpaland-printf STATIC)
+else()
+	add_library(mpaland-printf SHARED)
+endif()
+set(GENERATED_INCLUDE_DIR "${CMAKE_CURRENT_BINARY_DIR}/include")
+configure_file("printf_config.h.in" "${GENERATED_INCLUDE_DIR}/printf_config.h" @ONLY)
+target_sources(mpaland-printf PRIVATE printf.c "${GENERATED_INCLUDE_DIR}/printf_config.h" printf.h)
+target_compile_definitions(mpaland-printf PRIVATE PRINTF_INCLUDE_CONFIG_H)
+target_include_directories(mpaland-printf PRIVATE "$<BUILD_INTERFACE:${GENERATED_INCLUDE_DIR}>")
+
+set_property(TARGET mpaland-printf PROPERTY C_STANDARD 99)
+set_property(TARGET mpaland-printf PROPERTY C_STANDARD_REQUIRED ON)
+set_property(TARGET mpaland-printf PROPERTY C_EXTENSIONS OFF)
+
+target_include_directories(
+	mpaland-printf
+	PRIVATE
+	${CMAKE_CURRENT_SOURCE_DIR}
+	PUBLIC
+	"$<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>"
+)
+
+set_target_properties(mpaland-printf PROPERTIES
+         LIBRARY_OUTPUT_DIRECTORY ${PROJECT_BINARY_DIR}/lib
+         ARCHIVE_OUTPUT_DIRECTORY ${PROJECT_BINARY_DIR}/lib)
+
+if (CMAKE_CXX_COMPILER_ID STREQUAL "MSVC")
+	target_compile_options(mpaland-printf PRIVATE /W4)
+elseif (CMAKE_CXX_COMPILER_ID STREQUAL "GNU" OR
+        CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
+	target_compile_options(mpaland-printf PRIVATE -Wall -Wextra -pedantic)
+endif()
+
+if (BUILD_TESTS)
+	enable_testing()
+	add_subdirectory(test)
+endif()
+
+if (UNIX)
+	add_custom_target(mpaland-printf-sizes
+		COMMAND size -A -t $<TARGET_FILE:mpaland-printf>  > mpaland-printf_sizes.txt
+		DEPENDS mpaland-printf
+		BYPRODUCTS mpaland-printf_sizes.txt
+		COMMENT Prints the sizes of the different sections of the ELF file: text, dat, vss etc.)
+
+	add_custom_target(mpaland-printf-symbols
+		COMMAND nm --numeric-sort --print-size "$<TARGET_FILE:mpaland-printf>" > mpaland-printf_symbols.txt
+		COMMAND bash -c "nm --numeric-sort --print-size $<TARGET_FILE:mpaland-printf> | c++filt > mpaland-printf_cpp_symbols.txt"
+		VERBATIM
+		DEPENDS mpaland-printf
+		BYPRODUCTS mpaland-printf_symbols.txt mpaland-printf_cpp_symbols.txt
+		COMMENT Produces lists of the symbols, and C++demangled symbols, inside the library)
+
+	add_custom_target(mpaland-printf-lst
+		COMMAND objdump --disassemble --line-numbers -S "$<TARGET_FILE:mpaland-printf>" > mpaland-printf.list
+		DEPENDS mpaland-printf
+		BYPRODUCTS mpaland-printf.lst
+		COMMENT Dissassembles the compiled library into an .lst file)
+
+endif()
+
+# -------------------------
+# Installation
+# -------------------------
+
+include(GNUInstallDirs)
+
+install(
+	TARGETS mpaland-printf
+	EXPORT mpaland-printf_export
+	RUNTIME DESTINATION "${CMAKE_INSTALL_BINDIR}"
+	ARCHIVE DESTINATION "${CMAKE_INSTALL_LIBDIR}"
+	LIBRARY DESTINATION "${CMAKE_INSTALL_LIBDIR}"
+	INCLUDES DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}"
+)
+
+install(
+	FILES "printf.h"
+	DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}"
+)
+
+install(
+	EXPORT mpaland-printf_export
+	DESTINATION "${CMAKE_INSTALL_LIBDIR}/cmake/mpaland-printf"
+	NAMESPACE "mpaland-printf::"
+	FILE "mpaland-printf-config.cmake"
+)
+
+include(CMakePackageConfigHelpers)
+
+write_basic_package_version_file(
+	"mpaland-printf-config-version.cmake"
+	VERSION ${PROJECT_VERSION}
+	COMPATIBILITY SameMinorVersion
+)
+
+install(
+	FILES "${CMAKE_CURRENT_BINARY_DIR}/mpaland-printf-config-version.cmake"
+	DESTINATION "${CMAKE_INSTALL_LIBDIR}/cmake/mpaland-printf"
+)
+
+
+
