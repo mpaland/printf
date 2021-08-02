@@ -132,6 +132,9 @@ typedef uint8_t numeric_base_t;
 #include <float.h>
 #endif
 
+// Note in particular the behavior here on LONG_MIN or LLONG_MIN; it is valid
+// and well-defined, but if you're not careful you can easily trigger undefined
+// behavior with -LONG_MIN or -LLONG_MIN
 #define NTOA_ABS(_x) ( (_x) > 0 ? (NTOA_VALUE_TYPE)(_x) : -((NTOA_VALUE_TYPE)_x) )
 
 // output function type

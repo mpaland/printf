@@ -33,7 +33,7 @@
 #include <string.h>
 #include <sstream>
 #include <math.h>
-
+#include <limits>
 
 namespace test {
   // use functions in own test namespace to avoid stdio conflicts
@@ -1054,6 +1054,59 @@ TEST_CASE("misc", "[]" ) {
   PRINTING_CHECK("3.33e-01",          ==, test::sprintf_, buffer, "%.*e", 2, 0.33333333);
 #endif
 }
+
+TEST_CASE("extremal signed integer values", "[]" ) {
+  char buffer[100];
+  char expected[100];
+
+  std::sprintf(expected, "%hhd", std::numeric_limits<char>::max());
+  PRINTING_CHECK(expected, ==, test::sprintf_, buffer, "%hhd", std::numeric_limits<char>::max());
+
+  std::sprintf(expected, "%hd", std::numeric_limits<short int>::max());
+  PRINTING_CHECK(expected, ==, test::sprintf_, buffer, "%hd", std::numeric_limits<short int>::max());
+
+  std::sprintf(expected, "%hd", std::numeric_limits<short int>::max());
+  PRINTING_CHECK(expected, ==, test::sprintf_, buffer, "%hd", std::numeric_limits<short int>::max());
+
+  std::sprintf(expected, "%d", std::numeric_limits<int>::min());
+  PRINTING_CHECK(expected, ==, test::sprintf_, buffer, "%d", std::numeric_limits<int>::min());
+
+  std::sprintf(expected, "%d", std::numeric_limits<int>::max());
+  PRINTING_CHECK(expected, ==, test::sprintf_, buffer, "%d", std::numeric_limits<int>::max());
+
+  std::sprintf(expected, "%ld", std::numeric_limits<long int>::min());
+  PRINTING_CHECK(expected, ==, test::sprintf_, buffer, "%ld", std::numeric_limits<long int>::min());
+
+  std::sprintf(expected, "%ld", std::numeric_limits<long int>::max());
+  PRINTING_CHECK(expected, ==, test::sprintf_, buffer, "%ld", std::numeric_limits<long int>::max());
+
+  std::sprintf(expected, "%lld", std::numeric_limits<long long int>::min());
+  PRINTING_CHECK(expected, ==, test::sprintf_, buffer, "%lld", std::numeric_limits<long long int>::min());
+
+  std::sprintf(expected, "%lld", std::numeric_limits<long long int>::max());
+  PRINTING_CHECK(expected, ==, test::sprintf_, buffer, "%lld", std::numeric_limits<long long int>::max());
+}
+
+TEST_CASE("extremal unsigned integer values", "[]" ) {
+  char buffer[100];
+  char expected[100];
+
+  std::sprintf(expected, "%hhu", std::numeric_limits<char unsigned>::max());
+  PRINTING_CHECK(expected, ==, test::sprintf_, buffer, "%hhu", std::numeric_limits<char unsigned>::max());
+
+  std::sprintf(expected, "%hu", std::numeric_limits<short unsigned>::max());
+  PRINTING_CHECK(expected, ==, test::sprintf_, buffer, "%hu", std::numeric_limits<short unsigned>::max());
+
+  std::sprintf(expected, "%u", std::numeric_limits<unsigned>::max());
+  PRINTING_CHECK(expected, ==, test::sprintf_, buffer, "%u", std::numeric_limits<unsigned>::max());
+
+  std::sprintf(expected, "%lu", std::numeric_limits<long unsigned>::max());
+  PRINTING_CHECK(expected, ==, test::sprintf_, buffer, "%lu", std::numeric_limits<long unsigned>::max());
+
+  std::sprintf(expected, "%llu", std::numeric_limits<long long unsigned>::max());
+  PRINTING_CHECK(expected, ==, test::sprintf_, buffer, "%llu", std::numeric_limits<long long unsigned>::max());
+}
+
 
 #ifdef TEST_WITH_NON_STANDARD_FORMAT_STRINGS
 DISABLE_WARNING_POP
