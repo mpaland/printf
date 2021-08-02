@@ -346,6 +346,9 @@ static size_t _ntoa(out_fct_type out, char* buffer, size_t idx, size_t maxlen, N
 
 #if PRINTF_SUPPORT_FLOAT_SPECIFIERS
 
+// Note: This assumes _x is a _number - not NaN nor +/- infinity
+#define SIGN_OF_DOUBLE_NUMBER(_x) (*(const uint64_t *)(&(_x)) >> 63U)
+
 #if PRINTF_SUPPORT_EXPONENTIAL_SPECIFIERS
 // forward declaration so that _ftoa can switch to exp notation for values > PRINTF_FLOAT_NOTATION_THRESHOLD
 static size_t _etoa(out_fct_type out, char* buffer, size_t idx, size_t maxlen, double value, unsigned int precision, unsigned int width, unsigned int flags);
@@ -380,12 +383,11 @@ static size_t _ftoa(out_fct_type out, char* buffer, size_t idx, size_t maxlen, d
 #endif
   }
 
-  // test for negative
-  bool negative = false;
-  if (value < 0) {
-    negative = true;
-    value = 0 - value;
+  bool negative = SIGN_OF_DOUBLE_NUMBER(value);
+  if (negative) {
+    value = -value;
   }
+
 
   // set default precision, if not set explicitly
   if (!(flags & FLAGS_PRECISION)) {
@@ -509,8 +511,7 @@ static size_t _etoa(out_fct_type out, char* buffer, size_t idx, size_t maxlen, d
     return _ftoa(out, buffer, idx, maxlen, value, precision, width, flags);
   }
 
-  // determine the sign
-  const bool negative = value < 0;
+  const bool negative = SIGN_OF_DOUBLE_NUMBER(value);
   if (negative) {
     value = -value;
   }
@@ -520,29 +521,36 @@ static size_t _etoa(out_fct_type out, char* buffer, size_t idx, size_t maxlen, d
     precision = PRINTF_DEFAULT_FLOAT_PRECISION;
   }
 
-  // determine the decimal exponent
-  // based on the algorithm by David Gay (https://www.ampl.com/netlib/fp/dtoa.c)
+  int expval;
   union {
     uint64_t U;
     double   F;
   } conv;
-
   conv.F = value;
-  int exp2 = (int)((conv.U >> 52U) & 0x07FFU) - 1023;           // effectively log2
-  conv.U = (conv.U & ((1ULL << 52U) - 1U)) | (1023ULL << 52U);  // drop the exponent so conv.F is now in [1,2)
-  // now approximate log10 from the log2 integer part and an expansion of ln around 1.5
-  int expval = (int)(0.1760912590558 + exp2 * 0.301029995663981 + (conv.F - 1.5) * 0.289529654602168);
-  // now we want to compute 10^expval but we want to be sure it won't overflow
-  exp2 = (int)(expval * 3.321928094887362 + 0.5);
-  const double z  = expval * 2.302585092994046 - exp2 * 0.6931471805599453;
-  const double z2 = z * z;
-  conv.U = (uint64_t)(exp2 + 1023) << 52U;
-  // compute exp(z) using continued fractions, see https://en.wikipedia.org/wiki/Exponential_function#Continued_fractions_for_ex
-  conv.F *= 1 + 2 * z / (2 - z + (z2 / (6 + (z2 / (10 + z2 / 14)))));
-  // correct for rounding errors
-  if (value < conv.F) {
-    expval--;
-    conv.F /= 10;
+
+  if (value == 0.0) {
+    // TODO: This is a special-case for 0.0 (and -0.0); but proper handling is required for denormals more generally.
+    expval = 0;
+  }
+  else  {
+    // determine the decimal exponent
+    // based on the algorithm by David Gay (https://www.ampl.com/netlib/fp/dtoa.c)
+    int exp2 = (int)((conv.U >> 52U) & 0x07FFU) - 1023;           // effectively log2
+    conv.U = (conv.U & ((1ULL << 52U) - 1U)) | (1023ULL << 52U);  // drop the exponent so conv.F is now in [1,2)
+    // now approximate log10 from the log2 integer part and an expansion of ln around 1.5
+    expval = (int)(0.1760912590558 + exp2 * 0.301029995663981 + (conv.F - 1.5) * 0.289529654602168);
+    // now we want to compute 10^expval but we want to be sure it won't overflow
+    exp2 = (int)(expval * 3.321928094887362 + 0.5);
+    const double z  = expval * 2.302585092994046 - exp2 * 0.6931471805599453;
+    const double z2 = z * z;
+    conv.U = (uint64_t)(exp2 + 1023) << 52U;
+    // compute exp(z) using continued fractions, see https://en.wikipedia.org/wiki/Exponential_function#Continued_fractions_for_ex
+    conv.F *= 1 + 2 * z / (2 - z + (z2 / (6 + (z2 / (10 + z2 / 14)))));
+    // correct for rounding errors
+    if (value < conv.F) {
+      expval--;
+      conv.F /= 10;
+    }
   }
 
   // the exponent format is "%+03d" and largest value is "307", so set aside 4-5 characters
