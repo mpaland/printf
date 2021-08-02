@@ -21,6 +21,8 @@
   #define FLOAT_TST_MIN 1E-5
   #define FLOAT_TST_MAX 1E5
 
+  #define FLOAT_PREC_MAX 8
+
 	struct cmdopt_struct 
 	{
     bool i;
@@ -435,7 +437,7 @@ static void test_f(void)
 	if(rand()&1 && opts.prec)
 	{
 		strcat(fmt_buf, ".");
-		sprintf(&fmt_buf[strlen(fmt_buf)], "%i", 1+rand()%width);
+		sprintf(&fmt_buf[strlen(fmt_buf)], "%i", 1+rand()%FLOAT_PREC_MAX);
 	};
 
 	strcat(fmt_buf, "f");
@@ -492,7 +494,7 @@ static void test_e(void)
 	if(rand()&1 && opts.prec)
 	{
 		strcat(fmt_buf, ".");
-		sprintf(&fmt_buf[strlen(fmt_buf)], "%i", 1+rand()%width);
+		sprintf(&fmt_buf[strlen(fmt_buf)], "%i", 1+rand()%FLOAT_PREC_MAX);
 	};
 
 	strcat(fmt_buf, "e");
@@ -549,7 +551,7 @@ static void test_g(void)
 	if(rand()&1 && opts.prec)
 	{
 		strcat(fmt_buf, ".");
-		sprintf(&fmt_buf[strlen(fmt_buf)], "%i", 1+rand()%width);
+		sprintf(&fmt_buf[strlen(fmt_buf)], "%i", 1+rand()%FLOAT_PREC_MAX);
 	};
 
 	strcat(fmt_buf, "g");
