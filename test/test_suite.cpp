@@ -770,7 +770,7 @@ TEST_CASE("float", "[]" ) {
 
   CAPTURE_AND_PRINT(test::sprintf_, buffer, "%.0f", (double) ((int64_t)1 * 1000 * 1000 * 1000 * 1000) );
   if (PRINTF_FLOAT_NOTATION_THRESHOLD < 10e+11) {
-    CHECK(!strcmp(buffer, "10e+11"));
+    CHECK(!strcmp(buffer, "1e+12"));
   }
   else {
     CHECK(!strcmp(buffer, "1000000000000"));
@@ -778,7 +778,7 @@ TEST_CASE("float", "[]" ) {
 
   CAPTURE_AND_PRINT(test::sprintf_, buffer, "%.0f", (double) ((int64_t)1 * 1000 * 1000 * 1000 * 1000 * 1000) );
   if (PRINTF_FLOAT_NOTATION_THRESHOLD < 10e+14) {
-    CHECK(!strcmp(buffer, "10e+14"));
+    CHECK(!strcmp(buffer, "1e+15"));
   }
   else {
     CHECK(!strcmp(buffer, "1000000000000000"));
@@ -826,6 +826,7 @@ TEST_CASE("float", "[]" ) {
   PRINTING_CHECK("+001.234e-05",     ==, test::sprintf_, buffer, "%+012.4g", 0.00001234);
   PRINTING_CHECK("-1.23e-308",       ==, test::sprintf_, buffer, "%.3g", -1.2345e-308);
   PRINTING_CHECK("+1.230E+308",      ==, test::sprintf_, buffer, "%+.3E", 1.23e+308);
+  PRINTING_CHECK("1.000e+01",        ==, test::sprintf_, buffer, "%.3e", 9.9996);
 #endif
 
   // out of range for float: should switch to exp notation if supported, else empty
