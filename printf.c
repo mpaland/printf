@@ -354,16 +354,12 @@ static size_t _ntoa(out_fct_type out, char* buffer, size_t idx, size_t maxlen, N
 static size_t _etoa(out_fct_type out, char* buffer, size_t idx, size_t maxlen, double value, unsigned int precision, unsigned int width, unsigned int flags);
 #endif
 
-
 // internal ftoa for fixed decimal floating point
 static size_t _ftoa(out_fct_type out, char* buffer, size_t idx, size_t maxlen, double value, unsigned int precision, unsigned int width, unsigned int flags)
 {
   char buf[PRINTF_FTOA_BUFFER_SIZE];
   size_t len  = 0U;
   double diff = 0.0;
-
-  // powers of 10
-  static const double pow10[] = { 1, 10, 100, 1000, 10000, 100000, 1000000, 10000000, 100000000, 1000000000 };
 
   // test for special values
   if (value != value)
@@ -393,15 +389,22 @@ static size_t _ftoa(out_fct_type out, char* buffer, size_t idx, size_t maxlen, d
   if (!(flags & FLAGS_PRECISION)) {
     precision = PRINTF_DEFAULT_FLOAT_PRECISION;
   }
+
+#define NUM_DECIMAL_DIGITS_IN_INT64_T 18U
   // limit precision to 9, cause a precision >= 10 can lead to overflow errors
-  while ((len < PRINTF_FTOA_BUFFER_SIZE) && (precision > 9U)) {
-    buf[len++] = '0';
+  while ((len < PRINTF_FTOA_BUFFER_SIZE) && (precision > NUM_DECIMAL_DIGITS_IN_INT64_T)) {
+    buf[len++] = '0'; // This respects the precision in terms of result length only
     precision--;
   }
 
+  static const double pow10[] = {
+    1e00, 1e01, 1e02, 1e03, 1e04, 1e05, 1e06, 1e07, 1e08,
+    1e09, 1e10, 1e11, 1e12, 1e13, 1e14, 1e15, 1e16, 1e17
+  };
+
   int_fast64_t integral_part = (int_fast64_t)value;
   double tmp = (value - integral_part) * pow10[precision];
-  unsigned long fractional_part = (unsigned long)tmp;
+  int_fast64_t fractional_part = (int_fast64_t) tmp;
   diff = tmp - (double)fractional_part;
 
   if (diff > 0.5) {
@@ -436,7 +439,7 @@ static size_t _ftoa(out_fct_type out, char* buffer, size_t idx, size_t maxlen, d
       // %g/%G mandates we skip the trailing 0 digits...
       if (fractional_part > 0) {
         while(true) {
-          unsigned long digit = fractional_part % 10U;
+          int_fast64_t digit = fractional_part % 10U;
           if (digit != 0) {
             break;
           }

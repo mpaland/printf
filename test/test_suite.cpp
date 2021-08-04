@@ -793,11 +793,11 @@ TEST_CASE("float", "[]" ) {
 
   // this testcase checks, that the precision is truncated to 9 digits.
   // a perfect working float should return the whole number
-  PRINTING_CHECK("42.895223123000",  ==, test::sprintf_, buffer, "%.12f", 42.89522312345678);
+  PRINTING_CHECK("42.895223123457",  ==, test::sprintf_, buffer, "%.12f", 42.89522312345678);
 
   // this testcase checks, that the precision is truncated AND rounded to 9 digits.
   // a perfect working float should return the whole number
-  PRINTING_CHECK("42.895223877000",  ==, test::sprintf_, buffer, "%.12f", 42.89522387654321);
+  PRINTING_CHECK("42.895223876543",  ==, test::sprintf_, buffer, "%.12f", 42.89522387654321);
   PRINTING_CHECK(" 42.90",           ==, test::sprintf_, buffer, "%6.2f", 42.8952);
   PRINTING_CHECK("+42.90",           ==, test::sprintf_, buffer, "%+6.2f", 42.8952);
   PRINTING_CHECK("+42.9",            ==, test::sprintf_, buffer, "%+5.1f", 42.9252);
