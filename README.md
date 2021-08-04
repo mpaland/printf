@@ -17,7 +17,7 @@ If memory footprint is really a critical issue, floating point, exponential and 
 
 ## Highlights and Design Goals
 
-There is a boatload of so called 'tiny' printf implementations around. So why this one? [Macro Paland](https://github.com/mpaland) before creating this one, but most of them had very limited flag/specifier support, a lot of other dependencies or were just not standard compliant, and failing most tests in this repository's current test suite. Macro therefore decided to write his own implementation, with the following goals in mind:
+There is a boatload of so called 'tiny' printf implementations around. So why this one? [Marco Paland](https://github.com/mpaland) before creating this one, but most of them had very limited flag/specifier support, a lot of other dependencies or were just not standard compliant, and failing most tests in this repository's current test suite. Macro therefore decided to write his own implementation, with the following goals in mind:
 
  - Very small implementation (under 700 lines of code as of July 2021)
  - NO dependencies on other packages or libraries, no multiple compiled objects, just one object file.
@@ -214,4 +214,4 @@ The following assumes Marco Paland's original repository remains mostly-inactive
 
 
 ## License
-Both Macro Paland's [original `printf`](https://github.com/mpaland/printf/) and this fork are published under the [MIT license](http://www.opensource.org/licenses/MIT).
+Both Marco Paland's [original `printf`](https://github.com/mpaland/printf/) and this fork are published under the [MIT license](http://www.opensource.org/licenses/MIT).
