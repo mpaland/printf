@@ -531,7 +531,7 @@ static size_t sprint_exponential_number(out_fct_type out, char* buffer, size_t i
   // the exp10 format is "%+03d" and largest number is "307", so set aside 4-5 characters
   unsigned int minwidth = ((exp10 < 100) && (exp10 > -100)) ? 4U : 5U;
 
-  // in "%g" mode, "precision" is the number of *significant figures* not decimals
+  // in "%g" mode, "precision" is the number of _significant digits_ not decimals
   if (flags & FLAGS_ADAPT_EXP) {
     // do we want to fall-back to "%f" mode?
     if ((abs_number >= 1e-4) && (abs_number < 1e6)) {
@@ -575,7 +575,17 @@ static size_t sprint_exponential_number(out_fct_type out, char* buffer, size_t i
 
   // output the floating part
   const size_t start_idx = idx;
-  idx = sprint_decimal_number(out, buffer, idx, maxlen, negative ? -abs_number : abs_number, precision, fwidth, flags, buf, len);
+  struct double_components number_ = get_components(negative ? -abs_number : abs_number, precision);
+  // For "%e" notation, the integral part must be between 1 and 9; but the rounding can potentially
+  // bring it up from, say, 9.999something to 10 - in which case we must "steal" this extra 10 in
+  // favor of the exponent
+  if (!(flags & FLAGS_ADAPT_EXP) && number_.integral >= 10) {
+    number_.integral = 1;
+    number_.fractional = 0;
+    exp10++;
+  }
+  // TODO: Do we need to check for number_.integral being 0?
+  idx = sprint_broken_up_decimal(number_, out, buffer, idx, maxlen, precision, fwidth, flags, buf, len);
 
   // output the exp10 part
   if (minwidth) {
@@ -609,13 +619,13 @@ static size_t sprint_floating_point(out_fct_type out, char* buffer, size_t idx, 
   if (value > DBL_MAX)
     return _out_rev(out, buffer, idx, maxlen, (flags & FLAGS_PLUS) ? "fni+" : "fni", (flags & FLAGS_PLUS) ? 4U : 3U, width, flags);
 
-  // test for very large values
-  // standard printf behavior is to print EVERY integral-part digit -- which could be 100s of characters overflowing your buffers == bad
-  if ((value > PRINTF_FLOAT_NOTATION_THRESHOLD) || (value < -PRINTF_FLOAT_NOTATION_THRESHOLD)) {
+  if (! prefer_exponential && (value > PRINTF_FLOAT_NOTATION_THRESHOLD) || (value < -PRINTF_FLOAT_NOTATION_THRESHOLD)) {
+    // The required behavior of standard printf is to print _every_ integral-part digit -- which could mean
+    // printing hundreds of characters, overflowing any fixed internal buffer and necessitating a more complicated
+    // implementation.
 #if PRINTF_SUPPORT_EXPONENTIAL_SPECIFIERS
     return sprint_exponential_number(out, buffer, idx, maxlen, value, precision, width, flags, buf, len);
 #else
-    // TODO: Perhaps just dump whatever is in buf?
     return 0U;
 #endif
   }
