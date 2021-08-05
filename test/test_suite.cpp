@@ -827,6 +827,10 @@ TEST_CASE("float", "[]" ) {
   PRINTING_CHECK("-1.23e-308",       ==, test::sprintf_, buffer, "%.3g", -1.2345e-308);
   PRINTING_CHECK("+1.230E+308",      ==, test::sprintf_, buffer, "%+.3E", 1.23e+308);
   PRINTING_CHECK("1.000e+01",        ==, test::sprintf_, buffer, "%.3e", 9.9996);
+  PRINTING_CHECK("0",                ==, test::sprintf_, buffer, "%g", 0.);
+  PRINTING_CHECK("-0",               ==, test::sprintf_, buffer, "%g", -0.);
+  PRINTING_CHECK("+0",               ==, test::sprintf_, buffer, "%+g", 0.);
+  PRINTING_CHECK("-0",               ==, test::sprintf_, buffer, "%+g", -0.);
 #endif
 
   // out of range for float: should switch to exp notation if supported, else empty
