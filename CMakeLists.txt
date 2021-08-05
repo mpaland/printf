@@ -18,6 +18,17 @@ option(SUPPORT_LONG_LONG               "Support long long integral types (allows
 option(SUPPORT_PTRDIFF_LENGTH_MODIFIER "Support the pointer difference specifier (%t)" ON)
 option(ALIAS_STANDARD_FUNCTION_NAMES   "Alias the standard library function names (printf, sprintf etc.) to the library's functions" ON)
 
+foreach(opt
+	SUPPORT_FLOAT_SPECIFIERS
+	SUPPORT_EXPONENTIAL_SPECIFIERS
+	SUPPORT_LONG_LONG
+	SUPPORT_PTRDIFF_LENGTH_MODIFIER
+	ALIAS_STANDARD_FUNCTION_NAMES)
+	if (${${opt}})
+		set("PRINTF_${opt}" 1)
+	endif()
+endforeach()
+
 # Numeric defines which go into config.h
 
 set(NTOA_BUFFER_SIZE "32" CACHE STRING          "Integer to string (ntoa) conversion buffer size")

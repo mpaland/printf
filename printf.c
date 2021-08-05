@@ -87,7 +87,7 @@
 
 // Support for the ptrdiff_t length modifier (%t)
 // ptrdiff_t is normally defined in <stddef.h> as long or long long type
-#ifndef PRINTF_DISABLE_PTRDIFF_LENGTH_MODIFIER
+#ifndef PRINTF_SUPPORT_PTRDIFF_LENGTH_MODIFIER
 #define PRINTF_SUPPORT_PTRDIFF_LENGTH_MODIFIER 1
 #endif
 
