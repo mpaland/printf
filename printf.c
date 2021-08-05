@@ -534,7 +534,7 @@ static size_t sprint_exponential_number(out_fct_type out, char* buffer, size_t i
   // in "%g" mode, "precision" is the number of _significant digits_ not decimals
   if (flags & FLAGS_ADAPT_EXP) {
     // do we want to fall-back to "%f" mode?
-    if ((abs_number >= 1e-4) && (abs_number < 1e6)) {
+    if ((abs_number == 0.) || ((abs_number >= 1e-4) && (abs_number < 1e6))) {
       if ((int)precision > exp10) {
         precision = (unsigned)((int)precision - exp10 - 1);
       }
