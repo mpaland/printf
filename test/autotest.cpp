@@ -10,11 +10,13 @@
 
 #undef PRINTF_ALIAS_STANDARD_FUNCTION_NAMES
 #include "../printf.h"
+#include "printf_config.h"
 
 //*******************************************************
 // Defines
 //*******************************************************
 
+  #define min(a,b) ( (a) < (b) ? (a) : (b) )
   #define MAIN_TITLE "autotest"
 
   #define BUF_SIZE  100
@@ -487,7 +489,7 @@ static void test_e(void)
 	if(rand()&1 && opts.prec)
 	{
 		strcat(fmt_buf, ".");
-		sprintf(&fmt_buf[strlen(fmt_buf)], "%i", 1+rand()%width);
+		sprintf(&fmt_buf[strlen(fmt_buf)], "%i", 1+rand()%min(width,PRINTF_MAX_INTEGRAL_DIGITS_FOR_DECIMAL));
 	};
 
 	strcat(fmt_buf, "e");
@@ -544,7 +546,7 @@ static void test_g(void)
 	if(rand()&1 && opts.prec)
 	{
 		strcat(fmt_buf, ".");
-		sprintf(&fmt_buf[strlen(fmt_buf)], "%i", 1+rand()%width);
+		sprintf(&fmt_buf[strlen(fmt_buf)], "%i", 1+rand()%min(width,PRINTF_MAX_INTEGRAL_DIGITS_FOR_DECIMAL));
 	};
 
 	strcat(fmt_buf, "g");
