@@ -795,6 +795,7 @@ TEST_CASE("float", "[]" ) {
   // a perfect working float should return the whole number
   PRINTING_CHECK("42.895223123457",  ==, test::sprintf_, buffer, "%.12f", 42.89522312345678);
 
+  PRINTING_CHECK("42477.371093750000000", ==, test::sprintf_, buffer, "%020.15f", 42477.37109375);
   // this testcase checks, that the precision is truncated AND rounded to 9 digits.
   // a perfect working float should return the whole number
   PRINTING_CHECK("42.895223876543",  ==, test::sprintf_, buffer, "%.12f", 42.89522387654321);
@@ -833,6 +834,10 @@ TEST_CASE("float", "[]" ) {
   PRINTING_CHECK("-0",               ==, test::sprintf_, buffer, "%+g", -0.);
   PRINTING_CHECK("-4e+04",           ==, test::sprintf_, buffer, "%.1g", -40661.5);
   PRINTING_CHECK("-4.e+04",          ==, test::sprintf_, buffer, "%#.1g", -40661.5);
+  PRINTING_CHECK("4.895512e+04",     ==, test::sprintf_, buffer, "%e", 48955.125);
+  // This checks the "banker's rounding" behavior
+  PRINTING_CHECK("9.2524e+04",       ==, test::sprintf_, buffer, "%.4e", 92523.5);
+
 #endif
 
   // out of range for float: should switch to exp notation if supported, else empty
@@ -1054,7 +1059,7 @@ TEST_CASE("misc", "[]" ) {
   PRINTING_CHECK("     00004",           ==, test::sprintf_, buffer, "%10.5d", 4);
   PRINTING_CHECK("hi x",                 ==, test::sprintf_, buffer, "%*sx", -3, "hi");
   PRINTING_CHECK("00123               ", ==, test::sprintf_, buffer, "%-20.5i", 123);
-
+  PRINTING_CHECK("-67224.546875000000000000", ==, test::sprintf_, buffer, "%.18f", -67224.546875);
 
 #if PRINTF_SUPPORT_EXPONENTIAL_SPECIFIERS
   PRINTING_CHECK("0.33",              ==, test::sprintf_, buffer, "%.*g", 2, 0.33333333);
