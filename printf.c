@@ -528,13 +528,20 @@ static size_t sprint_exponential_number(out_fct_type out, char* buffer, size_t i
     }
   }
 
-  // the exp10 format is "%+03d" and largest number is "307", so set aside 4-5 characters
-  unsigned int minwidth = ((exp10 < 100) && (exp10 > -100)) ? 4U : 5U;
+  // We now begin accounting for the widths of the two parts of our printed field:
+  // the decimal part after decimal exponent extraction, and the base-10 exponent part.
+  // For both of these, the value of 0 has a special meaning, but not the same one:
+  // a 0 exponent-part width means "don't print the exponent"; a 0 decimal-part width
+  // means "use as many characters as necessary".
 
-  // in "%g" mode, "precision" is the number of _significant digits_ not decimals
+  // the exp10 format is "E%+03d" and largest number is "307", so set aside 4-5 characters
+  unsigned int exp10_part_width = ((exp10 < 100) && (exp10 > -100)) ? 4U : 5U;
+
   if (flags & FLAGS_ADAPT_EXP) {
-    // do we want to fall-back to "%f" mode?
+    // Do we want to fall-back to "%f" mode, printing only the decimal part?
     if ((abs_number == 0.) || ((abs_number >= 1e-4) && (abs_number < 1e6))) {
+      // Yes; but adjust for how in "%g" mode, "precision" is the number of _significant digits_,
+      // not digits past the decimal point.
       if ((int)precision > exp10) {
         precision = (unsigned)((int)precision - exp10 - 1);
       }
@@ -543,29 +550,36 @@ static size_t sprint_exponential_number(out_fct_type out, char* buffer, size_t i
       }
       flags |= FLAGS_PRECISION;   // make sure sprint_decimal_number respects precision
       // no characters in exp10
-      minwidth = 0U;
-      exp10   = 0;
+      exp10_part_width = 0U; // don't print the exponent
+      exp10   = 0; // don't extract the exponent from the number
     }
     else {
-      // we use one sigfig for the integer part
+      // No, print the exponent part; but adjust for how in "%g" mode, "precision" is the
+      // number of _significant digits_, not digits past the decimal point. Specifically,
+      // count the single digit before the decimal point towards the precision figure.
       if ((precision > 0) && (flags & FLAGS_PRECISION)) {
         --precision;
       }
     }
   }
 
-  // will everything fit?
-  unsigned int fwidth = width;
-  if (width > minwidth) {
-    // we didn't fall-back so subtract the characters required for the exp10
-    fwidth -= minwidth;
-  } else {
-    // not enough characters, so go back to default sizing
-    fwidth = 0U;
+  unsigned int decimal_part_width;
+  if ((flags & FLAGS_LEFT) && exp10_part_width) {
+    // if we're padding on the right, the width constraint is the exponent part's
+    // problem, not the decimal part's, so ...
+    decimal_part_width = 0U; // ... we'll use as many characters as we need
   }
-  if ((flags & FLAGS_LEFT) && minwidth) {
-    // if we're padding on the right, DON'T pad the floating part
-    fwidth = 0U;
+  else {
+    // Can both the decimal part and the exponent part fit within our overall width?
+    if (width > exp10_part_width) {
+      // Yes, so we limit our decimal part's width.
+      // (Note this is trivially valid even if we've fallen back to "%f" mode)
+      decimal_part_width = width - exp10_part_width;
+    }
+    else {
+      // No; so just give up on any restriction on the decimal part and...
+      decimal_part_width = 0U; // ... use as many characters as we need
+    }
   }
 
   // rescale the float number
@@ -585,19 +599,17 @@ static size_t sprint_exponential_number(out_fct_type out, char* buffer, size_t i
     exp10++;
   }
   // TODO: Do we need to check for number_.integral being 0?
-  idx = sprint_broken_up_decimal(number_, out, buffer, idx, maxlen, precision, fwidth, flags, buf, len);
+  idx = sprint_broken_up_decimal(number_, out, buffer, idx, maxlen, precision, decimal_part_width, flags, buf, len);
 
-  // output the exp10 part
-  if (minwidth) {
-    // output the exponential symbol
+  // Are we printing the exponential part?
+  if (exp10_part_width) {
     out((flags & FLAGS_UPPERCASE) ? 'E' : 'e', buffer, idx++, maxlen);
-    // output the exp10 number
     idx = _ntoa(out, buffer, idx, maxlen,
                 NTOA_ABS(exp10),
-                exp10 < 0, 10, 0, minwidth - 1,
+                exp10 < 0, 10, 0, exp10_part_width - 1,
                 FLAGS_ZEROPAD | FLAGS_PLUS);
-    // might need to right-pad spaces
     if (flags & FLAGS_LEFT) {
+      // We need to right-pad with spaces to meet the width requirement
       while (idx - start_idx < width) out(' ', buffer, idx++, maxlen);
     }
   }
