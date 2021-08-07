@@ -451,7 +451,7 @@ static void test_f(void)
 	if(strcmp(std_buf,tst_buf))
     dst = stderr;
 
-  fprintf(dst, "\nfmt = \"%s\" value = %f\n", fmt_buf, value);
+  fprintf(dst, "\nfmt = \"%s\" value = %.18f\n", fmt_buf, value);
   fprintf(dst, "gnu = \"%s\"\n", std_buf);
   fprintf(dst, "mpa = \"%s\"\n", tst_buf);
 }
@@ -508,7 +508,7 @@ static void test_e(void)
 	if(strcmp(std_buf,tst_buf))
     dst = stderr;
 
-  fprintf(dst, "\nfmt = \"%s\" value = %e\n", fmt_buf, value);
+  fprintf(dst, "\nfmt = \"%s\" value = %.18f\n", fmt_buf, value);
   fprintf(dst, "gnu = \"%s\"\n", std_buf);
   fprintf(dst, "mpa = \"%s\"\n", tst_buf);
 }
@@ -565,7 +565,7 @@ static void test_g(void)
 	if(strcmp(std_buf,tst_buf))
     dst = stderr;
 
-  fprintf(dst, "\nfmt = \"%s\" value = %g\n", fmt_buf, value);
+  fprintf(dst, "\nfmt = \"%s\" value = %.18f\n", fmt_buf, value);
   fprintf(dst, "gnu = \"%s\"\n", std_buf);
   fprintf(dst, "mpa = \"%s\"\n", tst_buf);
 }
