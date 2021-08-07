@@ -357,16 +357,18 @@ struct double_components {
   bool is_negative;
 } ;
 
+#define NUM_DECIMAL_DIGITS_IN_INT64_T 18U
+#define PRINTF_MAX_SUPPORTED_PRECISION NUM_DECIMAL_DIGITS_IN_INT64_T - 1
+static const double pow10[NUM_DECIMAL_DIGITS_IN_INT64_T] = {
+  1e00, 1e01, 1e02, 1e03, 1e04, 1e05, 1e06, 1e07, 1e08,
+  1e09, 1e10, 1e11, 1e12, 1e13, 1e14, 1e15, 1e16, 1e17
+};
+
 // Break up a double number - which is known to be a finite non-negative number -
 // into its base-10 parts: integral - before the decimal point, and fractional - after it.
 // Taken the precision into account, but does not change it even internally.
 static struct double_components get_components(double number, unsigned int precision)
 {
-  static const double pow10[] = {
-    1e00, 1e01, 1e02, 1e03, 1e04, 1e05, 1e06, 1e07, 1e08,
-    1e09, 1e10, 1e11, 1e12, 1e13, 1e14, 1e15, 1e16, 1e17
-  };
-
   struct double_components number_;
   number_.is_negative = SIGN_OF_DOUBLE_NUMBER(number);
   double abs_number = (number_.is_negative) ? -number : number;
@@ -559,7 +561,14 @@ static size_t sprint_exponential_number(out_fct_type out, char* buffer, size_t i
     flags |= FLAGS_PRECISION;   // make sure sprint_broken_up_decimal respects our choice above
   }
 
-  double normalized_abs_number = (!fall_back_to_decimal_only_mode && exp10) ? abs_number / conv.F : abs_number;
+  double normalized_abs_number = (!fall_back_to_decimal_only_mode && exp10) ?
+    (exp10 >= (int) NUM_DECIMAL_DIGITS_IN_INT64_T || -exp10 >= (int) NUM_DECIMAL_DIGITS_IN_INT64_T) ?
+    abs_number / conv.F :
+    exp10 > 0 ?
+      abs_number / pow10[exp10] :
+      abs_number * pow10[-exp10] :
+    abs_number;
+
   struct double_components normalized_number_components = get_components(negative ? -normalized_abs_number : normalized_abs_number, precision);
 
   if (!fall_back_to_decimal_only_mode) {
@@ -642,9 +651,8 @@ static size_t sprint_floating_point(out_fct_type out, char* buffer, size_t idx, 
     precision = PRINTF_DEFAULT_FLOAT_PRECISION;
   }
 
-#define NUM_DECIMAL_DIGITS_IN_INT64_T 18U
   // limit precision so that our integer holding the fractional part does not overflow
-  while ((len < PRINTF_FTOA_BUFFER_SIZE) && (precision > NUM_DECIMAL_DIGITS_IN_INT64_T)) {
+  while ((len < PRINTF_FTOA_BUFFER_SIZE) && (precision > PRINTF_MAX_SUPPORTED_PRECISION)) {
     buf[len++] = '0'; // This respects the precision in terms of result length only
     precision--;
   }
