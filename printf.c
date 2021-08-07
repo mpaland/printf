@@ -445,6 +445,13 @@ static size_t sprint_broken_up_decimal(
       }
     }
   }
+  else {
+    if (flags & FLAGS_HASH) {
+      if (len < PRINTF_FTOA_BUFFER_SIZE) {
+        buf[len++] = '.';
+      }
+    }
+  }
 
   // Write the integer part of the number (it comes after the fractional
   // since the character order is reversed)
@@ -528,81 +535,69 @@ static size_t sprint_exponential_number(out_fct_type out, char* buffer, size_t i
     }
   }
 
+  // TODO: Do we need to check for normalized_number_components.integral being 0, and correct in the opposite direction?
+
   // We now begin accounting for the widths of the two parts of our printed field:
   // the decimal part after decimal exponent extraction, and the base-10 exponent part.
   // For both of these, the value of 0 has a special meaning, but not the same one:
   // a 0 exponent-part width means "don't print the exponent"; a 0 decimal-part width
   // means "use as many characters as necessary".
 
-  // the exp10 format is "E%+03d" and largest number is "307", so set aside 4-5 characters
-  unsigned int exp10_part_width = ((exp10 < 100) && (exp10 > -100)) ? 4U : 5U;
-
+  bool fall_back_to_decimal_only_mode = false;
   if (flags & FLAGS_ADAPT_EXP) {
-    // Do we want to fall-back to "%f" mode, printing only the decimal part?
-    if ((abs_number == 0.) || ((abs_number >= 1e-4) && (abs_number < 1e6))) {
-      // Yes; but adjust for how in "%g" mode, "precision" is the number of _significant digits_,
-      // not digits past the decimal point.
-      if ((int)precision > exp10) {
-        precision = (unsigned)((int)precision - exp10 - 1);
-      }
-      else {
-        precision = 0;
-      }
-      flags |= FLAGS_PRECISION;   // make sure sprint_decimal_number respects precision
-      // no characters in exp10
-      exp10_part_width = 0U; // don't print the exponent
-      exp10   = 0; // don't extract the exponent from the number
-    }
-    else {
-      // No, print the exponent part; but adjust for how in "%g" mode, "precision" is the
-      // number of _significant digits_, not digits past the decimal point. Specifically,
-      // count the single digit before the decimal point towards the precision figure.
-      if ((precision > 0) && (flags & FLAGS_PRECISION)) {
-        --precision;
-      }
-    }
+    int required_significant_digits = (precision == 0) ? 1 : (int) precision;
+    // Should we want to fall-back to "%f" mode, and only print the decimal part?
+    fall_back_to_decimal_only_mode = (exp10 >= -4 && exp10 < required_significant_digits);
+    // Now, let's adjust the precisio
+    // This also decided how we adjust the precision value - as in "%g" mode,
+    // "precision" is the number of _significant digits_, and this is when we "translate"
+    // the precision value to an actual number of decimal digits.
+    int precision_ = (fall_back_to_decimal_only_mode) ?
+        (int) precision - 1 - exp10 :
+        (int) precision - 1; // the presence of the exponent ensures only one significant digit comes before the decimal point
+    precision = (precision_ > 0 ? (unsigned) precision_ : 0U);
+    flags |= FLAGS_PRECISION;   // make sure sprint_broken_up_decimal respects our choice above
   }
 
-  unsigned int decimal_part_width;
-  if ((flags & FLAGS_LEFT) && exp10_part_width) {
-    // if we're padding on the right, the width constraint is the exponent part's
-    // problem, not the decimal part's, so ...
-    decimal_part_width = 0U; // ... we'll use as many characters as we need
-  }
-  else {
-    // Can both the decimal part and the exponent part fit within our overall width?
-    if (width > exp10_part_width) {
-      // Yes, so we limit our decimal part's width.
-      // (Note this is trivially valid even if we've fallen back to "%f" mode)
-      decimal_part_width = width - exp10_part_width;
+  double normalized_abs_number = (!fall_back_to_decimal_only_mode && exp10) ? abs_number / conv.F : abs_number;
+  struct double_components normalized_number_components = get_components(negative ? -normalized_abs_number : normalized_abs_number, precision);
+
+  if (!fall_back_to_decimal_only_mode) {
+    // The rounding due to the breakup into components has the potential to add or decrease the number's exponent,
+    // e.g. from 9.999something to 10 - in which case we must "steal" this extra 10 in favor of the exponent
+    if (normalized_number_components.integral >= 10) {
+      exp10++;
+      normalized_abs_number /= 10;
+      normalized_number_components.integral = 1;
+      normalized_number_components.fractional = 0;
     }
-    else {
-      // No; so just give up on any restriction on the decimal part and...
-      decimal_part_width = 0U; // ... use as many characters as we need
-    }
+    // Note: We don't perform this check for the fallback-to-decimal-only mode.
+    // If we were to perform it, we may have needed to reconsider the fallback decision.
   }
 
-  // rescale the float number
-  if (exp10) {
-    abs_number /= conv.F;
-  }
+  // the exp10 format is "E%+03d" and largest number is "307", so set aside 4-5 characters
+  unsigned int exp10_part_width = fall_back_to_decimal_only_mode ?
+    0U : ((exp10 < 100) && (exp10 > -100)) ? 4U : 5U;
 
-  // output the floating part
+  unsigned int decimal_part_width =
+    ((flags & FLAGS_LEFT) && exp10_part_width) ?
+      // We're padding on the right, so the width constraint is the exponent part's
+      // problem, not the decimal part's, so we'll use as many characters as we need:
+      0U :
+      // We're padding on the left; so the width constraint is the decimal part's
+      // problem. Well, can both the decimal part and the exponent part fit within our overall width?
+      ((width > exp10_part_width) ?
+        // Yes, so we limit our decimal part's width.
+        // (Note this is trivially valid even if we've fallen back to "%f" mode)
+        width - exp10_part_width :
+        // No; we just give up on any restriction on the decimal part and use as many
+        // characters as we need
+        0U);
+
   const size_t start_idx = idx;
-  struct double_components number_ = get_components(negative ? -abs_number : abs_number, precision);
-  // For "%e" notation, the integral part must be between 1 and 9; but the rounding can potentially
-  // bring it up from, say, 9.999something to 10 - in which case we must "steal" this extra 10 in
-  // favor of the exponent
-  if (!(flags & FLAGS_ADAPT_EXP) && number_.integral >= 10) {
-    number_.integral = 1;
-    number_.fractional = 0;
-    exp10++;
-  }
-  // TODO: Do we need to check for number_.integral being 0?
-  idx = sprint_broken_up_decimal(number_, out, buffer, idx, maxlen, precision, decimal_part_width, flags, buf, len);
+  idx = sprint_broken_up_decimal(normalized_number_components, out, buffer, idx, maxlen, precision, decimal_part_width, flags, buf, len);
 
-  // Are we printing the exponential part?
-  if (exp10_part_width) {
+  if (! fall_back_to_decimal_only_mode) {
     out((flags & FLAGS_UPPERCASE) ? 'E' : 'e', buffer, idx++, maxlen);
     idx = _ntoa(out, buffer, idx, maxlen,
                 NTOA_ABS(exp10),
