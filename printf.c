@@ -498,6 +498,15 @@ static size_t sprint_decimal_number(out_fct_type out, char* buffer, size_t idx, 
   return sprint_broken_up_decimal(value_, out, buffer, idx, maxlen, precision, width, flags, buf, len);
 }
 
+struct normalization {
+  double factor;
+  bool multiply; // if true, need to multiply by factor; otherwise need to divide by it
+};
+
+double normalize(double num, struct normalization normalization)
+{
+  return normalization.multiply ? num * normalization.factor : num / normalization.factor;
+}
 
 #if PRINTF_SUPPORT_EXPONENTIAL_SPECIFIERS
 // internal ftoa variant for exponential floating-point type, contributed by Martijn Jasperse <m.jasperse@gmail.com>
@@ -509,7 +518,8 @@ static size_t sprint_exponential_number(out_fct_type out, char* buffer, size_t i
 
   int exp10;
   bool abs_exp10_covered_by_powers_table;
-  double normalization_factor; // equal, or almost equal, to either 10 ^ (|exp10|) or 10 ^ (|exp10|)
+  struct normalization normalization; // factor will be either 10 ^ (-|exp10|) or 10 ^ (|exp10|)
+
 
   // Determine the decimal exponent
   if (abs_number == 0.0) {
@@ -541,7 +551,7 @@ static size_t sprint_exponential_number(out_fct_type out, char* buffer, size_t i
       conv.F /= 10;
     }
     abs_exp10_covered_by_powers_table = PRINTF_ABS(exp10) < NUM_DECIMAL_DIGITS_IN_INT64_T;
-    normalization_factor = abs_exp10_covered_by_powers_table ? powers_of_10[PRINTF_ABS(exp10)] : conv.F;
+    normalization.factor = abs_exp10_covered_by_powers_table ? powers_of_10[PRINTF_ABS(exp10)] : conv.F;
       // So, note that the normalization factor may need multiplication or division,
       // depending on the circumstances. This is a bit fugly, but if we forced it to be
       // multiplication-only or division-only we would have lost a bit of accuracy
@@ -572,9 +582,9 @@ static size_t sprint_exponential_number(out_fct_type out, char* buffer, size_t i
   }
 
   bool should_skip_normalization = (fall_back_to_decimal_only_mode || exp10 == 0);
+  normalization.multiply = (exp10 < 0 && abs_exp10_covered_by_powers_table);
   double normalized_abs_number = should_skip_normalization ? abs_number :
-    (exp10 < 0 && abs_exp10_covered_by_powers_table) ?
-    abs_number * normalization_factor : abs_number / normalization_factor;
+                                 normalize(abs_number, normalization);
 
   struct double_components decimal_part_components = get_components(negative ? -normalized_abs_number : normalized_abs_number, precision);
 
