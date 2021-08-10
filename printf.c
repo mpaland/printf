@@ -140,6 +140,7 @@ typedef uint8_t numeric_base_t;
 // behavior with -LONG_MIN or -LLONG_MIN
 #define NTOA_ABS(_x) ( (_x) > 0 ? (NTOA_VALUE_TYPE)(_x) : -((NTOA_VALUE_TYPE)_x) )
 
+
 // output function type
 typedef void (*out_fct_type)(char character, void* buffer, size_t idx, size_t maxlen);
 
@@ -359,7 +360,7 @@ struct double_components {
 
 #define NUM_DECIMAL_DIGITS_IN_INT64_T 18U
 #define PRINTF_MAX_SUPPORTED_PRECISION NUM_DECIMAL_DIGITS_IN_INT64_T - 1
-static const double pow10[NUM_DECIMAL_DIGITS_IN_INT64_T] = {
+static const double powers_of_10[NUM_DECIMAL_DIGITS_IN_INT64_T] = {
   1e00, 1e01, 1e02, 1e03, 1e04, 1e05, 1e06, 1e07, 1e08,
   1e09, 1e10, 1e11, 1e12, 1e13, 1e14, 1e15, 1e16, 1e17
 };
@@ -373,7 +374,7 @@ static struct double_components get_components(double number, unsigned int preci
   number_.is_negative = SIGN_OF_DOUBLE_NUMBER(number);
   double abs_number = (number_.is_negative) ? -number : number;
   number_.integral = (int_fast64_t)abs_number;
-  double tmp = (abs_number - number_.integral) * pow10[precision];
+  double tmp = (abs_number - number_.integral) * powers_of_10[precision];
   number_.fractional = (int_fast64_t)tmp;
 
   double diff = tmp - (double) number_.fractional;
@@ -381,7 +382,7 @@ static struct double_components get_components(double number, unsigned int preci
   if (diff > 0.5) {
     ++number_.fractional;
     // handle rollover, e.g. case 0.99 with precision 1 is 1.0
-    if ((double) number_.fractional >= pow10[precision]) {
+    if ((double) number_.fractional >= powers_of_10[precision]) {
       number_.fractional = 0;
       ++number_.integral;
     }
@@ -537,7 +538,7 @@ static size_t sprint_exponential_number(out_fct_type out, char* buffer, size_t i
     }
   }
 
-  // TODO: Do we need to check for normalized_number_components.integral being 0, and correct in the opposite direction?
+  // TODO: Do we need to check for decimal_part_components.integral being 0, and correct in the opposite direction?
 
   // We now begin accounting for the widths of the two parts of our printed field:
   // the decimal part after decimal exponent extraction, and the base-10 exponent part.
@@ -565,20 +566,20 @@ static size_t sprint_exponential_number(out_fct_type out, char* buffer, size_t i
     (exp10 >= (int) NUM_DECIMAL_DIGITS_IN_INT64_T || -exp10 >= (int) NUM_DECIMAL_DIGITS_IN_INT64_T) ?
     abs_number / conv.F :
     exp10 > 0 ?
-      abs_number / pow10[exp10] :
-      abs_number * pow10[-exp10] :
+      abs_number / powers_of_10[exp10] :
+      abs_number * powers_of_10[-exp10] :
     abs_number;
 
-  struct double_components normalized_number_components = get_components(negative ? -normalized_abs_number : normalized_abs_number, precision);
+  struct double_components decimal_part_components = get_components(negative ? -normalized_abs_number : normalized_abs_number, precision);
 
   if (!fall_back_to_decimal_only_mode) {
     // The rounding due to the breakup into components has the potential to add or decrease the number's exponent,
     // e.g. from 9.999something to 10 - in which case we must "steal" this extra 10 in favor of the exponent
-    if (normalized_number_components.integral >= 10) {
+    if (decimal_part_components.integral >= 10) {
       exp10++;
       normalized_abs_number /= 10;
-      normalized_number_components.integral = 1;
-      normalized_number_components.fractional = 0;
+      decimal_part_components.integral = 1;
+      decimal_part_components.fractional = 0;
     }
     // Note: We don't perform this check for the fallback-to-decimal-only mode.
     // If we were to perform it, we may have needed to reconsider the fallback decision.
@@ -604,7 +605,7 @@ static size_t sprint_exponential_number(out_fct_type out, char* buffer, size_t i
         0U);
 
   const size_t start_idx = idx;
-  idx = sprint_broken_up_decimal(normalized_number_components, out, buffer, idx, maxlen, precision, decimal_part_width, flags, buf, len);
+  idx = sprint_broken_up_decimal(decimal_part_components, out, buffer, idx, maxlen, precision, decimal_part_width, flags, buf, len);
 
   if (! fall_back_to_decimal_only_mode) {
     out((flags & FLAGS_UPPERCASE) ? 'E' : 'e', buffer, idx++, maxlen);
