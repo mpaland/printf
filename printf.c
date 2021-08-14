@@ -436,71 +436,70 @@ static struct double_components get_components(double number, unsigned int preci
   return number_;
 }
 
-struct normalization {
-  double factor;
-  bool multiply; // if true, need to multiply by factor; otherwise need to divide by it
+struct scaling_factor {
+  double raw_factor;
+  bool multiply; // if true, need to multiply by raw_factor; otherwise need to divide by it
 };
 
-double normalize(double num, struct normalization normalization)
+double apply_scaling(double num, struct scaling_factor normalization)
 {
-  return normalization.multiply ? num * normalization.factor : num / normalization.factor;
+  return normalization.multiply ? num * normalization.raw_factor : num / normalization.raw_factor;
 }
 
-double unnormalize(double normalized, struct normalization normalization)
+double unapply_scaling(double normalized, struct scaling_factor normalization)
 {
-  return normalization.multiply ? normalized / normalization.factor : normalized * normalization.factor;
+  return normalization.multiply ? normalized / normalization.raw_factor : normalized * normalization.raw_factor;
 }
 
-struct normalization update_normalization(struct normalization n, double extra_multiplicative_factor)
+struct scaling_factor update_normalization(struct scaling_factor sf, double extra_multiplicative_factor)
 {
-  struct normalization result;
-  if (n.multiply) {
+  struct scaling_factor result;
+  if (sf.multiply) {
     result.multiply = true;
-    result.factor = n.factor * extra_multiplicative_factor;
+    result.raw_factor = sf.raw_factor * extra_multiplicative_factor;
   }
   else {
-    int factor_exp2 = get_exp2(get_bit_access(n.factor));
+    int factor_exp2 = get_exp2(get_bit_access(sf.raw_factor));
     int extra_factor_exp2 = get_exp2(get_bit_access(extra_multiplicative_factor));
 
-    // Divide the larger-exponent raw factor by the smaller
+    // Divide the larger-exponent raw raw_factor by the smaller
     if (PRINTF_ABS(factor_exp2) > PRINTF_ABS(extra_factor_exp2)) {
       result.multiply = false;
-      result.factor = n.factor / extra_multiplicative_factor;
+      result.raw_factor = sf.raw_factor / extra_multiplicative_factor;
     }
     else {
       result.multiply = true;
-      result.factor = extra_multiplicative_factor / n.factor;
+      result.raw_factor = extra_multiplicative_factor / sf.raw_factor;
     }
   }
   return result;
 }
 
-static struct double_components get_normalized_components(bool negative, unsigned int precision, double non_normalized, struct normalization account_for_exponent_part)
+static struct double_components get_normalized_components(bool negative, unsigned int precision, double non_normalized, struct scaling_factor normalization)
 {
   struct double_components components;
   components.is_negative = negative;
-  components.integral = (int_fast64_t) normalize(non_normalized, account_for_exponent_part);
-  double remainder = non_normalized - unnormalize(components.integral, account_for_exponent_part);
+  components.integral = (int_fast64_t) apply_scaling(non_normalized, normalization);
+  double remainder = non_normalized - unapply_scaling(components.integral, normalization);
   double prec_power_of_10 = powers_of_10[precision];
-  struct normalization account_for_precision = update_normalization(account_for_exponent_part, prec_power_of_10);
-  double normalized_remainder = normalize(remainder, account_for_precision);
+  struct scaling_factor account_for_precision = update_normalization(normalization, prec_power_of_10);
+  double scaled_remainder = apply_scaling(remainder, account_for_precision);
   double rounding_threshold = 0.5;
 
   if (precision == 0U) {
     components.fractional = 0;
-    components.integral += (normalized_remainder >= rounding_threshold);
-    if (normalized_remainder == rounding_threshold) {
+    components.integral += (scaled_remainder >= rounding_threshold);
+    if (scaled_remainder == rounding_threshold) {
       // banker's rounding: Round towards the even number (making the mean error 0)
       components.integral &= ~((int_fast64_t) 0x1);
     }
   }
   else {
-    // TODO: We currently do not assume that the normalization is by a perfect power of 10.
-    components.fractional = (int_fast64_t) normalized_remainder;
-    normalized_remainder -= components.fractional;
+    components.fractional = (int_fast64_t) scaled_remainder;
+    scaled_remainder -= components.fractional;
 
-    components.fractional += (normalized_remainder >= rounding_threshold);
-    if (normalized_remainder == rounding_threshold) {
+    components.fractional += (scaled_remainder >= rounding_threshold);
+    if (scaled_remainder == rounding_threshold) {
       // banker's rounding: Round towards the even number (making the mean error 0)
       components.fractional &= ~((int_fast64_t) 0x1);
     }
@@ -617,7 +616,7 @@ static size_t sprint_exponential_number(out_fct_type out, char* buffer, size_t i
 
   int exp10;
   bool abs_exp10_covered_by_powers_table;
-  struct normalization normalization; // factor will be either 10 ^ (-|exp10|) or 10 ^ (|exp10|)
+  struct scaling_factor normalization;
 
 
   // Determine the decimal exponent
@@ -647,7 +646,7 @@ static size_t sprint_exponential_number(out_fct_type out, char* buffer, size_t i
       }
     }
     abs_exp10_covered_by_powers_table = PRINTF_ABS(exp10) < PRINTF_MAX_PRECOMPUTED_POWER_OF_10;
-    normalization.factor = abs_exp10_covered_by_powers_table ? powers_of_10[PRINTF_ABS(exp10)] : conv.F;
+    normalization.raw_factor = abs_exp10_covered_by_powers_table ? powers_of_10[PRINTF_ABS(exp10)] : conv.F;
   }
 
   // We now begin accounting for the widths of the two parts of our printed field:
@@ -679,16 +678,22 @@ static size_t sprint_exponential_number(out_fct_type out, char* buffer, size_t i
     get_components(negative ? -abs_number : abs_number, precision) :
     get_normalized_components(negative, precision, abs_number, normalization);
 
-  if (!fall_back_to_decimal_only_mode) {
-    // The rounding due to the breakup into components has the potential to add or decrease the number's exponent,
-    // e.g. from 9.999something to 10 - in which case we must "steal" this extra 10 in favor of the exponent
+  // Account for roll-over, e.g. rounding from 9.99 to 100.0 - which effects
+  // the exponent and may require additional tweaking of the parts
+  if (fall_back_to_decimal_only_mode) {
+    if ( (flags & FLAGS_ADAPT_EXP) && exp10 >= -1 && decimal_part_components.integral == powers_of_10[exp10 + 1]) {
+      exp10++; // Not strictly necessary, since exp10 is no longer really used
+      precision--;
+      // ... and it should already be the case that decimal_part_components.fractional == 0
+    }
+    // TODO: What about rollover strictly within the fractional part?
+  }
+  else {
     if (decimal_part_components.integral >= 10) {
       exp10++;
       decimal_part_components.integral = 1;
       decimal_part_components.fractional = 0;
     }
-    // Note: We don't perform this check for the fallback-to-decimal-only mode.
-    // If we were to perform it, we may have needed to reconsider the fallback decision.
   }
 
   // the exp10 format is "E%+03d" and largest number is "307", so set aside 4-5 characters

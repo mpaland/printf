@@ -834,6 +834,7 @@ TEST_CASE("float", "[]" ) {
   PRINTING_CHECK("-0",               ==, test::sprintf_, buffer, "%+g", -0.);
   PRINTING_CHECK("-4e+04",           ==, test::sprintf_, buffer, "%.1g", -40661.5);
   PRINTING_CHECK("-4.e+04",          ==, test::sprintf_, buffer, "%#.1g", -40661.5);
+  PRINTING_CHECK("100.",             ==, test::sprintf_, buffer, "%#.3g", 99.998580932617187500);
   // Rounding-focused checks
   PRINTING_CHECK("4.895512e+04",     ==, test::sprintf_, buffer, "%e", 48955.125);
   PRINTING_CHECK("9.2524e+04",       ==, test::sprintf_, buffer, "%.4e", 92523.5);
