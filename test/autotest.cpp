@@ -5,7 +5,6 @@
 #include <stdbool.h>
 #include <stdint.h>
 #include <getopt.h>
-#include <math.h>
 #include <assert.h>
 
 #undef PRINTF_ALIAS_STANDARD_FUNCTION_NAMES
@@ -25,6 +24,8 @@
 // range for float testing
   #define FLOAT_TST_MIN 1E-5
   #define FLOAT_TST_MAX 1E5
+ 
+  #define PRECISION_LIMIT_DEFAULT 17
 
 	struct cmdopt_struct 
 	{
@@ -40,10 +41,11 @@
     bool hash;
     bool width;
     bool prec;
+    int prec_max;
   };
 
 //	Valid short options
-	#define VALIDOPTS	"ixoufeglz#wpah"
+	#define VALIDOPTS	"ixoufeglz#wp::ah"
 
 	#define MSG_USAGE "\n\
 Usage: " MAIN_TITLE " [OPTION/s]\n\
@@ -62,14 +64,15 @@ Errors are output to stderr\r\n\
    -z  test zero padding\n\
    -#  test prepending base 0 0x\n\
    -w  test width specifier\n\
-   -p  test precision specifier\n\
-   -a  test all of the above\n\
+   -p <limit> test precision specifier, with an optional limit for %%f %%e %%g\n\
+   -a  test all of the above, with a default precision limit of %i for %%f %%e %%g\n\
 \n\
    -h  show these options\n\
 \n\
 Examples:\n\
 	" MAIN_TITLE " -a                           test with all options, showing all passes and failures\n\
 	" MAIN_TITLE " -a 1>/dev/null               test with all options, showing only errors, with stdout > null\n\
+	" MAIN_TITLE " -ap14 1>/dev/null            test with all options and precision limit of 14 for %%f %%e %%g, showing only errors, with stdout > null\n\
 	" MAIN_TITLE " -ixou 1>/dev/null            test only %%i %%x %%o %%u, showing only errors, with stdout > null\n\
 \n\
 "
@@ -109,7 +112,7 @@ void _putchar(char character)
 int main(int argc, char *argv[])
 {
   if(!parse_options(argc, argv))
-    printf(MSG_USAGE);
+    printf(MSG_USAGE, PRECISION_LIMIT_DEFAULT);
   else
     run_tests();
   return 0;
@@ -132,6 +135,7 @@ static bool parse_options(int argc, char *argv[])
   opts.hash = false;
   opts.width = false;
   opts.prec = false;
+  opts.prec_max = -1;
 
   while ((c = getopt (argc, argv, VALIDOPTS)) != -1)
   {
@@ -159,7 +163,11 @@ static bool parse_options(int argc, char *argv[])
     else if(c == 'w')
       opts.width = true;
     else if(c == 'p')
+    {
       opts.prec = true;
+      if(optarg)
+        opts.prec_max = atoi(optarg);
+    }
     else if(c == 'a')
     {
       opts.i = true;
@@ -181,6 +189,10 @@ static bool parse_options(int argc, char *argv[])
       assert(false);
     };
   };
+
+  if(opts.prec_max == -1)
+    opts.prec_max = PRECISION_LIMIT_DEFAULT;
+
   return gotopt;
 }
 
@@ -432,7 +444,7 @@ static void test_f(void)
 	if(rand()&1 && opts.prec)
 	{
 		strcat(fmt_buf, ".");
-		sprintf(&fmt_buf[strlen(fmt_buf)], "%i", 1+rand()%width);
+		sprintf(&fmt_buf[strlen(fmt_buf)], "%i", 1+rand()%min(width, opts.prec_max));
 	};
 
 	strcat(fmt_buf, "f");
@@ -489,7 +501,7 @@ static void test_e(void)
 	if(rand()&1 && opts.prec)
 	{
 		strcat(fmt_buf, ".");
-		sprintf(&fmt_buf[strlen(fmt_buf)], "%i", 1+rand()%min(width,PRINTF_MAX_INTEGRAL_DIGITS_FOR_DECIMAL));
+		sprintf(&fmt_buf[strlen(fmt_buf)], "%i", 1+rand()%min(width,opts.prec_max));
 	};
 
 	strcat(fmt_buf, "e");
@@ -546,7 +558,7 @@ static void test_g(void)
 	if(rand()&1 && opts.prec)
 	{
 		strcat(fmt_buf, ".");
-		sprintf(&fmt_buf[strlen(fmt_buf)], "%i", 1+rand()%min(width,PRINTF_MAX_INTEGRAL_DIGITS_FOR_DECIMAL));
+		sprintf(&fmt_buf[strlen(fmt_buf)], "%i", 1+rand()%min(width,opts.prec_max));
 	};
 
 	strcat(fmt_buf, "g");
