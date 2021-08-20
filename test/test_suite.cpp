@@ -84,8 +84,11 @@ do {                                                             \
 
     #define DISABLE_WARNING_PRINTF_FORMAT    DISABLE_WARNING(-Wformat)
     #define DISABLE_WARNING_PRINTF_FORMAT_EXTRA_ARGS DISABLE_WARNING(-Wformat-extra-args)
+#if defined(__clang__)
+    #define DISABLE_WARNING_PRINTF_FORMAT_OVERFLOW
+#else
     #define DISABLE_WARNING_PRINTF_FORMAT_OVERFLOW DISABLE_WARNING(-Wformat-overflow)
-
+#endif
 #else
     #define DISABLE_WARNING_PUSH
     #define DISABLE_WARNING_POP

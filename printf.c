@@ -53,13 +53,13 @@
 // 'ntoa' conversion buffer size, this must be big enough to hold one converted
 // numeric number including padded zeros (dynamically created on stack)
 #ifndef PRINTF_NTOA_BUFFER_SIZE
-#define PRINTF_NTOA_BUFFER_SIZE    32U
+#define PRINTF_NTOA_BUFFER_SIZE    32
 #endif
 
 // 'ftoa' conversion buffer size, this must be big enough to hold one converted
 // float number including padded zeros (dynamically created on stack)
 #ifndef PRINTF_FTOA_BUFFER_SIZE
-#define PRINTF_FTOA_BUFFER_SIZE    32U
+#define PRINTF_FTOA_BUFFER_SIZE    32
 #endif
 
 // Support for the decimal notation floating point conversion specifiers (%f, %F)
@@ -74,7 +74,7 @@
 
 // Default precision for the floating point conversion specifiers (the C standard sets this at 6)
 #ifndef PRINTF_DEFAULT_FLOAT_PRECISION
-#define PRINTF_DEFAULT_FLOAT_PRECISION  6U
+#define PRINTF_DEFAULT_FLOAT_PRECISION  6
 #endif
 
 // According to the C languages standard, printf() and related functions must be able to print any
@@ -392,7 +392,7 @@ struct double_components {
   bool is_negative;
 };
 
-#define NUM_DECIMAL_DIGITS_IN_INT64_T 18U
+#define NUM_DECIMAL_DIGITS_IN_INT64_T 18
 #define PRINTF_MAX_PRECOMPUTED_POWER_OF_10  NUM_DECIMAL_DIGITS_IN_INT64_T
 static const double powers_of_10[NUM_DECIMAL_DIGITS_IN_INT64_T] = {
   1e00, 1e01, 1e02, 1e03, 1e04, 1e05, 1e06, 1e07, 1e08,
@@ -753,7 +753,7 @@ static size_t sprint_floating_point(out_fct_type out, char* buffer, size_t idx, 
   if (value > DBL_MAX)
     return _out_rev(out, buffer, idx, maxlen, (flags & FLAGS_PLUS) ? "fni+" : "fni", (flags & FLAGS_PLUS) ? 4U : 3U, width, flags);
 
-  if (! prefer_exponential && (value > PRINTF_FLOAT_NOTATION_THRESHOLD) || (value < -PRINTF_FLOAT_NOTATION_THRESHOLD)) {
+  if (!prefer_exponential && ((value > PRINTF_FLOAT_NOTATION_THRESHOLD) || (value < -PRINTF_FLOAT_NOTATION_THRESHOLD))) {
     // The required behavior of standard printf is to print _every_ integral-part digit -- which could mean
     // printing hundreds of characters, overflowing any fixed internal buffer and necessitating a more complicated
     // implementation.

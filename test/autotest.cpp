@@ -452,7 +452,7 @@ static void test_f(void)
  	if(rand()&1)
 		value = 0;
   else
-    value = rand_float(FLOAT_TST_MIN, FLOAT_TST_MAX);
+    value = (double) rand_float(FLOAT_TST_MIN, FLOAT_TST_MAX);
 
 	if(rand()&1)
 		value*=-1;
@@ -509,7 +509,7 @@ static void test_e(void)
  	if(rand()&1)
 		value = 0;
   else
-    value = rand_float(FLOAT_TST_MIN, FLOAT_TST_MAX);
+    value = (double) rand_float(FLOAT_TST_MIN, FLOAT_TST_MAX);
 
 	if(rand()&1)
 		value*=-1;
@@ -566,7 +566,7 @@ static void test_g(void)
  	if(rand()&1)
 		value = 0;
   else
-    value = rand_float(FLOAT_TST_MIN, FLOAT_TST_MAX);
+    value = (double) rand_float(FLOAT_TST_MIN, FLOAT_TST_MAX);
 
 	if(rand()&1)
 		value*=-1;
