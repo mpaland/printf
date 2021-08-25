@@ -4,7 +4,7 @@ project(
 	LANGUAGES C
 	DESCRIPTION "Mostly-stand-alone C implementation of printf, vprintf, sprintf and related functions"
 	HOMEPAGE_URL https://github.com/eyalroz/printf
-	VERSION 0.2.0
+	VERSION 5.0.0
 )
 
 option(BUILD_TESTS          "Build test programs for the library" OFF)
