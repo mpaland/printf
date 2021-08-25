@@ -67,7 +67,7 @@ add_test(
 	COMMAND "test_suite" # ${TEST_RUNNER_PARAMS}
 )
 
-target_link_libraries(autotest PRIVATE mpaland-printf)
+target_link_libraries(autotest PRIVATE printf)
 target_include_directories(autotest PRIVATE "$<BUILD_INTERFACE:${GENERATED_INCLUDE_DIR}>")
 
 # Not running autotest by default - it's randomized after all.

@@ -42,7 +42,7 @@ The author of this fork was one of the laltercomer bug-reporters-and-PR-authors;
 
 There are at least four ways to use this library:
 
-1. Use CMake to configure, build and install the library. Then, in another CMake project, use `find_package(mpaland-printf)` and make sure the install location is in the package search path.
+1. Use CMake to configure, build and install the library. Then, in another CMake project, use `find_package(printf)` and make sure the install location is in the package search path.
 2. Use CMake to configure and build the library. You now have a library file (named `printf.a`, or `printf.so`, or `printf.dll` depending on your platform and choice of static vs dynamic linking), a header file, `printf.h`, and an optional extra header file `printf_config.h` with the build configuration details (usually unnecessary). In your project, if you include `printf.h` and link against the library file, you're all set: There are no dependencies.
 3. Copy `printf.c` and `printf.h` into your own project, and build them yourself. Note the various preprocessor options controlling the library's behavior! You will have to set them yourself, or accept with the default values (which are quite reasonable). Remember that the library requires compilation with the C99 language standard enabled.
 4. Include the contents of `printf.c` into your own code. This works well enough - whether it's a C or C++ file, and even within a namespace. You again need to consider the preprocessor options controlling behavior, and the language standard.

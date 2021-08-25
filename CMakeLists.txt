@@ -1,6 +1,6 @@
 cmake_minimum_required (VERSION 3.13)
 project(
-	mpaland-printf
+	printf
 	LANGUAGES C
 	DESCRIPTION "Mostly-stand-alone C implementation of printf, vprintf, sprintf and related functions"
 	HOMEPAGE_URL https://github.com/eyalroz/printf
@@ -37,37 +37,37 @@ set(DEFAULT_FLOAT_PRECISION "6" CACHE STRING    "Default precision when printing
 set(MAX_INTEGRAL_DIGITS_FOR_DECIMAL "9" CACHE STRING "Maximum number of integral-part digits of a floating-point value for which printing with %f uses decimal (non-exponential) notation")
 
 if (BUILD_STATIC_LIBRARY)
-	add_library(mpaland-printf STATIC)
+	add_library(printf STATIC)
 else()
-	add_library(mpaland-printf SHARED)
+	add_library(printf SHARED)
 endif()
 set(GENERATED_INCLUDE_DIR "${CMAKE_CURRENT_BINARY_DIR}/include")
 configure_file("printf_config.h.in" "${GENERATED_INCLUDE_DIR}/printf_config.h" @ONLY)
-target_sources(mpaland-printf PRIVATE printf.c "${GENERATED_INCLUDE_DIR}/printf_config.h" printf.h)
-target_compile_definitions(mpaland-printf PRIVATE PRINTF_INCLUDE_CONFIG_H)
-target_include_directories(mpaland-printf PRIVATE "$<BUILD_INTERFACE:${GENERATED_INCLUDE_DIR}>")
+target_sources(printf PRIVATE printf.c "${GENERATED_INCLUDE_DIR}/printf_config.h" printf.h)
+target_compile_definitions(printf PRIVATE PRINTF_INCLUDE_CONFIG_H)
+target_include_directories(printf PRIVATE "$<BUILD_INTERFACE:${GENERATED_INCLUDE_DIR}>")
 
-set_property(TARGET mpaland-printf PROPERTY C_STANDARD 99)
-set_property(TARGET mpaland-printf PROPERTY C_STANDARD_REQUIRED ON)
-set_property(TARGET mpaland-printf PROPERTY C_EXTENSIONS OFF)
+set_property(TARGET printf PROPERTY C_STANDARD 99)
+set_property(TARGET printf PROPERTY C_STANDARD_REQUIRED ON)
+set_property(TARGET printf PROPERTY C_EXTENSIONS OFF)
 
 target_include_directories(
-	mpaland-printf
+	printf
 	PRIVATE
 	${CMAKE_CURRENT_SOURCE_DIR}
 	PUBLIC
 	"$<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>"
 )
 
-set_target_properties(mpaland-printf PROPERTIES
+set_target_properties(printf PROPERTIES
          LIBRARY_OUTPUT_DIRECTORY ${PROJECT_BINARY_DIR}/lib
          ARCHIVE_OUTPUT_DIRECTORY ${PROJECT_BINARY_DIR}/lib)
 
 if (CMAKE_CXX_COMPILER_ID STREQUAL "MSVC")
-	target_compile_options(mpaland-printf PRIVATE /W4)
+	target_compile_options(printf PRIVATE /W4)
 elseif (CMAKE_CXX_COMPILER_ID STREQUAL "GNU" OR
         CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
-	target_compile_options(mpaland-printf PRIVATE -Wall -Wextra -pedantic)
+	target_compile_options(printf PRIVATE -Wall -Wextra -pedantic)
 endif()
 
 if (BUILD_TESTS)
@@ -76,24 +76,24 @@ if (BUILD_TESTS)
 endif()
 
 if (UNIX)
-	add_custom_target(mpaland-printf-sizes
-		COMMAND size -A -t $<TARGET_FILE:mpaland-printf>  > mpaland-printf_sizes.txt
-		DEPENDS mpaland-printf
-		BYPRODUCTS mpaland-printf_sizes.txt
+	add_custom_target(printf-sizes
+		COMMAND size -A -t $<TARGET_FILE:printf>  > printf_sizes.txt
+		DEPENDS printf
+		BYPRODUCTS printf_sizes.txt
 		COMMENT Prints the sizes of the different sections of the ELF file: text, dat, vss etc.)
 
-	add_custom_target(mpaland-printf-symbols
-		COMMAND nm --numeric-sort --print-size "$<TARGET_FILE:mpaland-printf>" > mpaland-printf_symbols.txt
-		COMMAND bash -c "nm --numeric-sort --print-size $<TARGET_FILE:mpaland-printf> | c++filt > mpaland-printf_cpp_symbols.txt"
+	add_custom_target(printf-symbols
+		COMMAND nm --numeric-sort --print-size "$<TARGET_FILE:printf>" > printf_symbols.txt
+		COMMAND bash -c "nm --numeric-sort --print-size $<TARGET_FILE:printf> | c++filt > printf_cpp_symbols.txt"
 		VERBATIM
-		DEPENDS mpaland-printf
-		BYPRODUCTS mpaland-printf_symbols.txt mpaland-printf_cpp_symbols.txt
+		DEPENDS printf
+		BYPRODUCTS printf_symbols.txt printf_cpp_symbols.txt
 		COMMENT Produces lists of the symbols, and C++demangled symbols, inside the library)
 
-	add_custom_target(mpaland-printf-lst
-		COMMAND objdump --disassemble --line-numbers -S "$<TARGET_FILE:mpaland-printf>" > mpaland-printf.list
-		DEPENDS mpaland-printf
-		BYPRODUCTS mpaland-printf.lst
+	add_custom_target(printf-lst
+		COMMAND objdump --disassemble --line-numbers -S "$<TARGET_FILE:printf>" > printf.list
+		DEPENDS printf
+		BYPRODUCTS printf.lst
 		COMMENT Dissassembles the compiled library into an .lst file)
 
 endif()
@@ -105,8 +105,8 @@ endif()
 include(GNUInstallDirs)
 
 install(
-	TARGETS mpaland-printf
-	EXPORT mpaland-printf_export
+	TARGETS printf
+	EXPORT printf_export
 	RUNTIME DESTINATION "${CMAKE_INSTALL_BINDIR}"
 	ARCHIVE DESTINATION "${CMAKE_INSTALL_LIBDIR}"
 	LIBRARY DESTINATION "${CMAKE_INSTALL_LIBDIR}"
@@ -119,23 +119,23 @@ install(
 )
 
 install(
-	EXPORT mpaland-printf_export
-	DESTINATION "${CMAKE_INSTALL_LIBDIR}/cmake/mpaland-printf"
-	NAMESPACE "mpaland-printf::"
-	FILE "mpaland-printf-config.cmake"
+	EXPORT printf_export
+	DESTINATION "${CMAKE_INSTALL_LIBDIR}/cmake/printf"
+	NAMESPACE "printf::"
+	FILE "printf-config.cmake"
 )
 
 include(CMakePackageConfigHelpers)
 
 write_basic_package_version_file(
-	"mpaland-printf-config-version.cmake"
+	"printf-config-version.cmake"
 	VERSION ${PROJECT_VERSION}
 	COMPATIBILITY SameMinorVersion
 )
 
 install(
-	FILES "${CMAKE_CURRENT_BINARY_DIR}/mpaland-printf-config-version.cmake"
-	DESTINATION "${CMAKE_INSTALL_LIBDIR}/cmake/mpaland-printf"
+	FILES "${CMAKE_CURRENT_BINARY_DIR}/printf-config-version.cmake"
+	DESTINATION "${CMAKE_INSTALL_LIBDIR}/cmake/printf"
 )
 
 
