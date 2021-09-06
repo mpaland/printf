@@ -91,12 +91,6 @@
 #define PRINTF_SUPPORT_LONG_LONG 1
 #endif
 
-// Support for the ptrdiff_t length modifier (%t)
-// ptrdiff_t is normally defined in <stddef.h> as long or long long type
-#ifndef PRINTF_SUPPORT_PTRDIFF_LENGTH_MODIFIER
-#define PRINTF_SUPPORT_PTRDIFF_LENGTH_MODIFIER 1
-#endif
-
 #if PRINTF_SUPPORT_LONG_LONG
 #define PRINTF_INTEGER_VALUE_TYPE unsigned long long
 #else
@@ -872,12 +866,10 @@ static int _vsnprintf(out_fct_type out, char* buffer, const size_t maxlen, const
           format++;
         }
         break;
-#if PRINTF_SUPPORT_PTRDIFF_LENGTH_MODIFIER
       case 't' :
         flags |= (sizeof(ptrdiff_t) == sizeof(long) ? FLAGS_LONG : FLAGS_LONG_LONG);
         format++;
         break;
-#endif
       case 'j' :
         flags |= (sizeof(intmax_t) == sizeof(long) ? FLAGS_LONG : FLAGS_LONG_LONG);
         format++;
