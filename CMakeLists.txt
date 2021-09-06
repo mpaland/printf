@@ -12,14 +12,14 @@ option(BUILD_STATIC_LIBRARY "Build the library as static rather than shared" OFF
 
 # Boolean options which go into config.h
 
-option(SUPPORT_FLOAT_SPECIFIERS        "Support decimal notation floating-point conversion specifiers (%f,%F)" ON)
+option(SUPPORT_DECIMAL_SPECIFIERS      "Support decimal notation floating-point conversion specifiers (%f,%F)" ON)
 option(SUPPORT_EXPONENTIAL_SPECIFIERS  "Support exponential floating point format conversion specifiers (%e,%E,%g,%G)" ON)
 option(SUPPORT_LONG_LONG               "Support long long integral types (allows for the ll length modifier and affects %p)" ON)
 option(SUPPORT_PTRDIFF_LENGTH_MODIFIER "Support the pointer difference specifier (%t)" ON)
 option(ALIAS_STANDARD_FUNCTION_NAMES   "Alias the standard library function names (printf, sprintf etc.) to the library's functions" ON)
 
 foreach(opt
-	SUPPORT_FLOAT_SPECIFIERS
+	SUPPORT_DECIMAL_SPECIFIERS
 	SUPPORT_EXPONENTIAL_SPECIFIERS
 	SUPPORT_LONG_LONG
 	SUPPORT_PTRDIFF_LENGTH_MODIFIER
@@ -32,7 +32,7 @@ endforeach()
 # Numeric defines which go into config.h
 
 set(NTOA_BUFFER_SIZE "32" CACHE STRING          "Integer to string (ntoa) conversion buffer size")
-set(PRINTF_FTOA_BUFFER_SIZE "32" CACHE STRING   "Float to string (ftoa) conversion buffer size")
+set(PRINTF_DECIMAL_BUFFER_SIZE "32" CACHE STRING   "Floating-point to decimal conversion buffer size")
 set(DEFAULT_FLOAT_PRECISION "6" CACHE STRING    "Default precision when printing floating-point values")
 set(MAX_INTEGRAL_DIGITS_FOR_DECIMAL "9" CACHE STRING "Maximum number of integral-part digits of a floating-point value for which printing with %f uses decimal (non-exponential) notation")
 

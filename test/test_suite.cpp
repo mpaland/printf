@@ -253,7 +253,7 @@ TEST_CASE("space flag", "[]" ) {
   PRINTING_CHECK("             42", ==, test::sprintf_, buffer, "% 15d", 42);
   PRINTING_CHECK("            -42", ==, test::sprintf_, buffer, "% 15d", -42);
   PRINTING_CHECK("            -42", ==, test::sprintf_, buffer, "% 15d", -42);
-#ifdef PRINTF_SUPPORT_FLOAT_SPECIFIERS
+#ifdef PRINTF_SUPPORT_DECIMAL_SPECIFIERS
   PRINTING_CHECK("        -42.987", ==, test::sprintf_, buffer, "% 15.3f", -42.987);
   PRINTING_CHECK("         42.987", ==, test::sprintf_, buffer, "% 15.3f", 42.987);
 #endif
@@ -321,7 +321,7 @@ TEST_CASE("0 flag", "[]" ) {
   PRINTING_CHECK("-0042",           ==, test::sprintf_, buffer, "%05d", -42);
   PRINTING_CHECK("000000000000042", ==, test::sprintf_, buffer, "%015d", 42);
   PRINTING_CHECK("-00000000000042", ==, test::sprintf_, buffer, "%015d", -42);
-#ifdef PRINTF_SUPPORT_FLOAT_SPECIFIERS
+#ifdef PRINTF_SUPPORT_DECIMAL_SPECIFIERS
   PRINTING_CHECK("000000000042.12", ==, test::sprintf_, buffer, "%015.2f", 42.1234);
   PRINTING_CHECK("00000000042.988", ==, test::sprintf_, buffer, "%015.3f", 42.9876);
   PRINTING_CHECK("-00000042.98760", ==, test::sprintf_, buffer, "%015.5f", -42.9876);
@@ -519,7 +519,7 @@ TEST_CASE("width -20", "[]" ) {
   PRINTING_CHECK("1024                ", ==, test::sprintf_, buffer, "%-20i", 1024);
   PRINTING_CHECK("-1024               ", ==, test::sprintf_, buffer, "%-20i", -1024);
   PRINTING_CHECK("1024                ", ==, test::sprintf_, buffer, "%-20u", 1024);
-#ifdef PRINTF_SUPPORT_FLOAT_SPECIFIERS
+#ifdef PRINTF_SUPPORT_DECIMAL_SPECIFIERS
   PRINTING_CHECK("1024.1234           ", ==, test::sprintf_, buffer, "%-20.4f", 1024.1234);
 #endif
   PRINTING_CHECK("4294966272          ", ==, test::sprintf_, buffer, "%-20u", 4294966272U);
@@ -673,7 +673,7 @@ TEST_CASE("float padding neg numbers", "[]" ) {
   char buffer[100];
 
   // space padding
-#ifdef PRINTF_SUPPORT_FLOAT_SPECIFIERS
+#ifdef PRINTF_SUPPORT_DECIMAL_SPECIFIERS
   PRINTING_CHECK("-5.0",       ==, test::sprintf_, buffer, "% 3.1f", -5.);
   PRINTING_CHECK("-5.0",       ==, test::sprintf_, buffer, "% 4.1f", -5.);
   PRINTING_CHECK(" -5.0",      ==, test::sprintf_, buffer, "% 5.1f", -5.);
@@ -686,7 +686,7 @@ TEST_CASE("float padding neg numbers", "[]" ) {
 #endif
 
   // zero padding
-#ifdef PRINTF_SUPPORT_FLOAT_SPECIFIERS
+#ifdef PRINTF_SUPPORT_DECIMAL_SPECIFIERS
   PRINTING_CHECK("-5.0",       ==, test::sprintf_, buffer, "%03.1f", -5.);
   PRINTING_CHECK("-5.0",       ==, test::sprintf_, buffer, "%04.1f", -5.);
   PRINTING_CHECK("-05.0",      ==, test::sprintf_, buffer, "%05.1f", -5.);
@@ -745,7 +745,7 @@ TEST_CASE("float", "[]" ) {
   char buffer[100];
 
   // test special-case floats using math.h macros
-#ifdef PRINTF_SUPPORT_FLOAT_SPECIFIERS
+#ifdef PRINTF_SUPPORT_DECIMAL_SPECIFIERS
   PRINTING_CHECK("     nan",  ==, test::sprintf_, buffer, "%8f", (double) NAN);
   PRINTING_CHECK("     inf",  ==, test::sprintf_, buffer, "%8f", (double) INFINITY);
   PRINTING_CHECK("-inf    ",  ==, test::sprintf_, buffer, "%-8f", (double) -INFINITY);
@@ -753,7 +753,7 @@ TEST_CASE("float", "[]" ) {
 #if PRINTF_SUPPORT_EXPONENTIAL_SPECIFIERS
   PRINTING_CHECK("    +inf",  ==, test::sprintf_, buffer, "%+8e", (double) INFINITY);
 #endif
-#ifdef PRINTF_SUPPORT_FLOAT_SPECIFIERS
+#ifdef PRINTF_SUPPORT_DECIMAL_SPECIFIERS
   PRINTING_CHECK("3.1415",    ==, test::sprintf_, buffer, "%.4f", 3.1415354);
   PRINTING_CHECK("30343.142", ==, test::sprintf_, buffer, "%.3f", 30343.1415354);
 
@@ -852,7 +852,7 @@ TEST_CASE("float", "[]" ) {
 #endif
 
   // out of range for float: should switch to exp notation if supported, else empty
-#ifdef PRINTF_SUPPORT_FLOAT_SPECIFIERS
+#ifdef PRINTF_SUPPORT_DECIMAL_SPECIFIERS
   CAPTURE_AND_PRINT(test::sprintf_, buffer, "%.1f", 1E20);
 #endif
 #if PRINTF_SUPPORT_EXPONENTIAL_SPECIFIERS
@@ -861,7 +861,7 @@ TEST_CASE("float", "[]" ) {
   CHECK(!strcmp(buffer, ""));
 #endif
 
-#ifdef PRINTF_SUPPORT_FLOAT_SPECIFIERS
+#ifdef PRINTF_SUPPORT_DECIMAL_SPECIFIERS
   // brute force float
   bool fail = false;
   std::stringstream str;
@@ -1066,7 +1066,7 @@ DISABLE_WARNING_POP
 TEST_CASE("misc", "[]" ) {
   char buffer[100];
   PRINTING_CHECK("53000atest-20 bit",    ==, test::sprintf_, buffer, "%u%u%ctest%d %s", 5, 3000, 'a', -20, "bit");
-#ifdef PRINTF_SUPPORT_FLOAT_SPECIFIERS
+#ifdef PRINTF_SUPPORT_DECIMAL_SPECIFIERS
   PRINTING_CHECK("0.33",                 ==, test::sprintf_, buffer, "%.*f", 2, 0.33333333);
   PRINTING_CHECK("1",                    ==, test::sprintf_, buffer, "%.*d", -1, 1);
   PRINTING_CHECK("foo",                  ==, test::sprintf_, buffer, "%.3s", "foobar");
