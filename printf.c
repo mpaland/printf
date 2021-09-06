@@ -775,9 +775,12 @@ static size_t sprint_floating_point(out_fct_type out, char* buffer, size_t idx, 
     precision--;
   }
 
-  return prefer_exponential ?
-         sprint_exponential_number(out, buffer, idx, maxlen, value, precision, width, flags, buf, len) :
-         sprint_decimal_number(out, buffer, idx, maxlen, value, precision, width, flags, buf, len);
+  return
+#if PRINTF_SUPPORT_EXPONENTIAL_SPECIFIERS
+    prefer_exponential ?
+      sprint_exponential_number(out, buffer, idx, maxlen, value, precision, width, flags, buf, len) :
+#endif
+      sprint_decimal_number(out, buffer, idx, maxlen, value, precision, width, flags, buf, len);
 }
 
 #endif  // PRINTF_SUPPORT_FLOAT_SPECIFIERS
