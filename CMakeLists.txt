@@ -24,6 +24,9 @@ foreach(opt
 	ALIAS_STANDARD_FUNCTION_NAMES)
 	if (${${opt}})
 		set("PRINTF_${opt}" 1)
+	else()
+		set("PRINTF_${opt}" 0)
+		message(STATUS "PRINTF_${opt} 0")
 	endif()
 endforeach()
 
