@@ -41,7 +41,6 @@ namespace test {
   #include "../printf.c"
 } // namespace test
 
-
 #define CAPTURE_AND_PRINT(printer_, ...)                  \
 do {                                                      \
   INFO( #printer_  <<                                     \
@@ -786,7 +785,11 @@ TEST_CASE("float", "[]" ) {
 
   CAPTURE_AND_PRINT(test::sprintf_, buffer, "%.0f", (double) ((int64_t)1 * 1000 * 1000 * 1000 * 1000) );
   if (PRINTF_FLOAT_NOTATION_THRESHOLD < 10e+11) {
+#if PRINTF_SUPPORT_EXPONENTIAL_SPECIFIERS
     CHECK(!strcmp(buffer, "1e+12"));
+#else
+    CHECK(!strcmp(buffer, ""));
+#endif
   }
   else {
     CHECK(!strcmp(buffer, "1000000000000"));
@@ -794,7 +797,11 @@ TEST_CASE("float", "[]" ) {
 
   CAPTURE_AND_PRINT(test::sprintf_, buffer, "%.0f", (double) ((int64_t)1 * 1000 * 1000 * 1000 * 1000 * 1000) );
   if (PRINTF_FLOAT_NOTATION_THRESHOLD < 10e+14) {
+#if PRINTF_SUPPORT_EXPONENTIAL_SPECIFIERS
     CHECK(!strcmp(buffer, "1e+15"));
+#else
+    CHECK(!strcmp(buffer, ""));
+#endif
   }
   else {
     CHECK(!strcmp(buffer, "1000000000000000"));
@@ -854,11 +861,11 @@ TEST_CASE("float", "[]" ) {
   // out of range for float: should switch to exp notation if supported, else empty
 #if PRINTF_SUPPORT_DECIMAL_SPECIFIERS
   CAPTURE_AND_PRINT(test::sprintf_, buffer, "%.1f", 1E20);
-#endif
 #if PRINTF_SUPPORT_EXPONENTIAL_SPECIFIERS
   CHECK(!strcmp(buffer, "1.0e+20"));
 #else
   CHECK(!strcmp(buffer, ""));
+#endif
 #endif
 
 #if PRINTF_SUPPORT_DECIMAL_SPECIFIERS
@@ -875,6 +882,7 @@ TEST_CASE("float", "[]" ) {
   CHECK(!fail);
 
 #if PRINTF_SUPPORT_EXPONENTIAL_SPECIFIERS
+  // So, this is tested with both decimal and exponential specifiers are supported.
   // brute force exp
   str.setf(std::ios::scientific, std::ios::floatfield);
   for (float i = -1e20; i < (float) 1e20; i += (float) 1e15) {

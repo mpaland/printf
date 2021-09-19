@@ -131,7 +131,7 @@
 typedef uint8_t numeric_base_t;
 
 // import float.h for DBL_MAX
-#if PRINTF_SUPPORT_DECIMAL_SPECIFIERS
+#if (PRINTF_SUPPORT_DECIMAL_SPECIFIERS || PRINTF_SUPPORT_EXPONENTIAL_SPECIFIERS)
 #include <float.h>
 #endif
 
@@ -377,7 +377,7 @@ static size_t print_integer(out_fct_type out, char* buffer, size_t idx, size_t m
   return print_integer_format(out, buffer, idx, maxlen, buf, len, negative, base, precision, width, flags);
 }
 
-#if PRINTF_SUPPORT_DECIMAL_SPECIFIERS
+#if (PRINTF_SUPPORT_DECIMAL_SPECIFIERS || PRINTF_SUPPORT_EXPONENTIAL_SPECIFIERS)
 
 struct double_components {
   int_fast64_t integral;
@@ -474,6 +474,7 @@ struct scaling_factor update_normalization(struct scaling_factor sf, double extr
   return result;
 }
 
+#if PRINTF_SUPPORT_EXPONENTIAL_SPECIFIERS
 static struct double_components get_normalized_components(bool negative, unsigned int precision, double non_normalized, struct scaling_factor normalization)
 {
   struct double_components components;
@@ -511,7 +512,7 @@ static struct double_components get_normalized_components(bool negative, unsigne
   }
   return components;
 }
-
+#endif
 
 static size_t sprint_broken_up_decimal(
   struct double_components number_, out_fct_type out, char *buffer, size_t idx, size_t maxlen, unsigned int precision,
@@ -776,7 +777,7 @@ static size_t sprint_floating_point(out_fct_type out, char* buffer, size_t idx, 
       sprint_decimal_number(out, buffer, idx, maxlen, value, precision, width, flags, buf, len);
 }
 
-#endif  // PRINTF_SUPPORT_DECIMAL_SPECIFIERS
+#endif  // (PRINTF_SUPPORT_DECIMAL_SPECIFIERS || PRINTF_SUPPORT_EXPONENTIAL_SPECIFIERS)
 
 // internal vsnprintf
 static int _vsnprintf(out_fct_type out, char* buffer, const size_t maxlen, const char* format, va_list va)
@@ -964,6 +965,7 @@ static int _vsnprintf(out_fct_type out, char* buffer, const size_t maxlen, const
         idx = sprint_floating_point(out, buffer, idx, maxlen, va_arg(va, double), precision, width, flags, PRINTF_PREFER_DECIMAL);
         format++;
         break;
+#endif
 #if PRINTF_SUPPORT_EXPONENTIAL_SPECIFIERS
       case 'e':
       case 'E':
@@ -975,7 +977,6 @@ static int _vsnprintf(out_fct_type out, char* buffer, const size_t maxlen, const
         format++;
         break;
 #endif  // PRINTF_SUPPORT_EXPONENTIAL_SPECIFIERS
-#endif  // PRINTF_SUPPORT_DECIMAL_SPECIFIERS
       case 'c' : {
         unsigned int l = 1U;
         // pre padding
