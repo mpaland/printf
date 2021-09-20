@@ -130,10 +130,32 @@
 
 typedef uint8_t numeric_base_t;
 
-// import float.h for DBL_MAX
 #if (PRINTF_SUPPORT_DECIMAL_SPECIFIERS || PRINTF_SUPPORT_EXPONENTIAL_SPECIFIERS)
 #include <float.h>
+#if FLT_RADIX != 2
+#error "Non-binary-radix floating-point types are unsupported."
 #endif
+
+#if DBL_MANT_DIG == 24
+
+#define DOUBLE_SIZE_IN_BITS 32
+typedef uint32_t double_uint_t;
+#define DOUBLE_EXPONENT_MASK 0xFFU
+#define DOUBLE_BASE_EXPONENT 127
+
+#elif DBL_MANT_DIG == 53
+
+#define DOUBLE_SIZE_IN_BITS 64
+typedef uint64_t double_uint_t;
+#define DOUBLE_EXPONENT_MASK 0x7FFU
+#define DOUBLE_BASE_EXPONENT 1023
+
+#else
+#error "Unsupported double type configuration"
+#endif
+#define DOUBLE_STORED_MANTISSA_BITS (DBL_MANT_DIG - 1)
+
+#endif // (PRINTF_SUPPORT_DECIMAL_SPECIFIERS || PRINTF_SUPPORT_EXPONENTIAL_SPECIFIERS)
 
 // Note in particular the behavior here on LONG_MIN or LLONG_MIN; it is valid
 // and well-defined, but if you're not careful you can easily trigger undefined
@@ -143,8 +165,8 @@ typedef uint8_t numeric_base_t;
 #define PRINTF_ABS(_x) ( (_x) > 0 ? (_x) : -(_x) )
 
 typedef union {
-  uint64_t U;
-  double   F;
+  double_uint_t U;
+  double        F;
 } double_with_bit_access;
 
 // This is unnecessary in C99, since compound initializers can be used,
@@ -159,16 +181,17 @@ static inline double_with_bit_access get_bit_access(double x)
 
 static inline int get_sign(double x)
 {
-  // The sign is in the highest bit, bit 63
-  return get_bit_access(x).U >> 63U;
+  // The sign is stored in the highest bit
+  return get_bit_access(x).U >> (DOUBLE_SIZE_IN_BITS - 1);
 }
 
 static inline int get_exp2(double_with_bit_access x)
 {
-  // The exponent is in bits 52...62 inclusive, but the exponent is signed, not unsigned.
-  // Also, it's not signed like regular signed integers: The range is mapped to -1023..1024
-  // (and -1023 and 1024 are reserved for special use, but we ignore that here).
-  return (int)((x.U >> 52U) & 0x07FFU) - 1023;
+  // The exponent in an IEEE-754 floating-point number occupies a contiguous
+  // sequence of bits (e.g. 52..62 for 64-bit doubles), but with a non-trivial representation: An
+  // unsigned offset from some negative value (with the extremal offset values reserved for
+  // special use).
+  return (int)((x.U >> DOUBLE_STORED_MANTISSA_BITS ) & DOUBLE_EXPONENT_MASK) - DOUBLE_BASE_EXPONENT;
 }
 
 
@@ -629,14 +652,15 @@ static size_t sprint_exponential_number(out_fct_type out, char* buffer, size_t i
     {
       // based on the algorithm by David Gay (https://www.ampl.com/netlib/fp/dtoa.c)
       int exp2 = get_exp2(conv);
-      conv.U = (conv.U & ((1ULL << 52U) - 1U)) | (1023ULL << 52U);  // drop the exp10 so conv.F is now in [1,2)
+	  // drop the exponent, so conv.F comes into the range [1,2)
+      conv.U = (conv.U & (( (double_uint_t)(1) << DOUBLE_STORED_MANTISSA_BITS) - 1U)) | ((double_uint_t) DOUBLE_BASE_EXPONENT << DOUBLE_STORED_MANTISSA_BITS);
       // now approximate log10 from the log2 integer part and an expansion of ln around 1.5
       exp10 = (int)(0.1760912590558 + exp2 * 0.301029995663981 + (conv.F - 1.5) * 0.289529654602168);
       // now we want to compute 10^exp10 but we want to be sure it won't overflow
       exp2 = (int)(exp10 * 3.321928094887362 + 0.5);
       const double z  = exp10 * 2.302585092994046 - exp2 * 0.6931471805599453;
       const double z2 = z * z;
-      conv.U = (uint64_t)(exp2 + 1023) << 52U;
+      conv.U = ((double_uint_t)(exp2) + DOUBLE_BASE_EXPONENT) << DOUBLE_STORED_MANTISSA_BITS;
       // compute exp(z) using continued fractions, see https://en.wikipedia.org/wiki/Exponential_function#Continued_fractions_for_ex
       conv.F *= 1 + 2 * z / (2 - z + (z2 / (6 + (z2 / (10 + z2 / 14)))));
       // correct for rounding errors
@@ -696,9 +720,9 @@ static size_t sprint_exponential_number(out_fct_type out, char* buffer, size_t i
     }
   }
 
-  // the exp10 format is "E%+03d" and largest number is "307", so set aside 4-5 characters
-  unsigned int exp10_part_width = fall_back_to_decimal_only_mode ?
-    0U : ((exp10 < 100) && (exp10 > -100)) ? 4U : 5U;
+  // the exp10 format is "E%+03d" and largest possible exp10 value for a 64-bit double
+  // is "307" (for 2^1023), so we set aside 4-5 characters overall
+  unsigned int exp10_part_width = fall_back_to_decimal_only_mode ? 0U : (PRINTF_ABS(exp10) < 100) ? 4U : 5U;
 
   unsigned int decimal_part_width =
     ((flags & FLAGS_LEFT) && exp10_part_width) ?
