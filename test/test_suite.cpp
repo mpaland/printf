@@ -74,6 +74,7 @@ do {                                                             \
     // TODO: find the right warning number for this
     #define DISABLE_WARNING_PRINTF_FORMAT
     #define DISABLE_WARNING_PRINTF_FORMAT_EXTRA_ARGS
+    #define DISABLE_WARNING_PRINTF_FORMAT_OVERFLOW
 
 #elif defined(__GNUC__) || defined(__clang__)
     #define DO_PRAGMA(X) _Pragma(#X)
