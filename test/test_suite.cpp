@@ -470,24 +470,24 @@ TEST_CASE("width", "[]" ) {
 
 TEST_CASE("width 20", "[]" ) {
   char buffer[100];
-  PRINTING_CHECK("               Hello", ==, test::sprintf_, buffer, "%20s", "Hello");
-  PRINTING_CHECK("                1024", ==, test::sprintf_, buffer, "%20d", 1024);
-  PRINTING_CHECK("               -1024", ==, test::sprintf_, buffer, "%20d", -1024);
-  PRINTING_CHECK("                1024", ==, test::sprintf_, buffer, "%20i", 1024);
-  PRINTING_CHECK("               -1024", ==, test::sprintf_, buffer, "%20i", -1024);
-  PRINTING_CHECK("                   0", ==, test::sprintf_, buffer, "%20i", 0);
-  PRINTING_CHECK("                1024", ==, test::sprintf_, buffer, "%20u", 1024);
-  PRINTING_CHECK("          4294966272", ==, test::sprintf_, buffer, "%20u", 4294966272U);
-  PRINTING_CHECK("                 777", ==, test::sprintf_, buffer, "%20o", 511);
-  PRINTING_CHECK("         37777777001", ==, test::sprintf_, buffer, "%20o", 4294966785U);
-  PRINTING_CHECK("            1234abcd", ==, test::sprintf_, buffer, "%20x", 305441741);
-  PRINTING_CHECK("            edcb5433", ==, test::sprintf_, buffer, "%20x", 3989525555U);
-  PRINTING_CHECK("            1234ABCD", ==, test::sprintf_, buffer, "%20X", 305441741);
-  PRINTING_CHECK("            EDCB5433", ==, test::sprintf_, buffer, "%20X", 3989525555U);
-  PRINTING_CHECK("                   0", ==, test::sprintf_, buffer, "%20X", 0);
-  PRINTING_CHECK("                   0", ==, test::sprintf_, buffer, "%20X", 0U);
-  PRINTING_CHECK("                   0", ==, test::sprintf_, buffer, "%20llX", 0U);
-  PRINTING_CHECK("                   x", ==, test::sprintf_, buffer, "%20c", 'x');
+  PRINTING_CHECK("               Hello", ==, test::sprintf_, buffer, "%20s",   "Hello");
+  PRINTING_CHECK("                1024", ==, test::sprintf_, buffer, "%20d",   1024);
+  PRINTING_CHECK("               -1024", ==, test::sprintf_, buffer, "%20d",   -1024);
+  PRINTING_CHECK("                1024", ==, test::sprintf_, buffer, "%20i",   1024);
+  PRINTING_CHECK("               -1024", ==, test::sprintf_, buffer, "%20i",   -1024);
+  PRINTING_CHECK("                   0", ==, test::sprintf_, buffer, "%20i",   0);
+  PRINTING_CHECK("                1024", ==, test::sprintf_, buffer, "%20u",   1024);
+  PRINTING_CHECK("          4294966272", ==, test::sprintf_, buffer, "%20u",   4294966272U);
+  PRINTING_CHECK("                 777", ==, test::sprintf_, buffer, "%20o",   511);
+  PRINTING_CHECK("         37777777001", ==, test::sprintf_, buffer, "%20o",   4294966785U);
+  PRINTING_CHECK("            1234abcd", ==, test::sprintf_, buffer, "%20x",   305441741);
+  PRINTING_CHECK("            edcb5433", ==, test::sprintf_, buffer, "%20x",   3989525555U);
+  PRINTING_CHECK("            1234ABCD", ==, test::sprintf_, buffer, "%20X",   305441741);
+  PRINTING_CHECK("            EDCB5433", ==, test::sprintf_, buffer, "%20X",   3989525555U);
+  PRINTING_CHECK("                   0", ==, test::sprintf_, buffer, "%20X",   0);
+  PRINTING_CHECK("                   0", ==, test::sprintf_, buffer, "%20X",   0U);
+  PRINTING_CHECK("                   0", ==, test::sprintf_, buffer, "%20llX", 0ULL);
+  PRINTING_CHECK("                   x", ==, test::sprintf_, buffer, "%20c",   'x');
 }
 
 
