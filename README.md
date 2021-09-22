@@ -22,21 +22,20 @@ If you use a typical libc's `sprintf()` implementation (or similar function), yo
 
 Well, Marco tried out many of the available `printf()` implementations, but was disappointed: Some are not thread-safe; some have indirect dependencies on libc or other libraries, making them inconvenient to build and larger when compiled; some only offer extremely limited flag and specifier support; and some produce non-standard-compiled output, failing many tests no found in the repository's test suite.
 
-Marco therefore decided to write his own implementation, with the following goals in mind:
+Marco therefore decided to write his own implementation, with the following goals in mind (I've dropped a few relative to his original description):
 
  - Very small implementation
  - NO dependencies on other packages or libraries; no multiple compiled objects, just one object file.
  - Support for all standard specifiers and flags, and all width and precision sub-specifiers (see below).
  - Support of decimal/floating number representation (with an internal, relatively fast `itoa`/`ftoa` implementation)
- - Reentrant and thread-safe; `malloc()` free; no global or static-local variables or buffers.
- - Clean, mature and robust code; passes linting and compilation with no warnings; full coverage by testcases; automotive ready.
- - Extensive test suite (currently over 400 test cases) passing.
- - Simply the best `printf()` around the net (although that's always a matter of opinion).
+ - Reentrancy and thread-safety; `malloc()` freeness.
+ - Clean, robust code.
+ - Extensive test coverage.
  - MIT license
 
-Marco's repository upheld most of these goals - but did not quite make it all of the way. As of mid-2021, it still many standard-non-compliance bugs; and the test suite was quite lacking in coverage. The repository had become quite popular, but unfortunately, Marco had been otherwise preoccupied; he had almost not touched the code in the two years prior; many bug reports were pending, and so were many pull requests from eary adopters who had fixed some of the bugs they had encountered.
+Marco's repository upheld most of these goals - but did not quite make it all of the way. As of mid-2021, it still had many C-standard-non-compliance bugs; the test suite was quite lacking in coverage; some goals were simply discarded (like avoiding global/local-static constants) etc. The repository had become quite popular, but unfortunately, Marco had been otherwise preoccupied; he had not really touched the code in the two years prior; many bug reports were pending, and so were many pull requests from eary adopters who had fixed some of the bugs they had encountered.
 
-The author of this fork was one of the laltercomer bug-reporters-and-PR-authors; and when noticing nothing was moving forward, decided to take up the same goals; and integrate the existing forks and available PRs into a single "consensus fork" which would continue where Marco had left off - at least until he returns. Along the way, numerous other issues were observed; the build system was improved; the test suite streamlined and expanded; and other contributors also lent a hand (especially [@mickjc750](https://github.com/mickjc750/)). We are now very close to fully realizing the project goals, using a little over 700 lines of dependency-free code.
+The author of this fork was one of the latercomer bug-reporters-and-PR-authors; and when noticing nothing was moving forward, decided to take up the same goals (sans the discarded ones); and integrate the existing forks and available PRs into a single "consensus fork" which would continue where Marco had left off. Along the way, numerous other issues were observed; the build system was improved; the test suite streamlined and expanded; and other contributors also lent a hand (especially [@mickjc750](https://github.com/mickjc750/)). We are now very close to fully realizing the project goals.
 
 ## Using the `printf` library in your project
 
