@@ -4,7 +4,11 @@
 #include <string.h>
 #include <stdbool.h>
 #include <stdint.h>
+#ifdef _WIN32
+#include "getopt.h"
+#else
 #include <getopt.h>
+#endif
 #include <assert.h>
 
 #undef PRINTF_ALIAS_STANDARD_FUNCTION_NAMES
