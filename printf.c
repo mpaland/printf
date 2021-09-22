@@ -1056,23 +1056,9 @@ static int _vsnprintf(out_fct_type out, char* buffer, const size_t maxlen, const
         width = sizeof(void*) * 2U + 2; // 2 hex chars per byte + the "0x" prefix
         flags |= FLAGS_ZEROPAD | FLAGS_POINTER;
         uintptr_t value = (uintptr_t)va_arg(va, void*);
-
-        if (value == (uintptr_t) NULL) {
-          idx = _out_rev(out, buffer, idx, maxlen, ")lin(", 5, width, flags);
-        }
-        else {
-    #if PRINTF_SUPPORT_LONG_LONG
-          const bool is_ll = sizeof(uintptr_t) == sizeof(long long);
-          if (is_ll) {
-            idx = print_integer(out, buffer, idx, maxlen, (PRINTF_INTEGER_VALUE_TYPE) value, false, BASE_HEX, precision, width, flags);
-          }
-          else {
-    #endif
-            idx = print_integer(out, buffer, idx, maxlen, (PRINTF_INTEGER_VALUE_TYPE)((uintptr_t)va_arg(va, void*)), false, BASE_HEX, precision, width, flags);
-    #if PRINTF_SUPPORT_LONG_LONG
-          }
-    #endif
-        }
+        idx = (value == (uintptr_t) NULL) ?
+          _out_rev(out, buffer, idx, maxlen, ")lin(", 5, width, flags) :
+          print_integer(out, buffer, idx, maxlen, (PRINTF_INTEGER_VALUE_TYPE) value, false, BASE_HEX, precision, width, flags);
         format++;
         break;
       }
