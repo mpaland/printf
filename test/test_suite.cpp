@@ -111,6 +111,12 @@ DISABLE_WARNING_PRINTF_FORMAT
 DISABLE_WARNING_PRINTF_FORMAT_EXTRA_ARGS
 #endif
 
+#if defined(_MSC_VER)
+DISABLE_WARNING(4996) // Discouragement of use of std::sprintf()
+DISABLE_WARNING(4310) // Casting to smaller type
+DISABLE_WARNING(4127) // Constant conditional expression
+#endif
+
 // dummy putchar
 static char   printf_buffer[100];
 static size_t printf_idx = 0U;
@@ -881,25 +887,25 @@ TEST_CASE("float", "[]" ) {
 #if PRINTF_SUPPORT_DECIMAL_SPECIFIERS
   // brute force float
   bool fail = false;
-  std::stringstream str;
-  str.precision(5);
+  std::stringstream sstr;
+  sstr.precision(5);
   for (float i = -100000; i < 100000; i += 1) {
     test::sprintf_(buffer, "%.5f", (double)(i / 10000));
-    str.str("");
-    str << std::fixed << i / 10000;
-    fail = fail || !!strcmp(buffer, str.str().c_str());
+    sstr.str("");
+    sstr << std::fixed << i / 10000;
+    fail = fail || !!strcmp(buffer, sstr.str().c_str());
   }
   CHECK(!fail);
 
 #if PRINTF_SUPPORT_EXPONENTIAL_SPECIFIERS
-  // So, this is tested with both decimal and exponential specifiers are supported.
+  // This is tested when _both_ decimal and exponential specifiers are supported.
   // brute force exp
-  str.setf(std::ios::scientific, std::ios::floatfield);
-  for (float i = -1e20; i < (float) 1e20; i += (float) 1e15) {
+  sstr.setf(std::ios::scientific, std::ios::floatfield);
+  for (float i = (float) -1e20; i < (float) 1e20; i += (float) 1e15) {
     test::sprintf_(buffer, "%.5f", (double) i);
-    str.str("");
-    str << i;
-    fail = fail || !!strcmp(buffer, str.str().c_str());
+    sstr.str("");
+    sstr << i;
+    fail = fail || !!strcmp(buffer, sstr.str().c_str());
   }
   CHECK(!fail);
 #endif
