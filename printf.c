@@ -92,9 +92,11 @@
 #endif
 
 #if PRINTF_SUPPORT_LONG_LONG
-#define PRINTF_INTEGER_VALUE_TYPE unsigned long long
+typedef unsigned long long printf_unsigned_value_t;
+typedef long long          printf_signed_value_t;
 #else
-#define PRINTF_INTEGER_VALUE_TYPE unsigned long
+typedef unsigned long printf_unsigned_value_t;
+typedef long          printf_signed_value_t;
 #endif
 
 #define PRINTF_PREFER_DECIMAL     false
@@ -160,7 +162,7 @@ typedef uint64_t double_uint_t;
 // Note in particular the behavior here on LONG_MIN or LLONG_MIN; it is valid
 // and well-defined, but if you're not careful you can easily trigger undefined
 // behavior with -LONG_MIN or -LLONG_MIN
-#define ABS_FOR_PRINTING(_x) ( (_x) > 0 ? (PRINTF_INTEGER_VALUE_TYPE)(_x) : -((PRINTF_INTEGER_VALUE_TYPE)_x) )
+#define ABS_FOR_PRINTING(_x) ((printf_unsigned_value_t) ( (_x) > 0 ? (_x) : -((printf_signed_value_t)_x) ))
 
 #define PRINTF_ABS(_x) ( (_x) > 0 ? (_x) : -(_x) )
 
@@ -370,7 +372,7 @@ static size_t print_integer_format(out_fct_type out, char* buffer, size_t idx, s
 }
 
 // An internal itoa-like function
-static size_t print_integer(out_fct_type out, char* buffer, size_t idx, size_t maxlen, PRINTF_INTEGER_VALUE_TYPE value, bool negative, numeric_base_t base, unsigned int precision, unsigned int width, unsigned int flags)
+static size_t print_integer(out_fct_type out, char* buffer, size_t idx, size_t maxlen, printf_unsigned_value_t value, bool negative, numeric_base_t base, unsigned int precision, unsigned int width, unsigned int flags)
 {
   char buf[PRINT_INTEGER_BUFFER_SIZE];
   size_t len = 0U;
@@ -503,7 +505,7 @@ static struct double_components get_normalized_components(bool negative, unsigne
   struct double_components components;
   components.is_negative = negative;
   components.integral = (int_fast64_t) apply_scaling(non_normalized, normalization);
-  double remainder = non_normalized - unapply_scaling(components.integral, normalization);
+  double remainder = non_normalized - unapply_scaling((double) components.integral, normalization);
   double prec_power_of_10 = powers_of_10[precision];
   struct scaling_factor account_for_precision = update_normalization(normalization, prec_power_of_10);
   double scaled_remainder = apply_scaling(remainder, account_for_precision);
@@ -968,15 +970,15 @@ static int _vsnprintf(out_fct_type out, char* buffer, const size_t maxlen, const
           // unsigned
           if (flags & FLAGS_LONG_LONG) {
 #if PRINTF_SUPPORT_LONG_LONG
-            idx = print_integer(out, buffer, idx, maxlen, (PRINTF_INTEGER_VALUE_TYPE) va_arg(va, unsigned long long), false, base, precision, width, flags);
+            idx = print_integer(out, buffer, idx, maxlen, (printf_unsigned_value_t) va_arg(va, unsigned long long), false, base, precision, width, flags);
 #endif
           }
           else if (flags & FLAGS_LONG) {
-            idx = print_integer(out, buffer, idx, maxlen, (PRINTF_INTEGER_VALUE_TYPE) va_arg(va, unsigned long), false, base, precision, width, flags);
+            idx = print_integer(out, buffer, idx, maxlen, (printf_unsigned_value_t) va_arg(va, unsigned long), false, base, precision, width, flags);
           }
           else {
             const unsigned int value = (flags & FLAGS_CHAR) ? (unsigned char)va_arg(va, unsigned int) : (flags & FLAGS_SHORT) ? (unsigned short int)va_arg(va, unsigned int) : va_arg(va, unsigned int);
-            idx = print_integer(out, buffer, idx, maxlen, (PRINTF_INTEGER_VALUE_TYPE) value, false, base, precision, width, flags);
+            idx = print_integer(out, buffer, idx, maxlen, (printf_unsigned_value_t) value, false, base, precision, width, flags);
           }
         }
         format++;
@@ -1058,7 +1060,7 @@ static int _vsnprintf(out_fct_type out, char* buffer, const size_t maxlen, const
         uintptr_t value = (uintptr_t)va_arg(va, void*);
         idx = (value == (uintptr_t) NULL) ?
           _out_rev(out, buffer, idx, maxlen, ")lin(", 5, width, flags) :
-          print_integer(out, buffer, idx, maxlen, (PRINTF_INTEGER_VALUE_TYPE) value, false, BASE_HEX, precision, width, flags);
+          print_integer(out, buffer, idx, maxlen, (printf_unsigned_value_t) value, false, BASE_HEX, precision, width, flags);
         format++;
         break;
       }
