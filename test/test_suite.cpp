@@ -35,6 +35,15 @@
 #include <math.h>
 #include <limits>
 
+#if defined(_WIN32)
+#include <BaseTsd.h>
+typedef SSIZE_T ssize_t;
+#elif defined(__unix__) || defined(__unix) || (defined(__APPLE__) && defined(__MACH__))
+#include <sys/types.h>
+#else
+// Let's just cross our fingers and hope `ssize_t` is defined.
+#endif
+
 namespace test {
   // use functions in own test namespace to avoid stdio conflicts
   #include "../printf.h"
