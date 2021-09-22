@@ -412,6 +412,7 @@ TEST_CASE("# flag - non-standard format", "[]" ) {
 }
 #endif
 
+#if PRINTF_SUPPORT_LONG_LONG
 TEST_CASE("# flag with long-long", "[]" ) {
   char buffer[100];
   PRINTING_CHECK("0",          ==, test::sprintf_, buffer, "%#llo",   (long long)        0 );
@@ -432,13 +433,14 @@ TEST_CASE("# flag with long-long", "[]" ) {
   PRINTING_CHECK("0x0000614e", ==, test::sprintf_, buffer, "%#.8llx", (long long)   0x614e );
 }
 
+
 #ifdef TEST_WITH_NON_STANDARD_FORMAT_STRINGS
 TEST_CASE("# flag with long-long - non-standard format", "[]" ) {
   char buffer[100];
   PRINTING_CHECK("0b110", ==, test::sprintf_, buffer, "%#llb", (long long) 6);
 }
 #endif
-
+#endif // PRINTF_SUPPORT_LONG_LONG
 
 TEST_CASE("specifier", "[]" ) {
   char buffer[100];
@@ -502,7 +504,9 @@ TEST_CASE("width 20", "[]" ) {
   PRINTING_CHECK("            EDCB5433", ==, test::sprintf_, buffer, "%20X",   3989525555U);
   PRINTING_CHECK("                   0", ==, test::sprintf_, buffer, "%20X",   0);
   PRINTING_CHECK("                   0", ==, test::sprintf_, buffer, "%20X",   0U);
+#if PRINTF_SUPPORT_LONG_LONG
   PRINTING_CHECK("                   0", ==, test::sprintf_, buffer, "%20llX", 0ULL);
+#endif
   PRINTING_CHECK("                   x", ==, test::sprintf_, buffer, "%20c",   'x');
 }
 
@@ -922,20 +926,26 @@ TEST_CASE("types", "[]" ) {
   PRINTING_CHECK("30",                   ==, test::sprintf_, buffer, "%li", 30L);
   PRINTING_CHECK("-2147483647",          ==, test::sprintf_, buffer, "%li", -2147483647L);
   PRINTING_CHECK("2147483647",           ==, test::sprintf_, buffer, "%li", 2147483647L);
+#if PRINTF_SUPPORT_LONG_LONG
   PRINTING_CHECK("30",                   ==, test::sprintf_, buffer, "%lli", 30LL);
   PRINTING_CHECK("-9223372036854775807", ==, test::sprintf_, buffer, "%lli", -9223372036854775807LL);
   PRINTING_CHECK("9223372036854775807",  ==, test::sprintf_, buffer, "%lli", 9223372036854775807LL);
+#endif
   PRINTING_CHECK("100000",               ==, test::sprintf_, buffer, "%lu", 100000L);
   PRINTING_CHECK("4294967295",           ==, test::sprintf_, buffer, "%lu", 0xFFFFFFFFL);
+#if PRINTF_SUPPORT_LONG_LONG
   PRINTING_CHECK("281474976710656",      ==, test::sprintf_, buffer, "%llu", 281474976710656LLU);
   PRINTING_CHECK("18446744073709551615", ==, test::sprintf_, buffer, "%llu", 18446744073709551615LLU);
+#endif
   PRINTING_CHECK("2147483647",           ==, test::sprintf_, buffer, "%zu", (size_t)2147483647UL);
   PRINTING_CHECK("2147483647",           ==, test::sprintf_, buffer, "%zd", (size_t)2147483647UL);
   PRINTING_CHECK("-2147483647",          ==, test::sprintf_, buffer, "%zi", (ssize_t)-2147483647L);
   PRINTING_CHECK("165140",               ==, test::sprintf_, buffer, "%o", 60000);
   PRINTING_CHECK("57060516",             ==, test::sprintf_, buffer, "%lo", 12345678L);
   PRINTING_CHECK("12345678",             ==, test::sprintf_, buffer, "%lx", 0x12345678L);
+#if PRINTF_SUPPORT_LONG_LONG
   PRINTING_CHECK("1234567891234567",     ==, test::sprintf_, buffer, "%llx", 0x1234567891234567LLU);
+#endif
   PRINTING_CHECK("abcdefab",             ==, test::sprintf_, buffer, "%lx", 0xabcdefabL);
   PRINTING_CHECK("ABCDEFAB",             ==, test::sprintf_, buffer, "%lX", 0xabcdefabL);
   PRINTING_CHECK("v",                    ==, test::sprintf_, buffer, "%c", 'v');
@@ -1133,11 +1143,13 @@ TEST_CASE("extremal signed integer values", "[]" ) {
   std::sprintf(expected, "%ld", std::numeric_limits<long int>::max());
   PRINTING_CHECK(expected, ==, test::sprintf_, buffer, "%ld", std::numeric_limits<long int>::max());
 
+#if PRINTF_SUPPORT_LONG_LONG
   std::sprintf(expected, "%lld", std::numeric_limits<long long int>::min());
   PRINTING_CHECK(expected, ==, test::sprintf_, buffer, "%lld", std::numeric_limits<long long int>::min());
 
   std::sprintf(expected, "%lld", std::numeric_limits<long long int>::max());
   PRINTING_CHECK(expected, ==, test::sprintf_, buffer, "%lld", std::numeric_limits<long long int>::max());
+#endif
 }
 
 TEST_CASE("extremal unsigned integer values", "[]" ) {
@@ -1156,8 +1168,10 @@ TEST_CASE("extremal unsigned integer values", "[]" ) {
   std::sprintf(expected, "%lu", std::numeric_limits<long unsigned>::max());
   PRINTING_CHECK(expected, ==, test::sprintf_, buffer, "%lu", std::numeric_limits<long unsigned>::max());
 
+#if PRINTF_SUPPORT_LONG_LONG
   std::sprintf(expected, "%llu", std::numeric_limits<long long unsigned>::max());
   PRINTING_CHECK(expected, ==, test::sprintf_, buffer, "%llu", std::numeric_limits<long long unsigned>::max());
+#endif
 }
 
 
