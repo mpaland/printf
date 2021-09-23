@@ -688,6 +688,7 @@ TEST_CASE("padding neg numbers", "[]" ) {
 }
 
 
+#if PRINTF_SUPPORT_DECIMAL_SPECIFIERS || PRINTF_SUPPORT_EXPONENTIAL_SPECIFIERS
 TEST_CASE("float padding neg numbers", "[]" ) {
   char buffer[100];
 
@@ -722,6 +723,7 @@ TEST_CASE("float padding neg numbers", "[]" ) {
   PRINTING_CHECK("-05",        ==, test::sprintf_, buffer, "%03.0g", -5.);
 #endif
 }
+#endif // PRINTF_SUPPORT_DECIMAL_SPECIFIERS || PRINTF_SUPPORT_EXPONENTIAL_SPECIFIERS
 
 TEST_CASE("length", "[]" ) {
   char buffer[100];
