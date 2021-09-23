@@ -157,15 +157,6 @@ typedef uint64_t double_uint_t;
 #endif
 #define DOUBLE_STORED_MANTISSA_BITS (DBL_MANT_DIG - 1)
 
-#endif // (PRINTF_SUPPORT_DECIMAL_SPECIFIERS || PRINTF_SUPPORT_EXPONENTIAL_SPECIFIERS)
-
-// Note in particular the behavior here on LONG_MIN or LLONG_MIN; it is valid
-// and well-defined, but if you're not careful you can easily trigger undefined
-// behavior with -LONG_MIN or -LLONG_MIN
-#define ABS_FOR_PRINTING(_x) ((printf_unsigned_value_t) ( (_x) > 0 ? (_x) : -((printf_signed_value_t)_x) ))
-
-#define PRINTF_ABS(_x) ( (_x) > 0 ? (_x) : -(_x) )
-
 typedef union {
   double_uint_t U;
   double        F;
@@ -195,7 +186,14 @@ static inline int get_exp2(double_with_bit_access x)
   // special use).
   return (int)((x.U >> DOUBLE_STORED_MANTISSA_BITS ) & DOUBLE_EXPONENT_MASK) - DOUBLE_BASE_EXPONENT;
 }
+#define PRINTF_ABS(_x) ( (_x) > 0 ? (_x) : -(_x) )
 
+#endif // (PRINTF_SUPPORT_DECIMAL_SPECIFIERS || PRINTF_SUPPORT_EXPONENTIAL_SPECIFIERS)
+
+// Note in particular the behavior here on LONG_MIN or LLONG_MIN; it is valid
+// and well-defined, but if you're not careful you can easily trigger undefined
+// behavior with -LONG_MIN or -LLONG_MIN
+#define ABS_FOR_PRINTING(_x) ((printf_unsigned_value_t) ( (_x) > 0 ? (_x) : -((printf_signed_value_t)_x) ))
 
 // output function type
 typedef void (*out_fct_type)(char character, void* buffer, size_t idx, size_t maxlen);
