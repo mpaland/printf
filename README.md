@@ -172,18 +172,22 @@ Notes:
 
 The length sub-specifier modifies the length of the data type.
 
-| Length | With `d`, `i` | With `u`,`o`,`x`, `X`  | Support enabled by...           |
-|--------|---------------|------------------------|---------------------------------|
-| (none) | int           | unsigned int           |                                 |
-| hh     | signed char   | unsigned char          |                                 |
-| h      | short int     | unsigned short int     |                                 |
-| l      | long int      | unsigned long int      |                                 |
-| ll     | long long int | unsigned long long int | PRINTF_SUPPORT_LONG_LONG        |
-| j      | intmax_t      | uintmax_t              |                                 |
-| z      | size_t        | size_t                 |                                 |
-| t      | ptrdiff_t     | ptrdiff_t              | SUPPORT_PTRDIFF_LENGTH_MODIFIER |
+| Length | With `d`, `i`             | With `u`,`o`,`x`, `X`  | Support enabled by...           |
+|--------|---------------------------|------------------------|---------------------------------|
+| (none) | int                       | unsigned int           |                                 |
+| hh     | signed char               | unsigned char          |                                 |
+| h      | short int                 | unsigned short int     |                                 |
+| l      | long int                  | unsigned long int      |                                 |
+| ll     | long long int             | unsigned long long int | PRINTF_SUPPORT_LONG_LONG        |
+| j      | intmax_t                  | uintmax_t              |                                 |
+| z      | signed version of size_t  | size_t                 |                                 |
+| t      | ptrdiff_t                 | ptrdiff_t              | SUPPORT_PTRDIFF_LENGTH_MODIFIER |
 
-Note: The `L` modifier, for `long double`, is not currently supported.
+Notes:
+
+* The `L` modifier, for `long double`, is not currently supported.
+* A `"%zd"` or `"%zi"` takes a signed integer of the same size as `size_t`. 
+* The implementation currently assumes each of `intmax_t`, signed `size_t`, and `ptrdiff_t` has the same size as `long int` or as `long long int`. If this is not the case for your platform, please open an issue.
 
 ### Return Value
 

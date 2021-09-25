@@ -1,4 +1,7 @@
 cmake_minimum_required (VERSION 3.13)
+
+include(CheckTypeSize)
+
 project(
 	printf
 	LANGUAGES C
@@ -36,6 +39,23 @@ set(NTOA_BUFFER_SIZE "32" CACHE STRING          "Integer to string (ntoa) conver
 set(PRINTF_DECIMAL_BUFFER_SIZE "32" CACHE STRING   "Floating-point to decimal conversion buffer size")
 set(DEFAULT_FLOAT_PRECISION "6" CACHE STRING    "Default precision when printing floating-point values")
 set(MAX_INTEGRAL_DIGITS_FOR_DECIMAL "9" CACHE STRING "Maximum number of integral-part digits of a floating-point value for which printing with %f uses decimal (non-exponential) notation")
+
+# Checks related to the 'j', 'z' and 't' size modifiers
+
+check_type_size( "long"        SIZEOF_LONG       )
+check_type_size( "long long"   SIZEOF_LONG_LONG  )
+
+set(ACCEPTABLE_JZT_TYPE_SIZES ${SIZEOF_LONG} ${SIZEOF_LONG_LONG})
+
+function(validate_type_size type_name)
+	check_type_size(${type_name} TYPE_SIZE)
+	if (NOT ${TYPE_SIZE} IN_LIST ACCEPTABLE_JZT_TYPE_SIZES)
+		message(FATAL_ERROR "sizeof(${type_name}) is  ${TYPE_SIZE}, which is neither sizeof(long) (${SIZEOF_LONG}) nor sizeof(long long) (${SIZEOF_LONG_LONG}). Please contact the library maintainers with your platform details.")
+	endif()
+endfunction()
+validate_type_size("intmax_t")
+validate_type_size("size_t")
+validate_type_size("ptrdiff_t")
 
 if (BUILD_STATIC_LIBRARY)
 	add_library(printf STATIC)
