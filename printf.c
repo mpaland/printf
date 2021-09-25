@@ -903,8 +903,8 @@ static int _vsnprintf(out_fct_type out, char* buffer, const size_t maxlen, const
         flags |= (sizeof(size_t) == sizeof(long) ? FLAGS_LONG : FLAGS_LONG_LONG);
         format++;
         break;
-        default :
-          break;
+      default:
+        break;
     }
 
     // evaluate specifier
