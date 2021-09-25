@@ -92,6 +92,27 @@ int vfctprintf(void (*out)(char character, void* arg), void* arg, const char* fo
 ```
 These higher-order functions allow for better flexibility of use: You can decide to do different things with the individual output characters: Encode them, compress them, filter them, append them to a buffer or a file, or just discard them. This is achieved by you passing a pointer to your own state information - through `(v)fctprintf()` and all the way to your own `out()` function.
 
+#### "... but I don't like the underscore-suffix names :-("
+
+You can [configure](#CMake-options-and-preprocessor-definitions) the library to alias the standard library's names, in which case it exposes `printf()`, `sprintf()`, `vsprintf()` and so on. Alternatively, you can write short wrappers with your preferred names. This is completely trivial with the v-functions, e.g.:
+```
+int my_vprintf(const char* format, va_list va)
+{
+  return vprintf_(format, va);
+}
+```
+and is still pretty straightforward with the variable-number-of-arguments functions:
+```
+int my_sprintf(char* buffer, const char* format, ...)
+{
+  va_list va;
+  va_start(va, format);
+  const int ret = vsprintf_(buffer, format, va);
+  va_end(va);
+  return ret;
+}
+```
+
 ### Supported Format Specifiers
 
 A format specifier follows this prototype: `%[flags][width][.precision][length]type`
