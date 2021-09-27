@@ -300,8 +300,9 @@ static size_t _out_rev(out_fct_type out, char* buffer, size_t idx, size_t maxlen
 }
 
 
-// internal itoa format
-static size_t print_integer_format(out_fct_type out, char* buffer, size_t idx, size_t maxlen, char* buf, size_t len, bool negative, numeric_base_t base, unsigned int precision, unsigned int width, unsigned int flags)
+// Invoked by print_integer after the actual number has been printed, performing necessary
+// work on the number's prefix (as the number is initially printed in reverse order)
+static size_t print_integer_finalization(out_fct_type out, char* buffer, size_t idx, size_t maxlen, char* buf, size_t len, bool negative, numeric_base_t base, unsigned int precision, unsigned int width, unsigned int flags)
 {
   size_t unpadded_len = len;
 
@@ -397,7 +398,7 @@ static size_t print_integer(out_fct_type out, char* buffer, size_t idx, size_t m
     } while (value && (len < PRINT_INTEGER_BUFFER_SIZE));
   }
 
-  return print_integer_format(out, buffer, idx, maxlen, buf, len, negative, base, precision, width, flags);
+  return print_integer_finalization(out, buffer, idx, maxlen, buf, len, negative, base, precision, width, flags);
 }
 
 #if (PRINTF_SUPPORT_DECIMAL_SPECIFIERS || PRINTF_SUPPORT_EXPONENTIAL_SPECIFIERS)
