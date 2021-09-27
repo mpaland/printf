@@ -57,12 +57,12 @@ __attribute__((format(__printf__, (one_based_format_index), (first_arg))))
 #endif
 
 #ifdef PRINTF_ALIAS_STANDARD_FUNCTION_NAMES
-# define printf    printf_
-# define sprintf   sprintf_
-# define vsprintf  vsprintf_
-# define snprintf  snprintf_
-# define vsnprintf vsnprintf_
-# define vprintf   vprintf_
+# define printf_    printf_
+# define sprintf_   sprintf_
+# define vsprintf_  vsprintf_
+# define snprintf_  snprintf_
+# define vsnprintf_ vsnprintf_
+# define vprintf_   vprintf_
 #endif
 
 
@@ -134,6 +134,15 @@ int vfctprintf(void (*out)(char character, void* arg), void* arg, const char* fo
 
 #ifdef __cplusplus
 }
+#endif
+
+#ifdef PRINTF_ALIAS_STANDARD_FUNCTION_NAMES
+# undef printf_
+# undef sprintf_
+# undef vsprintf_
+# undef snprintf_
+# undef vsnprintf_
+# undef vprintf_
 #endif
 
 #endif  // _PRINTF_H_
