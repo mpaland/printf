@@ -1032,7 +1032,10 @@ DISABLE_WARNING_POP
 #ifdef TEST_WITH_NON_STANDARD_FORMAT_STRINGS
 TEST_CASE("string length (non-standard format)", "[]" ) {
   char buffer[100];
+DISABLE_WARNING_PUSH
+DISABLE_WARNING_PRINTF_FORMAT
   PRINTING_CHECK(".2s", ==, test::sprintf_, buffer, "%.4.2s", "123456");
+DISABLE_WARNING_POP
 }
 #endif
 
