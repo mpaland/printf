@@ -36,8 +36,8 @@
  * THE SOFTWARE.
  */
 
-#ifndef _PRINTF_H_
-#define _PRINTF_H_
+#ifndef PRINTF_H_
+#define PRINTF_H_
 
 #include <stdarg.h>
 #include <stddef.h>
@@ -145,4 +145,4 @@ int vfctprintf(void (*out)(char character, void* arg), void* arg, const char* fo
 # undef vprintf_
 #endif
 
-#endif  // _PRINTF_H_
+#endif  // PRINTF_H_
