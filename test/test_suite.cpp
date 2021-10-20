@@ -781,7 +781,7 @@ TEST_CASE("float", "[]" ) {
   // switch from decimal to exponential representation
   //
   CAPTURE_AND_PRINT(test::sprintf_, buffer, "%.0f", (double) ((int64_t)1 * 1000 ) );
-  if (PRINTF_FLOAT_NOTATION_THRESHOLD < 1e+3) {
+  if (PRINTF_MAX_INTEGRAL_DIGITS_FOR_DECIMAL < 3) {
     CHECK(!strcmp(buffer, "1e+3"));
   }
   else {
@@ -790,7 +790,7 @@ TEST_CASE("float", "[]" ) {
   }
 
   CAPTURE_AND_PRINT(test::sprintf_, buffer, "%.0f", (double) ((int64_t)1 * 1000 * 1000 ) );
-  if (PRINTF_FLOAT_NOTATION_THRESHOLD < 1e+6) {
+  if (PRINTF_MAX_INTEGRAL_DIGITS_FOR_DECIMAL < 6) {
     CHECK(!strcmp(buffer, "1e+6"));
   }
   else {
@@ -798,7 +798,7 @@ TEST_CASE("float", "[]" ) {
   }
 
   CAPTURE_AND_PRINT(test::sprintf_, buffer, "%.0f", (double) ((int64_t)1 * 1000 * 1000 * 1000 ) );
-  if (PRINTF_FLOAT_NOTATION_THRESHOLD < 1e+9) {
+  if (PRINTF_MAX_INTEGRAL_DIGITS_FOR_DECIMAL < 9) {
     CHECK(!strcmp(buffer, "1e+9"));
   }
   else {
@@ -806,7 +806,7 @@ TEST_CASE("float", "[]" ) {
   }
 
   CAPTURE_AND_PRINT(test::sprintf_, buffer, "%.0f", (double) ((int64_t)1 * 1000 * 1000 * 1000 * 1000) );
-  if (PRINTF_FLOAT_NOTATION_THRESHOLD < 1e+12) {
+  if (PRINTF_MAX_INTEGRAL_DIGITS_FOR_DECIMAL < 12) {
 #if PRINTF_SUPPORT_EXPONENTIAL_SPECIFIERS
     CHECK(!strcmp(buffer, "1e+12"));
 #else
@@ -818,7 +818,7 @@ TEST_CASE("float", "[]" ) {
   }
 
   CAPTURE_AND_PRINT(test::sprintf_, buffer, "%.0f", (double) ((int64_t)1 * 1000 * 1000 * 1000 * 1000 * 1000) );
-  if (PRINTF_FLOAT_NOTATION_THRESHOLD < 1e+15) {
+  if (PRINTF_MAX_INTEGRAL_DIGITS_FOR_DECIMAL < 15) {
 #if PRINTF_SUPPORT_EXPONENTIAL_SPECIFIERS
     CHECK(!strcmp(buffer, "1e+15"));
 #else
