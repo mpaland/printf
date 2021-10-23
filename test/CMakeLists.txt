@@ -4,7 +4,7 @@ enable_language(CXX)
 
 set(test_targets test_suite autotest)
 
-option(TEST_NONSTD_FORMATS "Include tests using non-standard-compliant format strings?" ON)
+option(TEST_WITH_NON_STANDARD_FORMAT_STRINGS "Include tests using non-standard-compliant format strings?" ON)
 # ... don't worry, we'll suppress the compiler warnings for those.
 
 foreach(tgt ${test_targets})
@@ -17,7 +17,7 @@ foreach(tgt ${test_targets})
 		CXX_EXTENSIONS NO
 	)
 
-	if (TEST_NONSTD_FORMATS)
+	if (TEST_WITH_NON_STANDARD_FORMAT_STRINGS)
 		target_compile_definitions(${tgt} PRIVATE TEST_WITH_NON_STANDARD_FORMAT_STRINGS)
 	endif()
 
