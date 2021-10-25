@@ -449,7 +449,7 @@ TEST_CASE("specifier", "[]" ) {
 
 DISABLE_WARNING_PUSH
 DISABLE_WARNING_PRINTF_FORMAT_OVERFLOW
-  PRINTING_CHECK( "(null)", ==, test::sprintf_, buffer, "%s", NULL);
+  PRINTING_CHECK( "(null)", ==, test::sprintf_, buffer, "%s", (const char*) NULL);
 DISABLE_WARNING_POP
   PRINTING_CHECK("1024",        ==, test::sprintf_, buffer, "%d", 1024);
   PRINTING_CHECK("-1024",       ==, test::sprintf_, buffer, "%d", -1024);
@@ -1003,7 +1003,7 @@ TEST_CASE("pointer", "[]" ) {
     test::sprintf_(buffer, "%p", (void*)(uintptr_t)0xFFFFFFFFU);
     CHECK(!strcmp(buffer, "0xffffffff"));
   }
-  PRINTING_CHECK("(nil)", ==, test::sprintf_, buffer, "%p", NULL);
+  PRINTING_CHECK("(nil)", ==, test::sprintf_, buffer, "%p", (const void*) NULL);
 }
 
 #ifdef TEST_WITH_NON_STANDARD_FORMAT_STRINGS
@@ -1025,7 +1025,7 @@ TEST_CASE("string length", "[]" ) {
 
 DISABLE_WARNING_PUSH
 DISABLE_WARNING_PRINTF_FORMAT_OVERFLOW
-  PRINTING_CHECK("(null)", ==, test::sprintf_, buffer, "%.*s", 3, NULL);
+  PRINTING_CHECK("(null)", ==, test::sprintf_, buffer, "%.*s", 3, (const char*) NULL);
 DISABLE_WARNING_POP
 }
 
@@ -1061,7 +1061,7 @@ TEST_CASE("buffer length", "[]" ) {
 
 DISABLE_WARNING_PUSH
 DISABLE_WARNING_PRINTF_FORMAT_OVERFLOW
-  test::snprintf_(buffer, 2, "%s", NULL);
+  test::snprintf_(buffer, 2, "%s", (const char*) NULL);
   CHECK(!strcmp(buffer, "("));
 DISABLE_WARNING_POP
 }
@@ -1085,7 +1085,7 @@ TEST_CASE("ret value", "[]" ) {
 
 DISABLE_WARNING_PUSH
 DISABLE_WARNING_PRINTF_FORMAT_OVERFLOW
-  ret = test::snprintf_(buffer, 6, "0%s", NULL);
+  ret = test::snprintf_(buffer, 6, "0%s", (const char*) NULL);
 DISABLE_WARNING_POP
   CHECK(!strcmp(buffer, "0(nul"));
   CHECK(ret == 7);  // "l)" is truncated
