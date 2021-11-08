@@ -29,7 +29,6 @@ foreach(opt
 		set("PRINTF_${opt}" 1)
 	else()
 		set("PRINTF_${opt}" 0)
-		message(STATUS "PRINTF_${opt} 0")
 	endif()
 endforeach()
 

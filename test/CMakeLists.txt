@@ -20,8 +20,19 @@ foreach(tgt ${test_targets})
 	if (TEST_WITH_NON_STANDARD_FORMAT_STRINGS)
 		target_compile_definitions(${tgt} PRIVATE TEST_WITH_NON_STANDARD_FORMAT_STRINGS)
 	endif()
+endforeach()
 
+add_executable(aliasing "aliasing.c")
+set_target_properties(
+	${tgt}
+	PROPERTIES
+	C_STANDARD 11
+	C_STANDARD_REQUIRED YES
+	C_EXTENSIONS NO
+)
+list(APPEND test_targets aliasing)
 
+foreach(tgt ${test_targets})
 	if (CMAKE_CXX_COMPILER_ID STREQUAL "MSVC")
 		target_compile_options(test_suite PRIVATE /W4)
 	elseif (CMAKE_CXX_COMPILER_ID STREQUAL "GNU" OR
@@ -69,6 +80,16 @@ add_test(
 
 target_link_libraries(autotest PRIVATE printf)
 target_include_directories(autotest PRIVATE "$<BUILD_INTERFACE:${GENERATED_INCLUDE_DIR}>")
+
+add_test(
+	NAME "${PROJECT_NAME}.aliasing"
+	COMMAND "aliasing"
+)
+target_link_libraries(aliasing PRIVATE printf)
+target_include_directories(aliasing PRIVATE "$<BUILD_INTERFACE:${GENERATED_INCLUDE_DIR}>")
+
+
+
 
 # Not running autotest by default - it's randomized after all.
 

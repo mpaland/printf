@@ -57,14 +57,15 @@ __attribute__((format(__printf__, (one_based_format_index), (first_arg))))
 #endif
 
 #ifdef PRINTF_ALIAS_STANDARD_FUNCTION_NAMES
-# define printf_    printf_
-# define sprintf_   sprintf_
-# define vsprintf_  vsprintf_
-# define snprintf_  snprintf_
-# define vsnprintf_ vsnprintf_
-# define vprintf_   vprintf_
+#if PRINTF_ALIAS_STANDARD_FUNCTION_NAMES
+# define printf_    printf
+# define sprintf_   sprintf
+# define vsprintf_  vsprintf
+# define snprintf_  snprintf
+# define vsnprintf_ vsnprintf
+# define vprintf_   vprintf
 #endif
-
+#endif
 
 /**
  * Output a character to a custom device like UART, used by the printf() function
@@ -137,12 +138,14 @@ int vfctprintf(void (*out)(char character, void* arg), void* arg, const char* fo
 #endif
 
 #ifdef PRINTF_ALIAS_STANDARD_FUNCTION_NAMES
+#if PRINTF_ALIAS_STANDARD_FUNCTION_NAMES
 # undef printf_
 # undef sprintf_
 # undef vsprintf_
 # undef snprintf_
 # undef vsnprintf_
 # undef vprintf_
+#endif
 #endif
 
 #endif  // PRINTF_H_

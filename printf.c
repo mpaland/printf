@@ -39,14 +39,25 @@
 #include <stdbool.h>
 #include <stdint.h>
 
-#include "printf.h"
-
-
 // Define this globally (e.g. gcc -DPRINTF_INCLUDE_CONFIG_H ...) to include the
 // printf_config.h header file
-// default: undefined
 #ifdef PRINTF_INCLUDE_CONFIG_H
+#if PRINTF_INCLUDE_CONFIG_H
 #include "printf_config.h"
+#endif
+#endif
+
+#include "printf.h"
+
+#ifdef PRINTF_ALIAS_STANDARD_FUNCTION_NAMES
+#if PRINTF_ALIAS_STANDARD_FUNCTION_NAMES
+# define printf_    printf
+# define sprintf_   sprintf
+# define vsprintf_  vsprintf
+# define snprintf_  snprintf
+# define vsnprintf_ vsnprintf
+# define vprintf_   vprintf
+#endif
 #endif
 
 
@@ -1148,3 +1159,4 @@ int vfctprintf(void (*out)(char character, void* arg), void* arg, const char* fo
   const out_fct_wrap_type out_fct_wrap = { out, arg };
   return _vsnprintf(_out_fct, (char*)(uintptr_t)&out_fct_wrap, (size_t)-1, format, va);
 }
+

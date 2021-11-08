@@ -11,9 +11,22 @@
 #endif
 #include <assert.h>
 
-#undef PRINTF_ALIAS_STANDARD_FUNCTION_NAMES
-#include "../printf.h"
 #include "printf_config.h"
+#include "../printf.h"
+
+#ifndef PRINTF_ALIAS_STANDARD_FUNCTION_NAMES
+#define PRINTF_ALIAS_STANDARD_FUNCTION_NAMES 0
+#endif
+
+#if PRINTF_ALIAS_STANDARD_FUNCTION_NAMES
+# define printf_    printf
+# define sprintf_   sprintf
+# define vsprintf_  vsprintf
+# define snprintf_  snprintf
+# define vsnprintf_ vsnprintf
+# define vprintf_   vprintf
+#endif
+
 
 //*******************************************************
 // Defines
