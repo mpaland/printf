@@ -121,7 +121,7 @@ DISABLE_WARNING(4127) // Constant conditional expression
 static char   printf_buffer[100];
 static size_t printf_idx = 0U;
 
-void test::_putchar(char character)
+void test::putchar_(char character)
 {
   printf_buffer[printf_idx++] = character;
 }

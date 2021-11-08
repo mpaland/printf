@@ -121,7 +121,7 @@ Examples:\n\
 // Functions
 //*******************************************************
 
-void _putchar(char character)
+void putchar_(char character)
 {
   (void)character;
 }

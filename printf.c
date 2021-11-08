@@ -214,11 +214,11 @@ typedef void (*out_fct_type)(char character, void* buffer, size_t idx, size_t ma
 typedef struct {
   void  (*fct)(char character, void* arg);
   void* arg;
-} out_fct_wrap_type;
+} out_function_wrapper_type;
 
 
 // internal buffer output
-static inline void _out_buffer(char character, void* buffer, size_t idx, size_t maxlen)
+static inline void out_buffer(char character, void* buffer, size_t idx, size_t maxlen)
 {
   if (idx < maxlen) {
     ((char*)buffer)[idx] = character;
@@ -227,36 +227,36 @@ static inline void _out_buffer(char character, void* buffer, size_t idx, size_t 
 
 
 // internal null output
-static inline void _out_null(char character, void* buffer, size_t idx, size_t maxlen)
+static inline void out_discard(char character, void* buffer, size_t idx, size_t maxlen)
 {
   (void)character; (void)buffer; (void)idx; (void)maxlen;
 }
 
 
-// internal _putchar wrapper
-static inline void _out_char(char character, void* buffer, size_t idx, size_t maxlen)
+// internal putchar_ wrapper
+static inline void out_putchar(char character, void* buffer, size_t idx, size_t maxlen)
 {
   (void)buffer; (void)idx; (void)maxlen;
   if (character) {
-    _putchar(character);
+    putchar_(character);
   }
 }
 
 
 // internal output function wrapper
-static inline void _out_fct(char character, void* buffer, size_t idx, size_t maxlen)
+static inline void out_wrapped_function(char character, void* wrapped_function, size_t idx, size_t maxlen)
 {
   (void)idx; (void)maxlen;
   if (character) {
     // buffer is the output fct pointer
-    ((out_fct_wrap_type*)buffer)->fct(character, ((out_fct_wrap_type*)buffer)->arg);
+    ((out_function_wrapper_type*)wrapped_function)->fct(character, ((out_function_wrapper_type*)wrapped_function)->arg);
   }
 }
 
 
 // internal secure strlen
 // @return The length of the string (excluding the terminating 0) limited by 'maxsize'
-static inline unsigned int _strnlen_s(const char* str, size_t maxsize)
+static inline unsigned int strnlen_s_(const char* str, size_t maxsize)
 {
   const char* s;
   for (s = str; *s && maxsize--; ++s);
@@ -266,17 +266,17 @@ static inline unsigned int _strnlen_s(const char* str, size_t maxsize)
 
 // internal test if char is a digit (0-9)
 // @return true if char is a digit
-static inline bool _is_digit(char ch)
+static inline bool is_digit_(char ch)
 {
   return (ch >= '0') && (ch <= '9');
 }
 
 
 // internal ASCII string to unsigned int conversion
-static unsigned int _atoi(const char** str)
+static unsigned int atoi_(const char** str)
 {
   unsigned int i = 0U;
-  while (_is_digit(**str)) {
+  while (is_digit_(**str)) {
     i = i * 10U + (unsigned int)(*((*str)++) - '0');
   }
   return i;
@@ -284,7 +284,7 @@ static unsigned int _atoi(const char** str)
 
 
 // output the specified string in reverse, taking care of any zero-padding
-static size_t _out_rev(out_fct_type out, char* buffer, size_t idx, size_t maxlen, const char* buf, size_t len, unsigned int width, unsigned int flags)
+static size_t out_rev_(out_fct_type out, char* buffer, size_t idx, size_t maxlen, const char* buf, size_t len, unsigned int width, unsigned int flags)
 {
   const size_t start_idx = idx;
 
@@ -378,7 +378,7 @@ static size_t print_integer_finalization(out_fct_type out, char* buffer, size_t 
     }
   }
 
-  return _out_rev(out, buffer, idx, maxlen, buf, len, width, flags);
+  return out_rev_(out, buffer, idx, maxlen, buf, len, width, flags);
 }
 
 // An internal itoa-like function
@@ -549,7 +549,7 @@ static struct double_components get_normalized_components(bool negative, unsigne
 }
 #endif
 
-static size_t sprint_broken_up_decimal(
+static size_t print_broken_up_decimal(
   struct double_components number_, out_fct_type out, char *buffer, size_t idx, size_t maxlen, unsigned int precision,
   unsigned int width, unsigned int flags, char *buf, size_t len)
 {
@@ -631,19 +631,19 @@ static size_t sprint_broken_up_decimal(
     }
   }
 
-  return _out_rev(out, buffer, idx, maxlen, buf, len, width, flags);
+  return out_rev_(out, buffer, idx, maxlen, buf, len, width, flags);
 }
 
       // internal ftoa for fixed decimal floating point
-static size_t sprint_decimal_number(out_fct_type out, char* buffer, size_t idx, size_t maxlen, double number, unsigned int precision, unsigned int width, unsigned int flags, char* buf, size_t len)
+static size_t print_decimal_number(out_fct_type out, char* buffer, size_t idx, size_t maxlen, double number, unsigned int precision, unsigned int width, unsigned int flags, char* buf, size_t len)
 {
   struct double_components value_ = get_components(number, precision);
-  return sprint_broken_up_decimal(value_, out, buffer, idx, maxlen, precision, width, flags, buf, len);
+  return print_broken_up_decimal(value_, out, buffer, idx, maxlen, precision, width, flags, buf, len);
 }
 
 #if PRINTF_SUPPORT_EXPONENTIAL_SPECIFIERS
 // internal ftoa variant for exponential floating-point type, contributed by Martijn Jasperse <m.jasperse@gmail.com>
-static size_t sprint_exponential_number(out_fct_type out, char* buffer, size_t idx, size_t maxlen, double number, unsigned int precision, unsigned int width, unsigned int flags, char* buf, size_t len)
+static size_t print_exponential_number(out_fct_type out, char* buffer, size_t idx, size_t maxlen, double number, unsigned int precision, unsigned int width, unsigned int flags, char* buf, size_t len)
 {
   const bool negative = get_sign(number);
   // This number will decrease gradually (by factors of 10) as we "extract" the exponent out of it
@@ -704,7 +704,7 @@ static size_t sprint_exponential_number(out_fct_type out, char* buffer, size_t i
         (int) precision - 1 - exp10 :
         (int) precision - 1; // the presence of the exponent ensures only one significant digit comes before the decimal point
     precision = (precision_ > 0 ? (unsigned) precision_ : 0U);
-    flags |= FLAGS_PRECISION;   // make sure sprint_broken_up_decimal respects our choice above
+    flags |= FLAGS_PRECISION;   // make sure print_broken_up_decimal respects our choice above
   }
 
   normalization.multiply = (exp10 < 0 && abs_exp10_covered_by_powers_table);
@@ -752,7 +752,7 @@ static size_t sprint_exponential_number(out_fct_type out, char* buffer, size_t i
         0U);
 
   const size_t start_idx = idx;
-  idx = sprint_broken_up_decimal(decimal_part_components, out, buffer, idx, maxlen, precision, decimal_part_width, flags, buf, len);
+  idx = print_broken_up_decimal(decimal_part_components, out, buffer, idx, maxlen, precision, decimal_part_width, flags, buf, len);
 
   if (! fall_back_to_decimal_only_mode) {
     out((flags & FLAGS_UPPERCASE) ? 'E' : 'e', buffer, idx++, maxlen);
@@ -770,25 +770,25 @@ static size_t sprint_exponential_number(out_fct_type out, char* buffer, size_t i
 #endif  // PRINTF_SUPPORT_EXPONENTIAL_SPECIFIERS
 
 
-static size_t sprint_floating_point(out_fct_type out, char* buffer, size_t idx, size_t maxlen, double value, unsigned int precision, unsigned int width, unsigned int flags, bool prefer_exponential)
+static size_t print_floating_point(out_fct_type out, char* buffer, size_t idx, size_t maxlen, double value, unsigned int precision, unsigned int width, unsigned int flags, bool prefer_exponential)
 {
   char buf[PRINTF_FTOA_BUFFER_SIZE];
   size_t len  = 0U;
 
   // test for special values
   if (value != value)
-    return _out_rev(out, buffer, idx, maxlen, "nan", 3, width, flags);
+    return out_rev_(out, buffer, idx, maxlen, "nan", 3, width, flags);
   if (value < -DBL_MAX)
-    return _out_rev(out, buffer, idx, maxlen, "fni-", 4, width, flags);
+    return out_rev_(out, buffer, idx, maxlen, "fni-", 4, width, flags);
   if (value > DBL_MAX)
-    return _out_rev(out, buffer, idx, maxlen, (flags & FLAGS_PLUS) ? "fni+" : "fni", (flags & FLAGS_PLUS) ? 4U : 3U, width, flags);
+    return out_rev_(out, buffer, idx, maxlen, (flags & FLAGS_PLUS) ? "fni+" : "fni", (flags & FLAGS_PLUS) ? 4U : 3U, width, flags);
 
   if (!prefer_exponential && ((value > PRINTF_FLOAT_NOTATION_THRESHOLD) || (value < -PRINTF_FLOAT_NOTATION_THRESHOLD))) {
     // The required behavior of standard printf is to print _every_ integral-part digit -- which could mean
     // printing hundreds of characters, overflowing any fixed internal buffer and necessitating a more complicated
     // implementation.
 #if PRINTF_SUPPORT_EXPONENTIAL_SPECIFIERS
-    return sprint_exponential_number(out, buffer, idx, maxlen, value, precision, width, flags, buf, len);
+    return print_exponential_number(out, buffer, idx, maxlen, value, precision, width, flags, buf, len);
 #else
     return 0U;
 #endif
@@ -808,9 +808,9 @@ static size_t sprint_floating_point(out_fct_type out, char* buffer, size_t idx, 
   return
 #if PRINTF_SUPPORT_EXPONENTIAL_SPECIFIERS
     prefer_exponential ?
-      sprint_exponential_number(out, buffer, idx, maxlen, value, precision, width, flags, buf, len) :
+      print_exponential_number(out, buffer, idx, maxlen, value, precision, width, flags, buf, len) :
 #endif
-      sprint_decimal_number(out, buffer, idx, maxlen, value, precision, width, flags, buf, len);
+      print_decimal_number(out, buffer, idx, maxlen, value, precision, width, flags, buf, len);
 }
 
 #endif  // (PRINTF_SUPPORT_DECIMAL_SPECIFIERS || PRINTF_SUPPORT_EXPONENTIAL_SPECIFIERS)
@@ -823,7 +823,7 @@ static int _vsnprintf(out_fct_type out, char* buffer, const size_t maxlen, const
 
   if (!buffer) {
     // use null output function
-    out = _out_null;
+    out = out_discard;
   }
 
   while (*format)
@@ -855,8 +855,8 @@ static int _vsnprintf(out_fct_type out, char* buffer, const size_t maxlen, const
 
     // evaluate width field
     width = 0U;
-    if (_is_digit(*format)) {
-      width = _atoi(&format);
+    if (is_digit_(*format)) {
+      width = atoi_(&format);
     }
     else if (*format == '*') {
       const int w = va_arg(va, int);
@@ -875,8 +875,8 @@ static int _vsnprintf(out_fct_type out, char* buffer, const size_t maxlen, const
     if (*format == '.') {
       flags |= FLAGS_PRECISION;
       format++;
-      if (_is_digit(*format)) {
-        precision = _atoi(&format);
+      if (is_digit_(*format)) {
+        precision = atoi_(&format);
       }
       else if (*format == '*') {
         const int precision_ = (int)va_arg(va, int);
@@ -998,7 +998,7 @@ static int _vsnprintf(out_fct_type out, char* buffer, const size_t maxlen, const
       case 'f' :
       case 'F' :
         if (*format == 'F') flags |= FLAGS_UPPERCASE;
-        idx = sprint_floating_point(out, buffer, idx, maxlen, va_arg(va, double), precision, width, flags, PRINTF_PREFER_DECIMAL);
+        idx = print_floating_point(out, buffer, idx, maxlen, va_arg(va, double), precision, width, flags, PRINTF_PREFER_DECIMAL);
         format++;
         break;
 #endif
@@ -1009,7 +1009,7 @@ static int _vsnprintf(out_fct_type out, char* buffer, const size_t maxlen, const
       case 'G':
         if ((*format == 'g')||(*format == 'G')) flags |= FLAGS_ADAPT_EXP;
         if ((*format == 'E')||(*format == 'G')) flags |= FLAGS_UPPERCASE;
-        idx = sprint_floating_point(out, buffer, idx, maxlen, va_arg(va, double), precision, width, flags, PRINTF_PREFER_EXPONENTIAL);
+        idx = print_floating_point(out, buffer, idx, maxlen, va_arg(va, double), precision, width, flags, PRINTF_PREFER_EXPONENTIAL);
         format++;
         break;
 #endif  // PRINTF_SUPPORT_EXPONENTIAL_SPECIFIERS
@@ -1036,10 +1036,10 @@ static int _vsnprintf(out_fct_type out, char* buffer, const size_t maxlen, const
       case 's' : {
         const char* p = va_arg(va, char*);
         if (p == NULL) {
-          idx = _out_rev(out, buffer, idx, maxlen, ")llun(", 6, width, flags);
+          idx = out_rev_(out, buffer, idx, maxlen, ")llun(", 6, width, flags);
         }
         else {
-          unsigned int l = _strnlen_s(p, precision ? precision : (size_t)-1);
+          unsigned int l = strnlen_s_(p, precision ? precision : (size_t)-1);
           // pre padding
           if (flags & FLAGS_PRECISION) {
             l = (l < precision ? l : precision);
@@ -1069,7 +1069,7 @@ static int _vsnprintf(out_fct_type out, char* buffer, const size_t maxlen, const
         flags |= FLAGS_ZEROPAD | FLAGS_POINTER;
         uintptr_t value = (uintptr_t)va_arg(va, void*);
         idx = (value == (uintptr_t) NULL) ?
-          _out_rev(out, buffer, idx, maxlen, ")lin(", 5, width, flags) :
+          out_rev_(out, buffer, idx, maxlen, ")lin(", 5, width, flags) :
           print_integer(out, buffer, idx, maxlen, (printf_unsigned_value_t) value, false, BASE_HEX, precision, width, flags);
         format++;
         break;
@@ -1102,7 +1102,7 @@ int printf_(const char* format, ...)
   va_list va;
   va_start(va, format);
   char buffer[1];
-  const int ret = _vsnprintf(_out_char, buffer, (size_t)-1, format, va);
+  const int ret = _vsnprintf(out_putchar, buffer, (size_t)-1, format, va);
   va_end(va);
   return ret;
 }
@@ -1112,7 +1112,7 @@ int sprintf_(char* buffer, const char* format, ...)
 {
   va_list va;
   va_start(va, format);
-  const int ret = _vsnprintf(_out_buffer, buffer, (size_t)-1, format, va);
+  const int ret = _vsnprintf(out_buffer, buffer, (size_t)-1, format, va);
   va_end(va);
   return ret;
 }
@@ -1122,7 +1122,7 @@ int snprintf_(char* buffer, size_t count, const char* format, ...)
 {
   va_list va;
   va_start(va, format);
-  const int ret = _vsnprintf(_out_buffer, buffer, count, format, va);
+  const int ret = _vsnprintf(out_buffer, buffer, count, format, va);
   va_end(va);
   return ret;
 }
@@ -1131,17 +1131,17 @@ int snprintf_(char* buffer, size_t count, const char* format, ...)
 int vprintf_(const char* format, va_list va)
 {
   char buffer[1];
-  return _vsnprintf(_out_char, buffer, (size_t)-1, format, va);
+  return _vsnprintf(out_putchar, buffer, (size_t)-1, format, va);
 }
 
 int vsprintf_(char* buffer, const char* format, va_list va)
 {
-  return _vsnprintf(_out_buffer, buffer, (size_t)-1, format, va);
+  return _vsnprintf(out_buffer, buffer, (size_t)-1, format, va);
 }
 
 int vsnprintf_(char* buffer, size_t count, const char* format, va_list va)
 {
-  return _vsnprintf(_out_buffer, buffer, count, format, va);
+  return _vsnprintf(out_buffer, buffer, count, format, va);
 }
 
 
@@ -1156,7 +1156,7 @@ int fctprintf(void (*out)(char character, void* arg), void* arg, const char* for
 
 int vfctprintf(void (*out)(char character, void* arg), void* arg, const char* format, va_list va)
 {
-  const out_fct_wrap_type out_fct_wrap = { out, arg };
-  return _vsnprintf(_out_fct, (char*)(uintptr_t)&out_fct_wrap, (size_t)-1, format, va);
+  const out_function_wrapper_type out_fct_wrap = { out, arg };
+  return _vsnprintf(out_wrapped_function, (char*)(uintptr_t)&out_fct_wrap, (size_t)-1, format, va);
 }
 

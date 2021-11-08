@@ -72,12 +72,12 @@ __attribute__((format(__printf__, (one_based_format_index), (first_arg))))
  * This function is declared here only. You have to write your custom implementation somewhere
  * @param character Character to output
  */
-void _putchar(char character);
+void putchar_(char character);
 
 
 /**
  * Tiny printf implementation
- * You have to implement _putchar if you use printf()
+ * You have to implement putchar_ if you use printf()
  * To avoid conflicts with the regular printf() API it is overridden by macro defines
  * and internal underscore-appended functions like printf_() are used
  * @param format A string that specifies the format of the output
