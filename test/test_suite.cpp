@@ -46,8 +46,8 @@ typedef SSIZE_T ssize_t;
 
 namespace test {
   // use functions in own test namespace to avoid stdio conflicts
-  #include "../printf.h"
-  #include "../printf.c"
+  #include "../src/printf.h"
+  #include "../src/printf.c"
 } // namespace test
 
 #define CAPTURE_AND_PRINT(printer_, ...)                  \

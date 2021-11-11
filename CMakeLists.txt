@@ -63,7 +63,7 @@ else()
 endif()
 set(GENERATED_INCLUDE_DIR "${CMAKE_CURRENT_BINARY_DIR}/include")
 configure_file("printf_config.h.in" "${GENERATED_INCLUDE_DIR}/printf_config.h" @ONLY)
-target_sources(printf PRIVATE printf.c "${GENERATED_INCLUDE_DIR}/printf_config.h" printf.h)
+target_sources(printf PRIVATE src/printf.c "${GENERATED_INCLUDE_DIR}/printf_config.h" src/printf.h)
 target_compile_definitions(printf PRIVATE PRINTF_INCLUDE_CONFIG_H)
 target_include_directories(printf PRIVATE "$<BUILD_INTERFACE:${GENERATED_INCLUDE_DIR}>")
 
@@ -74,7 +74,7 @@ set_property(TARGET printf PROPERTY C_EXTENSIONS OFF)
 target_include_directories(
 	printf
 	PRIVATE
-	${CMAKE_CURRENT_SOURCE_DIR}
+	src
 	PUBLIC
 	"$<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>"
 )
@@ -134,7 +134,7 @@ install(
 )
 
 install(
-	FILES "printf.h"
+	FILES "src/printf.h"
 	DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}"
 )
 

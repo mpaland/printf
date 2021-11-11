@@ -12,7 +12,7 @@
 #include <assert.h>
 
 #include "printf_config.h"
-#include "../printf.h"
+#include "../src/printf.h"
 
 #ifndef PRINTF_ALIAS_STANDARD_FUNCTION_NAMES
 #define PRINTF_ALIAS_STANDARD_FUNCTION_NAMES 0
