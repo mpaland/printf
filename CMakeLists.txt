@@ -34,7 +34,7 @@ endforeach()
 
 # Numeric defines which go into config.h
 
-set(NTOA_BUFFER_SIZE "32" CACHE STRING          "Integer to string (ntoa) conversion buffer size")
+set(PRINTF_INTEGER_BUFFER_SIZE "32" CACHE STRING          "Integer to string conversion buffer size")
 set(PRINTF_DECIMAL_BUFFER_SIZE "32" CACHE STRING   "Floating-point to decimal conversion buffer size")
 set(DEFAULT_FLOAT_PRECISION "6" CACHE STRING    "Default precision when printing floating-point values")
 set(MAX_INTEGRAL_DIGITS_FOR_DECIMAL "9" CACHE STRING "Maximum number of integral-part digits of a floating-point value for which printing with %f uses decimal (non-exponential) notation")
