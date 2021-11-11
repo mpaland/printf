@@ -66,7 +66,6 @@ Options used both in CMake and in the library source code via a preprocessor def
 | PRINTF_SUPPORT_FLOAT_SPECIFIERS        | YES     |  Support decimal notation floating-point conversion specifiers (%f,%F) |
 | PRINTF_SUPPORT_EXPONENTIAL_SPECIFIERS  | YES     |  Support exponential floating point format conversion specifiers (%e,%E,%g,%G)" |
 | PRINTF_SUPPORT_LONG_LONG               | YES     |  Support long long integral types (allows for the ll length modifier and affects %p) |
-| PRINTF_SUPPORT_PTRDIFF_LENGTH_MODIFIER | YES     |  Support the pointer difference specifier (%t), used for `ptrdiff_t` variables" |
 
 CMake-only options:
 
@@ -193,7 +192,7 @@ The length sub-specifier modifies the length of the data type.
 | ll     | long long int             | unsigned long long int | PRINTF_SUPPORT_LONG_LONG        |
 | j      | intmax_t                  | uintmax_t              |                                 |
 | z      | signed version of size_t  | size_t                 |                                 |
-| t      | ptrdiff_t                 | ptrdiff_t              | SUPPORT_PTRDIFF_LENGTH_MODIFIER |
+| t      | ptrdiff_t                 | ptrdiff_t              |                                 |
 
 Notes:
 
