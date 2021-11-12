@@ -56,7 +56,10 @@ __attribute__((format(__printf__, (one_based_format_index), (first_arg))))
 # define ATTR_VPRINTF(one_based_format_index)
 #endif
 
-#ifdef PRINTF_ALIAS_STANDARD_FUNCTION_NAMES
+#ifndef PRINTF_ALIAS_STANDARD_FUNCTION_NAMES
+#define PRINTF_ALIAS_STANDARD_FUNCTION_NAMES 0
+#endif
+
 #if PRINTF_ALIAS_STANDARD_FUNCTION_NAMES
 # define printf_    printf
 # define sprintf_   sprintf
@@ -64,7 +67,6 @@ __attribute__((format(__printf__, (one_based_format_index), (first_arg))))
 # define snprintf_  snprintf
 # define vsnprintf_ vsnprintf
 # define vprintf_   vprintf
-#endif
 #endif
 
 /**
@@ -137,7 +139,6 @@ int vfctprintf(void (*out)(char character, void* arg), void* arg, const char* fo
 }
 #endif
 
-#ifdef PRINTF_ALIAS_STANDARD_FUNCTION_NAMES
 #if PRINTF_ALIAS_STANDARD_FUNCTION_NAMES
 # undef printf_
 # undef sprintf_
@@ -145,7 +146,6 @@ int vfctprintf(void (*out)(char character, void* arg), void* arg, const char* fo
 # undef snprintf_
 # undef vsnprintf_
 # undef vprintf_
-#endif
 #endif
 
 #endif  // PRINTF_H_

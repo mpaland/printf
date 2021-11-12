@@ -41,15 +41,16 @@
 
 // Define this globally (e.g. gcc -DPRINTF_INCLUDE_CONFIG_H ...) to include the
 // printf_config.h header file
-#ifdef PRINTF_INCLUDE_CONFIG_H
+#ifndef PRINTF_INCLUDE_CONFIG_H
+#define PRINTF_INCLUDE_CONFIG_H 0
+#endif
+
 #if PRINTF_INCLUDE_CONFIG_H
 #include "printf_config.h"
-#endif
 #endif
 
 #include "printf.h"
 
-#ifdef PRINTF_ALIAS_STANDARD_FUNCTION_NAMES
 #if PRINTF_ALIAS_STANDARD_FUNCTION_NAMES
 # define printf_    printf
 # define sprintf_   sprintf
@@ -57,7 +58,6 @@
 # define snprintf_  snprintf
 # define vsnprintf_ vsnprintf
 # define vprintf_   vprintf
-#endif
 #endif
 
 
