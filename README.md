@@ -149,8 +149,9 @@ The following format specifiers are supported:
 Notes:
 
 * The `%a` specifier for hexadecimal floating-point notation (introduced in C99 and C++11) is _not_ currently supported.
+* The `%n` specifier for writing back the number of characters printed so far is not directly supported at this time; but you can use `fctprintf()`, with a do-nothing output function and with a partial format string, to obtain the number of characters as the `fctprintf()`'s return value.
 * If you want to print the percent sign (`%`, US-ASCII character 37), use "%%" in your format string.
-* `printf()`-style functions don't accept `float` arguments, only `double`'s; this is true in the C standard library and for this one as well. `float`'s get converted.
+* The C standard library's `printf()`-style functions don't accept `float` arguments, only `double`'s; that is true for this library as well. `float`'s get converted to `double`'s.
 
 #### Flags
 
