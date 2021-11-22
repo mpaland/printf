@@ -1178,6 +1178,33 @@ TEST_CASE("extremal unsigned integer values", "[]" ) {
 #endif
 }
 
+TEST_CASE("writeback specifier", "[]" ) {
+  char buffer[100];
+
+  struct {
+	  char char_;
+	  short short_;
+	  int int_;
+	  long long_;
+	  long long long_long_;
+  } num_written;
+
+
+  num_written.int_ = 1234;
+  test::printf_("%n", &num_written.int_);
+  CHECK(num_written.int_ == 0);
+  num_written.int_ = 1234;
+  test::printf_("foo%nbar", &num_written.int_);
+  CHECK(num_written.int_ == 3);
+
+  num_written.int_ = 1234;
+  PRINTING_CHECK("", ==, test::sprintf_, buffer, "%n", &num_written.int_);
+  CHECK(num_written.int_ == 0);
+  num_written.int_ = 1234;
+  PRINTING_CHECK("foobar", ==, test::sprintf_, buffer, "foo%nbar", &num_written.int_);
+  CHECK(num_written.int_ == 3);
+}
+
 
 #ifdef TEST_WITH_NON_STANDARD_FORMAT_STRINGS
 DISABLE_WARNING_POP

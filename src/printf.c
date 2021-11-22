@@ -78,9 +78,14 @@
 #define PRINTF_SUPPORT_DECIMAL_SPECIFIERS 1
 #endif
 
-// Support for the exponential notatin floating point conversion specifiers (%e, %g, %E, %G)
+// Support for the exponential notation floating point conversion specifiers (%e, %g, %E, %G)
 #ifndef PRINTF_SUPPORT_EXPONENTIAL_SPECIFIERS
 #define PRINTF_SUPPORT_EXPONENTIAL_SPECIFIERS 1
+#endif
+
+// Support for the length write-back specifier (%n)
+#ifndef PRINTF_SUPPORT_WRITEBACK_SPECIFIER
+#define PRINTF_SUPPORT_WRITEBACK_SPECIFIER 1
 #endif
 
 // Default precision for the floating point conversion specifiers (the C standard sets this at 6)
@@ -1079,6 +1084,23 @@ static int _vsnprintf(out_fct_type out, char* buffer, const size_t maxlen, const
         out('%', buffer, idx++, maxlen);
         format++;
         break;
+
+      // Many people prefer to disable support for %n, as it lets the caller
+	  // engineer a write to an arbitrary location, of a value the caller
+	  // effectively controls - which could be a security concern in some cases.
+#if PRINTF_SUPPORT_WRITEBACK_SPECIFIER
+      case 'n' : {
+        if       (flags & FLAGS_CHAR)      *(va_arg(va, char*))      = (char) idx;
+        else if  (flags & FLAGS_SHORT)     *(va_arg(va, short*))     = (short) idx;
+        else if  (flags & FLAGS_LONG)      *(va_arg(va, long*))      = (long) idx;
+#if PRINTF_SUPPORT_LONG_LONG
+        else if  (flags & FLAGS_LONG_LONG) *(va_arg(va, long long*)) = (long long int) idx;
+#endif // PRINTF_SUPPORT_LONG_LONG
+        else                               *(va_arg(va, int*))       = (int) idx;
+        format++;
+        break;
+      }
+#endif // PRINTF_SUPPORT_WRITEBACK_SPECIFIER
 
       default :
         out(*format, buffer, idx++, maxlen);
