@@ -2,7 +2,7 @@
 
 // Note: If we include <printf.h>, that will likely get us the
 // the file /usr/include/printf.h on Linux systems
-#include "../src/printf.h"
+#include "../src/printf/printf.h"
 
 int strcmp_(const char* lhs, const char* rhs)
 {
