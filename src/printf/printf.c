@@ -1086,8 +1086,8 @@ static int _vsnprintf(out_fct_type out, char* buffer, const size_t maxlen, const
         break;
 
       // Many people prefer to disable support for %n, as it lets the caller
-	  // engineer a write to an arbitrary location, of a value the caller
-	  // effectively controls - which could be a security concern in some cases.
+      // engineer a write to an arbitrary location, of a value the caller
+      // effectively controls - which could be a security concern in some cases.
 #if PRINTF_SUPPORT_WRITEBACK_SPECIFIER
       case 'n' : {
         if       (flags & FLAGS_CHAR)      *(va_arg(va, char*))      = (char) idx;

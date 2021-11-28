@@ -41,11 +41,11 @@
 // range for float testing
   #define FLOAT_TST_MIN 1E-5
   #define FLOAT_TST_MAX 1E5
- 
+
   #define PRECISION_LIMIT_DEFAULT 17
 
-	struct cmdopt_struct 
-	{
+  struct cmdopt_struct
+  {
     bool i;
     bool x;
     bool o;
@@ -61,10 +61,10 @@
     int prec_max;
   };
 
-//	Valid short options
-	#define VALIDOPTS	"ixoufeglz#wp::ah"
+//  Valid short options
+  #define VALIDOPTS  "ixoufeglz#wp::ah"
 
-	#define MSG_USAGE "\n\
+  #define MSG_USAGE "\n\
 Usage: " MAIN_TITLE " [OPTION/s]\n\
 Compare randomly formatted strings with the stdio printf()\n\
 Matching strings are output to stdout\n\
@@ -87,10 +87,10 @@ Errors are output to stderr\r\n\
    -h  show these options\n\
 \n\
 Examples:\n\
-	" MAIN_TITLE " -a                           test with all options, showing all passes and failures\n\
-	" MAIN_TITLE " -a 1>/dev/null               test with all options, showing only errors, with stdout > null\n\
-	" MAIN_TITLE " -ap14 1>/dev/null            test with all options and precision limit of 14 for %%f %%e %%g, showing only errors, with stdout > null\n\
-	" MAIN_TITLE " -ixou 1>/dev/null            test only %%i %%x %%o %%u, showing only errors, with stdout > null\n\
+  " MAIN_TITLE " -a                           test with all options, showing all passes and failures\n\
+  " MAIN_TITLE " -a 1>/dev/null               test with all options, showing only errors, with stdout > null\n\
+  " MAIN_TITLE " -ap14 1>/dev/null            test with all options and precision limit of 14 for %%f %%e %%g, showing only errors, with stdout > null\n\
+  " MAIN_TITLE " -ixou 1>/dev/null            test only %%i %%x %%o %%u, showing only errors, with stdout > null\n\
 \n\
 "
 
@@ -238,8 +238,8 @@ static void test_i(void)
 {
   FILE* dst = stdout;
   char fmt_buf[BUF_SIZE];
-	char std_buf[BUF_SIZE];
-	char tst_buf[BUF_SIZE];
+  char std_buf[BUF_SIZE];
+  char tst_buf[BUF_SIZE];
   bool width_flag;
   int width;
   int value;
@@ -247,38 +247,38 @@ static void test_i(void)
   strcpy(fmt_buf, "%");
   if(rand()&1 && opts.left_justify)
     strcat(fmt_buf, "-");
-	if(rand()&1)
-		strcat(fmt_buf, "+");
-	else if(rand()&1)
-		strcat(fmt_buf, " ");
+  if(rand()&1)
+    strcat(fmt_buf, "+");
+  else if(rand()&1)
+    strcat(fmt_buf, " ");
 
-	width_flag = (rand()&1 && opts.width);
+  width_flag = (rand()&1 && opts.width);
 
-	width = 1+rand()%WIDTH_MAX;
-	if(width_flag)
-	{
-		if(rand()&1 && opts.zero_pad)
-			strcat(fmt_buf, "0");
-		sprintf(&fmt_buf[strlen(fmt_buf)], "%i", width);
-	};
+  width = 1+rand()%WIDTH_MAX;
+  if(width_flag)
+  {
+    if(rand()&1 && opts.zero_pad)
+      strcat(fmt_buf, "0");
+    sprintf(&fmt_buf[strlen(fmt_buf)], "%i", width);
+  };
 
-	if(rand()&1 && opts.prec)
-	{
-		strcat(fmt_buf, ".");
-		sprintf(&fmt_buf[strlen(fmt_buf)], "%i", 1+rand()%width);
-	};
+  if(rand()&1 && opts.prec)
+  {
+    strcat(fmt_buf, ".");
+    sprintf(&fmt_buf[strlen(fmt_buf)], "%i", 1+rand()%width);
+  };
 
-	strcat(fmt_buf, "i");
-	value = rand();
-	if(rand()&1)
-		value = 0;
-	if(rand()&1)
-		value*=-1;
-	
-	sprintf(std_buf, fmt_buf, value);
-	sprintf_(tst_buf, fmt_buf, value);
-	
-	if(strcmp(std_buf,tst_buf))
+  strcat(fmt_buf, "i");
+  value = rand();
+  if(rand()&1)
+    value = 0;
+  if(rand()&1)
+    value*=-1;
+
+  sprintf(std_buf, fmt_buf, value);
+  sprintf_(tst_buf, fmt_buf, value);
+
+  if(strcmp(std_buf,tst_buf))
     dst = stderr;
 
   fprintf(dst, "\nfmt = \"%s\" value = %i\n", fmt_buf, value);
@@ -290,8 +290,8 @@ static void test_x(void)
 {
   FILE* dst = stdout;
   char fmt_buf[BUF_SIZE];
-	char std_buf[BUF_SIZE];
-	char tst_buf[BUF_SIZE];
+  char std_buf[BUF_SIZE];
+  char tst_buf[BUF_SIZE];
   bool width_flag;
   int width;
   unsigned int value;
@@ -299,34 +299,34 @@ static void test_x(void)
   strcpy(fmt_buf, "%");
   if(rand()&1 && opts.left_justify)
     strcat(fmt_buf, "-");
-	if(rand()&1 && opts.hash)
-		strcat(fmt_buf, "#");
+  if(rand()&1 && opts.hash)
+    strcat(fmt_buf, "#");
 
-	width_flag = (rand()&1 && opts.width);
+  width_flag = (rand()&1 && opts.width);
 
-	width = 1+rand()%WIDTH_MAX;
-	if(width_flag)
-	{
-		if(rand()&1 && opts.zero_pad)
-			strcat(fmt_buf, "0");
-		sprintf(&fmt_buf[strlen(fmt_buf)], "%i", width);
-	};
+  width = 1+rand()%WIDTH_MAX;
+  if(width_flag)
+  {
+    if(rand()&1 && opts.zero_pad)
+      strcat(fmt_buf, "0");
+    sprintf(&fmt_buf[strlen(fmt_buf)], "%i", width);
+  };
 
-	if(rand()&1 && opts.prec)
-	{
-		strcat(fmt_buf, ".");
-		sprintf(&fmt_buf[strlen(fmt_buf)], "%i", 1+rand()%width);
-	};
+  if(rand()&1 && opts.prec)
+  {
+    strcat(fmt_buf, ".");
+    sprintf(&fmt_buf[strlen(fmt_buf)], "%i", 1+rand()%width);
+  };
 
-	strcat(fmt_buf, "x");
-	value = (unsigned)rand();
-	if(rand()&1)
-		value = 0;
-	
-	sprintf(std_buf, fmt_buf, value);
-	sprintf_(tst_buf, fmt_buf, value);
-	
-	if(strcmp(std_buf,tst_buf))
+  strcat(fmt_buf, "x");
+  value = (unsigned)rand();
+  if(rand()&1)
+    value = 0;
+
+  sprintf(std_buf, fmt_buf, value);
+  sprintf_(tst_buf, fmt_buf, value);
+
+  if(strcmp(std_buf,tst_buf))
     dst = stderr;
 
   fprintf(dst, "\nfmt = \"%s\" value = %#x\n", fmt_buf, value);
@@ -338,8 +338,8 @@ static void test_o(void)
 {
   FILE* dst = stdout;
   char fmt_buf[BUF_SIZE];
-	char std_buf[BUF_SIZE];
-	char tst_buf[BUF_SIZE];
+  char std_buf[BUF_SIZE];
+  char tst_buf[BUF_SIZE];
   bool width_flag;
   int width;
   unsigned int value;
@@ -347,34 +347,34 @@ static void test_o(void)
   strcpy(fmt_buf, "%");
   if(rand()&1 && opts.left_justify)
     strcat(fmt_buf, "-");
-	if(rand()&1 && opts.hash)
-		strcat(fmt_buf, "#");
+  if(rand()&1 && opts.hash)
+    strcat(fmt_buf, "#");
 
-	width_flag = (rand()&1 && opts.width);
+  width_flag = (rand()&1 && opts.width);
 
-	width = 1+rand()%WIDTH_MAX;
-	if(width_flag)
-	{
-		if(rand()&1 && opts.zero_pad)
-			strcat(fmt_buf, "0");
-		sprintf(&fmt_buf[strlen(fmt_buf)], "%i", width);
-	};
+  width = 1+rand()%WIDTH_MAX;
+  if(width_flag)
+  {
+    if(rand()&1 && opts.zero_pad)
+      strcat(fmt_buf, "0");
+    sprintf(&fmt_buf[strlen(fmt_buf)], "%i", width);
+  };
 
-	if(rand()&1 && opts.prec)
-	{
-		strcat(fmt_buf, ".");
-		sprintf(&fmt_buf[strlen(fmt_buf)], "%i", 1+rand()%width);
-	};
+  if(rand()&1 && opts.prec)
+  {
+    strcat(fmt_buf, ".");
+    sprintf(&fmt_buf[strlen(fmt_buf)], "%i", 1+rand()%width);
+  };
 
-	strcat(fmt_buf, "o");
-	value = (unsigned)rand();
-	if(rand()&1)
-		value = 0;
-	
-	sprintf(std_buf, fmt_buf, value);
-	sprintf_(tst_buf, fmt_buf, value);
-	
-	if(strcmp(std_buf,tst_buf))
+  strcat(fmt_buf, "o");
+  value = (unsigned)rand();
+  if(rand()&1)
+    value = 0;
+
+  sprintf(std_buf, fmt_buf, value);
+  sprintf_(tst_buf, fmt_buf, value);
+
+  if(strcmp(std_buf,tst_buf))
     dst = stderr;
 
   fprintf(dst, "\nfmt = \"%s\" value = %o\n", fmt_buf, value);
@@ -386,8 +386,8 @@ static void test_u(void)
 {
   FILE* dst = stdout;
   char fmt_buf[BUF_SIZE];
-	char std_buf[BUF_SIZE];
-	char tst_buf[BUF_SIZE];
+  char std_buf[BUF_SIZE];
+  char tst_buf[BUF_SIZE];
   bool width_flag;
   int width;
   unsigned int value;
@@ -396,31 +396,31 @@ static void test_u(void)
   if(rand()&1 && opts.left_justify)
     strcat(fmt_buf, "-");
 
-	width_flag = (rand()&1 && opts.width);
+  width_flag = (rand()&1 && opts.width);
 
-	width = 1+rand()%WIDTH_MAX;
-	if(width_flag)
-	{
-		if(rand()&1 && opts.zero_pad)
-			strcat(fmt_buf, "0");
-		sprintf(&fmt_buf[strlen(fmt_buf)], "%i", width);
-	};
+  width = 1+rand()%WIDTH_MAX;
+  if(width_flag)
+  {
+    if(rand()&1 && opts.zero_pad)
+      strcat(fmt_buf, "0");
+    sprintf(&fmt_buf[strlen(fmt_buf)], "%i", width);
+  };
 
-	if(rand()&1 && opts.prec)
-	{
-		strcat(fmt_buf, ".");
-		sprintf(&fmt_buf[strlen(fmt_buf)], "%i", 1+rand()%width);
-	};
+  if(rand()&1 && opts.prec)
+  {
+    strcat(fmt_buf, ".");
+    sprintf(&fmt_buf[strlen(fmt_buf)], "%i", 1+rand()%width);
+  };
 
-	strcat(fmt_buf, "u");
-	value = (unsigned)rand();
-	if(rand()&1)
-		value = 0;
-	
-	sprintf(std_buf, fmt_buf, value);
-	sprintf_(tst_buf, fmt_buf, value);
-	
-	if(strcmp(std_buf,tst_buf))
+  strcat(fmt_buf, "u");
+  value = (unsigned)rand();
+  if(rand()&1)
+    value = 0;
+
+  sprintf(std_buf, fmt_buf, value);
+  sprintf_(tst_buf, fmt_buf, value);
+
+  if(strcmp(std_buf,tst_buf))
     dst = stderr;
 
   fprintf(dst, "\nfmt = \"%s\" value = %u\n", fmt_buf, value);
@@ -432,8 +432,8 @@ static void test_f(void)
 {
   FILE* dst = stdout;
   char fmt_buf[BUF_SIZE];
-	char std_buf[BUF_SIZE];
-	char tst_buf[BUF_SIZE];
+  char std_buf[BUF_SIZE];
+  char tst_buf[BUF_SIZE];
   bool width_flag;
   int width;
   double value;
@@ -441,43 +441,43 @@ static void test_f(void)
   strcpy(fmt_buf, "%");
   if(rand()&1 && opts.left_justify)
     strcat(fmt_buf, "-");
-	if(rand()&1 && opts.hash)
-		strcat(fmt_buf, "#");
-	if(rand()&1)
-		strcat(fmt_buf, "+");
-	else if(rand()&1)
-		strcat(fmt_buf, " ");
+  if(rand()&1 && opts.hash)
+    strcat(fmt_buf, "#");
+  if(rand()&1)
+    strcat(fmt_buf, "+");
+  else if(rand()&1)
+    strcat(fmt_buf, " ");
 
-	width_flag = (rand()&1 && opts.width);
+  width_flag = (rand()&1 && opts.width);
 
-	width = 1+rand()%WIDTH_MAX;
-	if(width_flag)
-	{
-		if(rand()&1 && opts.zero_pad)
-			strcat(fmt_buf, "0");
-		sprintf(&fmt_buf[strlen(fmt_buf)], "%i", width);
-	};
+  width = 1+rand()%WIDTH_MAX;
+  if(width_flag)
+  {
+    if(rand()&1 && opts.zero_pad)
+      strcat(fmt_buf, "0");
+    sprintf(&fmt_buf[strlen(fmt_buf)], "%i", width);
+  };
 
-	if(rand()&1 && opts.prec)
-	{
-		strcat(fmt_buf, ".");
-		sprintf(&fmt_buf[strlen(fmt_buf)], "%i", 1+rand()%min(width, opts.prec_max));
-	};
+  if(rand()&1 && opts.prec)
+  {
+    strcat(fmt_buf, ".");
+    sprintf(&fmt_buf[strlen(fmt_buf)], "%i", 1+rand()%min(width, opts.prec_max));
+  };
 
-	strcat(fmt_buf, "f");
+  strcat(fmt_buf, "f");
 
- 	if(rand()&1)
-		value = 0;
+   if(rand()&1)
+    value = 0;
   else
     value = (double) rand_float(FLOAT_TST_MIN, FLOAT_TST_MAX);
 
-	if(rand()&1)
-		value*=-1;
-	
-	sprintf(std_buf, fmt_buf, value);
-	sprintf_(tst_buf, fmt_buf, value);
-	
-	if(strcmp(std_buf,tst_buf))
+  if(rand()&1)
+    value*=-1;
+
+  sprintf(std_buf, fmt_buf, value);
+  sprintf_(tst_buf, fmt_buf, value);
+
+  if(strcmp(std_buf,tst_buf))
     dst = stderr;
 
   fprintf(dst, "\nfmt = \"%s\" value = %.18f\n", fmt_buf, value);
@@ -489,8 +489,8 @@ static void test_e(void)
 {
   FILE* dst = stdout;
   char fmt_buf[BUF_SIZE];
-	char std_buf[BUF_SIZE];
-	char tst_buf[BUF_SIZE];
+  char std_buf[BUF_SIZE];
+  char tst_buf[BUF_SIZE];
   bool width_flag;
   int width;
   double value;
@@ -498,43 +498,43 @@ static void test_e(void)
   strcpy(fmt_buf, "%");
   if(rand()&1 && opts.left_justify)
     strcat(fmt_buf, "-");
-	if(rand()&1 && opts.hash)
-		strcat(fmt_buf, "#");
-	if(rand()&1)
-		strcat(fmt_buf, "+");
-	else if(rand()&1)
-		strcat(fmt_buf, " ");
+  if(rand()&1 && opts.hash)
+    strcat(fmt_buf, "#");
+  if(rand()&1)
+    strcat(fmt_buf, "+");
+  else if(rand()&1)
+    strcat(fmt_buf, " ");
 
-	width_flag = (rand()&1 && opts.width);
+  width_flag = (rand()&1 && opts.width);
 
-	width = 1+rand()%WIDTH_MAX;
-	if(width_flag)
-	{
-		if(rand()&1 && opts.zero_pad)
-			strcat(fmt_buf, "0");
-		sprintf(&fmt_buf[strlen(fmt_buf)], "%i", width);
-	};
+  width = 1+rand()%WIDTH_MAX;
+  if(width_flag)
+  {
+    if(rand()&1 && opts.zero_pad)
+      strcat(fmt_buf, "0");
+    sprintf(&fmt_buf[strlen(fmt_buf)], "%i", width);
+  };
 
-	if(rand()&1 && opts.prec)
-	{
-		strcat(fmt_buf, ".");
-		sprintf(&fmt_buf[strlen(fmt_buf)], "%i", 1+rand()%min(width,opts.prec_max));
-	};
+  if(rand()&1 && opts.prec)
+  {
+    strcat(fmt_buf, ".");
+    sprintf(&fmt_buf[strlen(fmt_buf)], "%i", 1+rand()%min(width,opts.prec_max));
+  };
 
-	strcat(fmt_buf, "e");
+  strcat(fmt_buf, "e");
 
- 	if(rand()&1)
-		value = 0;
+   if(rand()&1)
+    value = 0;
   else
     value = (double) rand_float(FLOAT_TST_MIN, FLOAT_TST_MAX);
 
-	if(rand()&1)
-		value*=-1;
-	
-	sprintf(std_buf, fmt_buf, value);
-	sprintf_(tst_buf, fmt_buf, value);
-	
-	if(strcmp(std_buf,tst_buf))
+  if(rand()&1)
+    value*=-1;
+
+  sprintf(std_buf, fmt_buf, value);
+  sprintf_(tst_buf, fmt_buf, value);
+
+  if(strcmp(std_buf,tst_buf))
     dst = stderr;
 
   fprintf(dst, "\nfmt = \"%s\" value = %.18f\n", fmt_buf, value);
@@ -546,8 +546,8 @@ static void test_g(void)
 {
   FILE* dst = stdout;
   char fmt_buf[BUF_SIZE];
-	char std_buf[BUF_SIZE];
-	char tst_buf[BUF_SIZE];
+  char std_buf[BUF_SIZE];
+  char tst_buf[BUF_SIZE];
   bool width_flag;
   int width;
   double value;
@@ -555,43 +555,43 @@ static void test_g(void)
   strcpy(fmt_buf, "%");
   if(rand()&1 && opts.left_justify)
     strcat(fmt_buf, "-");
-	if(rand()&1 && opts.hash)
-		strcat(fmt_buf, "#");
-	if(rand()&1)
-		strcat(fmt_buf, "+");
-	else if(rand()&1)
-		strcat(fmt_buf, " ");
+  if(rand()&1 && opts.hash)
+    strcat(fmt_buf, "#");
+  if(rand()&1)
+    strcat(fmt_buf, "+");
+  else if(rand()&1)
+    strcat(fmt_buf, " ");
 
-	width_flag = (rand()&1 && opts.width);
+  width_flag = (rand()&1 && opts.width);
 
-	width = 1+rand()%WIDTH_MAX;
-	if(width_flag)
-	{
-		if(rand()&1 && opts.zero_pad)
-			strcat(fmt_buf, "0");
-		sprintf(&fmt_buf[strlen(fmt_buf)], "%i", width);
-	};
+  width = 1+rand()%WIDTH_MAX;
+  if(width_flag)
+  {
+    if(rand()&1 && opts.zero_pad)
+      strcat(fmt_buf, "0");
+    sprintf(&fmt_buf[strlen(fmt_buf)], "%i", width);
+  };
 
-	if(rand()&1 && opts.prec)
-	{
-		strcat(fmt_buf, ".");
-		sprintf(&fmt_buf[strlen(fmt_buf)], "%i", 1+rand()%min(width,opts.prec_max));
-	};
+  if(rand()&1 && opts.prec)
+  {
+    strcat(fmt_buf, ".");
+    sprintf(&fmt_buf[strlen(fmt_buf)], "%i", 1+rand()%min(width,opts.prec_max));
+  };
 
-	strcat(fmt_buf, "g");
+  strcat(fmt_buf, "g");
 
- 	if(rand()&1)
-		value = 0;
+   if(rand()&1)
+    value = 0;
   else
     value = (double) rand_float(FLOAT_TST_MIN, FLOAT_TST_MAX);
 
-	if(rand()&1)
-		value*=-1;
-	
-	sprintf(std_buf, fmt_buf, value);
-	sprintf_(tst_buf, fmt_buf, value);
-	
-	if(strcmp(std_buf,tst_buf))
+  if(rand()&1)
+    value*=-1;
+
+  sprintf(std_buf, fmt_buf, value);
+  sprintf_(tst_buf, fmt_buf, value);
+
+  if(strcmp(std_buf,tst_buf))
     dst = stderr;
 
   fprintf(dst, "\nfmt = \"%s\" value = %.18f\n", fmt_buf, value);
