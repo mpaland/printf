@@ -72,7 +72,12 @@ endforeach()
 # compiled library - it includes the library's source .c file; and that means we
 # need to include the generated config.h file.
 target_compile_definitions(test_suite PRIVATE PRINTF_INCLUDE_CONFIG_H)
-target_include_directories(test_suite PRIVATE "${GENERATED_INCLUDE_DIR}")
+target_include_directories(
+	test_suite 
+	PRIVATE 
+	"${GENERATED_INCLUDE_DIR}"
+    "$<BUILD_INTERFACE:${CMAKE_CURRENT_LIST_DIR}/../src/>"
+)
 add_test(
 	NAME "${PROJECT_NAME}.test_suite"
 	COMMAND "test_suite" # ${TEST_RUNNER_PARAMS}
