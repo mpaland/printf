@@ -79,6 +79,7 @@ target_include_directories(
 	src
 	PUBLIC
 	"$<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>"
+	"$<BUILD_INTERFACE:${CMAKE_CURRENT_LIST_DIR}/src/>"
 )
 
 set_target_properties(printf PROPERTIES
@@ -137,7 +138,7 @@ install(
 
 install(
 	FILES "src/printf/printf.h"
-	DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}"
+	DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}/printf"
 )
 
 install(
