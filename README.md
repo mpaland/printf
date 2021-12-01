@@ -39,18 +39,36 @@ The author of this fork was one of the latercomer bug-reporters-and-PR-authors; 
 
 ## Using the `printf` library in your project
 
-There are at least four ways to use this library:
+** Use involving CMake: **
 
-1. Use CMake to configure, build and install the library. Then, in another CMake project, use `find_package(printf)` and make sure the install location is in the package search path.
-2. Use CMake to configure and build the library. You now have a library file (named `printf.a`, or `printf.so`, or `printf.dll` depending on your platform and choice of static vs dynamic linking), a header file, `printf.h`, and an optional extra header file `printf_config.h` with the build configuration details (usually unnecessary). In your project, if you include `printf.h` and link against the library file, you're all set: There are no dependencies.
-3. Copy `printf.c` and `printf.h` into your own project, and build them yourself. Note the various preprocessor options controlling the library's behavior! You will have to set them yourself, or accept with the default values (which are quite reasonable). Remember that the library requires compilation with the C99 language standard enabled.
-4. Include the contents of `printf.c` into your own code. This works well enough - whether it's a C or C++ file, and even within a namespace. You again need to consider the preprocessor options controlling behavior, and the language standard.
+1. Use CMake to configure, build and install the library. Then, in another CMake project, use `find_package(printf)` and make sure the library's install location is in CMake's package search path.
+2. Use CMake to configure and build the library. This results in the following file:
 
-As mentioned earlier, and with all four options - using `printf()` or `vprintf()` will require implementing a `_putchar(char c)` function. If you like, you can have the library functions alias the standard library function names (e.g. have `snprintf()` really invoke `snprintf_()`) using a CMake configuration option or directly with an appropriate macro.
+   * An object code library file (named `printf.a`, or `printf.so`, or `printf.dll` depending on your platform and choice of static vs dynamic linking)
+   * A header file, `printf.h`
+   * (Unnecessary) An optional extra header file `printf_config.h` with the build configuration details. 
 
-If you've started using the library in a publicly-available (FOSS or commercial) project, please consider emailing [@eyalroz](https://github.com/eyalroz), or open an [issue](https://github.com/eyalroz/printf/issues/), to announce this.
+   Now, in your project, include `printf.h` and link against the library file, you're all set: There are no dependencies to satisfy or keep track of. 
+3. Use CMake's `FetchContent` module to obtain the project source code and make it part of your own project's build, e.g.:
+   ```
+   FetchContent_Declare(printf_library
+       GIT_REPOSITORY https://github.com/eyalroz/printf.git
+       GIT_TAG v12.34.45 # Replace this with a real available version
+   )
+   FetchContent_MakeAvailable(printf_library)
+   ```
+4. Copy `printf.c` and `printf.h` into your own project, and compile the source however you see fit. Remember that the library requires compilation with the C99 language standard enabled.
+5. Include the contents of `printf.c` into your own code. This works well enough - whether it's a C or C++ file, and even within a namespace. You again need to consider the language standard.
 
-**Important note: The `sprintf` function is dangerous and insecure, and should be avoided in favor of `snprintf`:** `sprintf()` is unaware of the amount of memory allocated for the printed string, and will "happily" overflow your buffer; instead, pass your buffer size to `snprintf()` - and avoid overflow.
+Whichever way you choose to use the library:
+
+* You can have this library stand-in for the C standard library's `printf()` family of functions, e.g. provide `snprintf()` instead of `snprintf_()`, by setting an appropriate [preprocessor definition](#cmake-options-and-preprocessor-definitions) during compilation and use. 
+* Speaking of the preprocessor definition [preprocessor definitions](#cmake-options-and-preprocessor-definitions) which affect the library's behavior - you have to be consistent in their choice when building and when using the library. (The easiest way to do that is just not to change any of them and accept the reasonable defaults.)
+* Two of the functions --- `printf_()` and `vprintf_()` --- will only be usable if you implement a `_putchar(char c)` function for them to use.
+* **Avoid `sprintf()` in favor of `snprintf()` for safety and security** - and that goes for the standard C library `sprintf()` as well:. `sprintf()` is unaware of the amount of memory allocated for the string it writes into, and will "happily" overflow your buffer; instead of calling it, pass your buffer size to `snprintf()` - and avoid overflow.
+
+Finally, if you've started using the library in a publicly-available (FOSS or commercial) project, please consider emailing [@eyalroz](https://github.com/eyalroz), or open an [issue](https://github.com/eyalroz/printf/issues/), to announce this.
+
 
 ### CMake options and preprocessor definitions
 
@@ -58,7 +76,7 @@ Options used both in CMake and in the library source code via a preprocessor def
 
 | Option name                            | Default | Description  |
 |----------------------------------------|---------|--------------|
-| PRINTF_ALIAS_STANDARD_FUNCTION_NAMES   | NO      |  Alias the standard library function names (`printf()`, `sprintf()` etc.) to the library's functions |
+| PRINTF_ALIAS_STANDARD_FUNCTION_NAMES   | NO      |  Alias the standard library function names (`printf()`, `sprintf()` etc.) to the library's functions.<br>**Note:** If you build the library with this option turned on, you must also have written<br>`#define PRINTF_ALIAS_STANDARD_FUNCTION_NAMES 1`<br>before including the `printf.h` header. |
 | PRINTF_INTEGER_BUFFER_SIZE             | 32      |  ntoa (integer) conversion buffer size. This must be big enough to hold one converted numeric number _including_ leading zeros, normally 32 is a sufficient value. Created on the stack. |
 | PRINTF_DECIMAL_BUFFER_SIZE             | 32      |  ftoa (float) conversion buffer size. This must be big enough to hold one converted float number _including_ leading zeros, normally 32 is a sufficient value. Created on the stack. |
 | PRINTF_DEFAULT_FLOAT_PRECISION         | 6       |  Define the default floating point precision|
@@ -228,9 +246,9 @@ The following assumes Marco Paland's original repository remains mostly-inactive
 5. Add new checks or test-cases to the test suite - both for any problems you have identified and for any new functionality you have introduced.
 4. Commit your changes (`git commit -a -m "Added some feature"`)
 5. Publish the branch (`git push origin my-new-feature`)
-6. Create a new pull request against this repository.
+6. Create a new pull request against this repository. Note: Please don't create a PR without a related issue.
 
-I will try to attend to PRs promptly.
+I try to attend to issues and PRs promptly.
 
 
 ## License
