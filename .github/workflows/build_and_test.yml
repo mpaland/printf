@@ -1,0 +1,48 @@
+name: Build and test
+
+on: [workflow_dispatch, push, pull_request]
+
+jobs:
+  build:
+    runs-on: ${{ matrix.os }}
+    
+    strategy:
+      matrix:
+        os: [ubuntu-20.04] # TODO: add: windows-latest, macos-latest
+
+    steps:
+      - name: Check Out Repo
+        uses: actions/checkout@v2
+        
+      - name: Install dependencies on Ubuntu
+        if: matrix.os == 'ubuntu-20.04'
+        run: |
+          sudo apt update
+          sudo apt-get install -y gcc python3-pip
+          pip3 install gcovr
+
+      - name: Install dependencies on mac-os
+        if: matrix.os == 'macos-latest'
+        run: |
+          brew install gcc python3
+          pip3 install gcovr
+
+      - name: Build project
+        run: make
+
+      - name: Test project
+        run: ./bin/test_suite -d yes
+
+      - name: Generate Code coverage report
+        run: |
+          ./tmp/cov/test_suite
+          gcovr -r . -e test --html -o codecov_report.html
+        
+      - name: Upload code coverage report as an artifact
+        uses: actions/upload-artifact@v2
+        with:
+          name: codecov_report
+          path: codecov_report.html
+        
+      - name: Upload code coverage reports to codecov.io page
+        run: bash <(curl -s https://codecov.io/bash) 

@@ -1,6 +1,6 @@
 # A printf / sprintf Implementation for Embedded Systems
 
-[![Build Status](https://travis-ci.org/mpaland/printf.svg?branch=master)](https://travis-ci.org/mpaland/printf)
+[![Build and test](https://github.com/IvanVnucec/printf/actions/workflows/build_and_test.yml/badge.svg)](https://github.com/IvanVnucec/printf/actions/workflows/build_and_test.yml)
 [![codecov](https://codecov.io/gh/mpaland/printf/branch/master/graph/badge.svg)](https://codecov.io/gh/mpaland/printf)
 [![Coverity Status](https://img.shields.io/coverity/scan/14180.svg)](https://scan.coverity.com/projects/mpaland-printf)
 [![Github Issues](https://img.shields.io/github/issues/mpaland/printf.svg)](http://github.com/mpaland/printf/issues)
