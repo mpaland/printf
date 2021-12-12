@@ -480,17 +480,17 @@ struct scaling_factor {
   bool multiply; // if true, need to multiply by raw_factor; otherwise need to divide by it
 };
 
-double apply_scaling(double num, struct scaling_factor normalization)
+static double apply_scaling(double num, struct scaling_factor normalization)
 {
   return normalization.multiply ? num * normalization.raw_factor : num / normalization.raw_factor;
 }
 
-double unapply_scaling(double normalized, struct scaling_factor normalization)
+static double unapply_scaling(double normalized, struct scaling_factor normalization)
 {
   return normalization.multiply ? normalized / normalization.raw_factor : normalized * normalization.raw_factor;
 }
 
-struct scaling_factor update_normalization(struct scaling_factor sf, double extra_multiplicative_factor)
+static struct scaling_factor update_normalization(struct scaling_factor sf, double extra_multiplicative_factor)
 {
   struct scaling_factor result;
   if (sf.multiply) {
