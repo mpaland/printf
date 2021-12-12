@@ -39,7 +39,7 @@ The author of this fork was one of the latercomer bug-reporters-and-PR-authors; 
 
 ## Using the `printf` library in your project
 
-** Use involving CMake: **
+**Use involving CMake:**
 
 1. Use CMake to configure, build and install the library. Then, in another CMake project, use `find_package(printf)` and make sure the library's install location is in CMake's package search path.
 2. Use CMake to configure and build the library. This results in the following file:
@@ -57,6 +57,8 @@ The author of this fork was one of the latercomer bug-reporters-and-PR-authors; 
    )
    FetchContent_MakeAvailable(printf_library)
    ```
+**Use not involving CMake:**
+
 4. Copy `printf.c` and `printf.h` into your own project, and compile the source however you see fit. Remember that the library requires compilation with the C99 language standard enabled.
 5. Include the contents of `printf.c` into your own code. This works well enough - whether it's a C or C++ file, and even within a namespace. You again need to consider the language standard.
 
