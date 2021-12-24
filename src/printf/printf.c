@@ -351,10 +351,8 @@ static size_t print_integer_finalization(out_fct_type out, char* buffer, size_t 
       if (unpadded_len < len) {
         len--;
       }
-      if (len && (base == BASE_HEX)) {
-        if (unpadded_len < len) {
-          len--;
-        }
+      if (len && (base == BASE_HEX) && (unpadded_len < len)) {
+        len--;
       }
     }
     if ((base == BASE_HEX) && !(flags & FLAGS_UPPERCASE) && (len < PRINTF_INTEGER_BUFFER_SIZE)) {
@@ -457,11 +455,9 @@ static struct double_components get_components(double number, unsigned int preci
       ++number_.integral;
     }
   }
-  else if (remainder == 0.5) {
-    if ((number_.fractional == 0U) || (number_.fractional & 1U)) {
-      // if halfway, round up if odd OR if last digit is 0
-      ++number_.fractional;
-    }
+  else if ((remainder == 0.5) && ((number_.fractional == 0U) || (number_.fractional & 1U))) {
+    // if halfway, round up if odd OR if last digit is 0
+    ++number_.fractional;
   }
 
   if (precision == 0U) {
@@ -563,17 +559,15 @@ static size_t print_broken_up_decimal(
 
     unsigned int count = precision;
 
-    if (flags & FLAGS_ADAPT_EXP && !(flags & FLAGS_HASH)) {
-      // %g/%G mandates we skip the trailing 0 digits...
-      if (number_.fractional > 0) {
-        while(true) {
-          int_fast64_t digit = number_.fractional % 10U;
-          if (digit != 0) {
-            break;
-          }
-          --count;
-          number_.fractional /= 10U;
+    // %g/%G mandates we skip the trailing 0 digits...
+    if ((flags & FLAGS_ADAPT_EXP) && !(flags & FLAGS_HASH) && (number_.fractional > 0)) {
+      while(true) {
+        int_fast64_t digit = number_.fractional % 10U;
+        if (digit != 0) {
+          break;
         }
+        --count;
+        number_.fractional /= 10U;
 
       }
       // ... and even the decimal point if there are no
@@ -599,10 +593,8 @@ static size_t print_broken_up_decimal(
     }
   }
   else {
-    if (flags & FLAGS_HASH) {
-      if (len < PRINTF_FTOA_BUFFER_SIZE) {
-        buf[len++] = '.';
-      }
+    if ((flags & FLAGS_HASH) && (len < PRINTF_FTOA_BUFFER_SIZE)) {
+      buf[len++] = '.';
     }
   }
 
