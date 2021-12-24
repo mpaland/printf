@@ -589,8 +589,9 @@ static size_t print_broken_up_decimal(
         }
       }
       // add extra 0s
-      while ((len < PRINTF_FTOA_BUFFER_SIZE) && (count-- > 0U)) {
+      while ((len < PRINTF_FTOA_BUFFER_SIZE) && (count > 0U)) {
         buf[len++] = '0';
+        --count;
       }
       if (len < PRINTF_FTOA_BUFFER_SIZE) {
         buf[len++] = '.';
@@ -1055,8 +1056,9 @@ static int _vsnprintf(out_fct_type out, char* buffer, const size_t maxlen, const
             }
           }
           // string output
-          while ((*p != 0) && (!(flags & FLAGS_PRECISION) || precision--)) {
+          while ((*p != 0) && (!(flags & FLAGS_PRECISION) || precision)) {
             out(*(p++), buffer, idx++, maxlen);
+            --precision;
           }
           // post padding
           if (flags & FLAGS_LEFT) {
