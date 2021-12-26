@@ -107,14 +107,6 @@
 #define PRINTF_SUPPORT_LONG_LONG 1
 #endif
 
-#if PRINTF_SUPPORT_LONG_LONG
-typedef unsigned long long printf_unsigned_value_t;
-typedef long long          printf_signed_value_t;
-#else
-typedef unsigned long printf_unsigned_value_t;
-typedef long          printf_signed_value_t;
-#endif
-
 #define PRINTF_PREFER_DECIMAL     false
 #define PRINTF_PREFER_EXPONENTIAL true
 
@@ -146,8 +138,6 @@ typedef long          printf_signed_value_t;
 #define BASE_DECIMAL  10
 #define BASE_HEX      16
 
-typedef uint8_t numeric_base_t;
-
 #if (PRINTF_SUPPORT_DECIMAL_SPECIFIERS || PRINTF_SUPPORT_EXPONENTIAL_SPECIFIERS)
 #include <float.h>
 #if FLT_RADIX != 2
@@ -172,6 +162,16 @@ typedef uint64_t double_uint_t;
 #error "Unsupported double type configuration"
 #endif
 #define DOUBLE_STORED_MANTISSA_BITS (DBL_MANT_DIG - 1)
+
+#if PRINTF_SUPPORT_LONG_LONG
+typedef unsigned long long printf_unsigned_value_t;
+typedef long long          printf_signed_value_t;
+#else
+typedef unsigned long printf_unsigned_value_t;
+typedef long          printf_signed_value_t;
+#endif
+
+typedef uint8_t numeric_base_t;
 
 typedef union {
   double_uint_t U;
