@@ -821,7 +821,7 @@ static int _vsnprintf(out_fct_type out, char* buffer, const size_t maxlen, const
 
   if (!buffer) {
     // use null output function
-    out = out_discard;
+    out = &out_discard;
   }
 
   while (*format)
@@ -1118,7 +1118,7 @@ int printf_(const char* format, ...)
   va_list va;
   va_start(va, format);
   char buffer[1];
-  const int ret = _vsnprintf(out_putchar, buffer, (size_t)-1, format, va);
+  const int ret = _vsnprintf(&out_putchar, buffer, (size_t)-1, format, va);
   va_end(va);
   return ret;
 }
@@ -1147,7 +1147,7 @@ int snprintf_(char* buffer, size_t count, const char* format, ...)
 int vprintf_(const char* format, va_list va)
 {
   char buffer[1];
-  return _vsnprintf(out_putchar, buffer, (size_t)-1, format, va);
+  return _vsnprintf(&out_putchar, buffer, (size_t)-1, format, va);
 }
 
 int vsprintf_(char* buffer, const char* format, va_list va)
