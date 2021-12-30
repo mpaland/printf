@@ -39,12 +39,13 @@
 #ifndef PRINTF_H_
 #define PRINTF_H_
 
-#include <stdarg.h>
-#include <stddef.h>
-
-
 #ifdef __cplusplus
+# include <cstdarg>
+# include <cstddef>
 extern "C" {
+#else
+# include <stdarg.h>
+# include <stddef.h>
 #endif
 
 #ifdef __GNUC__
@@ -136,7 +137,7 @@ int fctprintf(void (*out)(char character, void* arg), void* arg, const char* for
 int vfctprintf(void (*out)(char character, void* arg), void* arg, const char* format, va_list va) ATTR_VPRINTF(3);
 
 #ifdef __cplusplus
-}
+} // extern "C"
 #endif
 
 #if PRINTF_ALIAS_STANDARD_FUNCTION_NAMES

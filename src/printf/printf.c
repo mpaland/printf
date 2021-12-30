@@ -36,8 +36,13 @@
  * THE SOFTWARE.
  */
 
+#ifdef __cplusplus
+#include <cstdint>
+extern "C" {
+#else
 #include <stdbool.h>
 #include <stdint.h>
+#endif
 
 // Define this globally (e.g. gcc -DPRINTF_INCLUDE_CONFIG_H ...) to include the
 // printf_config.h header file
@@ -1176,3 +1181,6 @@ int vfctprintf(void (*out)(char character, void* arg), void* arg, const char* fo
   return _vsnprintf(out_wrapped_function, (char*)(uintptr_t)&out_fct_wrap, (size_t)-1, format, va);
 }
 
+#ifdef __cplusplus
+} // extern "C"
+#endif
