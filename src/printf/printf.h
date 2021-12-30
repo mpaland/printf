@@ -39,12 +39,13 @@
 #ifndef PRINTF_H_
 #define PRINTF_H_
 
-#include <stdarg.h>
-#include <stddef.h>
-
-
 #ifdef __cplusplus
+# include <cstdarg>
+# include <cstddef>
 extern "C" {
+#else
+# include <stdarg.h>
+# include <stddef.h>
 #endif
 
 #ifdef __GNUC__
