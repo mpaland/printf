@@ -51,9 +51,9 @@ extern "C" {
 #ifdef __GNUC__
 # define ATTR_PRINTF(one_based_format_index, first_arg) \
 __attribute__((format(__printf__, (one_based_format_index), (first_arg))))
-# define ATTR_VPRINTF(one_based_format_index) ATTR_PRINTF(one_based_format_index, 0)
+# define ATTR_VPRINTF(one_based_format_index) ATTR_PRINTF((one_based_format_index), 0)
 #else
-# define ATTR_PRINTF(one_based_format_index, first_arg)
+# define ATTR_PRINTF((one_based_format_index), (first_arg))
 # define ATTR_VPRINTF(one_based_format_index)
 #endif
 
