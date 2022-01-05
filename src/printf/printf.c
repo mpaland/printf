@@ -475,6 +475,7 @@ static struct double_components get_components(double number, unsigned int preci
   return number_;
 }
 
+#if PRINTF_SUPPORT_EXPONENTIAL_SPECIFIERS
 struct scaling_factor {
   double raw_factor;
   bool multiply; // if true, need to multiply by raw_factor; otherwise need to divide by it
@@ -514,7 +515,6 @@ static struct scaling_factor update_normalization(struct scaling_factor sf, doub
   return result;
 }
 
-#if PRINTF_SUPPORT_EXPONENTIAL_SPECIFIERS
 static struct double_components get_normalized_components(bool negative, unsigned int precision, double non_normalized, struct scaling_factor normalization)
 {
   struct double_components components;
