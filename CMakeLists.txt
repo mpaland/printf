@@ -15,15 +15,17 @@ option(BUILD_STATIC_LIBRARY "Build the library as static rather than shared" OFF
 
 # Boolean options which go into config.h
 
-option(SUPPORT_DECIMAL_SPECIFIERS      "Support decimal notation floating-point conversion specifiers (%f,%F)" ON)
-option(SUPPORT_EXPONENTIAL_SPECIFIERS  "Support exponential floating point format conversion specifiers (%e,%E,%g,%G)" ON)
-option(SUPPORT_WRITEBACK_SPECIFIER     "Support the length write-back specifier (%n)" ON)
-option(SUPPORT_LONG_LONG               "Support long long integral types (allows for the ll length modifier and affects %p)" ON)
-option(ALIAS_STANDARD_FUNCTION_NAMES   "Alias the standard library function names (printf, sprintf etc.) to the library's functions" ON)
+option(SUPPORT_DECIMAL_SPECIFIERS             "Support decimal notation floating-point conversion specifiers (%f,%F)" ON)
+option(SUPPORT_EXPONENTIAL_SPECIFIERS         "Support exponential floating point format conversion specifiers (%e,%E,%g,%G)" ON)
+option(SUPPORT_MSVC_STYLE_INTEGER_SPECIFIERS  "Support the I + bit size integer specifiers (%I8, %I16, %I32, %I64) as in Microsoft Visual C++" ON)
+option(SUPPORT_WRITEBACK_SPECIFIER            "Support the length write-back specifier (%n)" ON)
+option(SUPPORT_LONG_LONG                      "Support long long integral types (allows for the ll length modifier and affects %p)" ON)
+option(ALIAS_STANDARD_FUNCTION_NAMES          "Alias the standard library function names (printf, sprintf etc.) to the library's functions" ON)
 
 foreach(opt
 	SUPPORT_DECIMAL_SPECIFIERS
 	SUPPORT_EXPONENTIAL_SPECIFIERS
+	SUPPORT_MSVC_STYLE_INTEGER_SPECIFIERS
 	SUPPORT_WRITEBACK_SPECIFIER
 	SUPPORT_LONG_LONG
 	ALIAS_STANDARD_FUNCTION_NAMES)

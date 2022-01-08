@@ -38,10 +38,16 @@
 
 #ifdef __cplusplus
 #include <cstdint>
+#ifdef PRINTF_SUPPORT_MSVC_STYLE_INTEGER_SPECIFIERS
+#include <climits>
+#endif
 extern "C" {
 #else
 #include <stdbool.h>
 #include <stdint.h>
+#ifdef PRINTF_SUPPORT_MSVC_STYLE_INTEGER_SPECIFIERS
+#include <limits.h>
+#endif
 #endif // __cplusplus
 
 // Define this globally (e.g. gcc -DPRINTF_INCLUDE_CONFIG_H ...) to include the
@@ -53,6 +59,13 @@ extern "C" {
 #if PRINTF_INCLUDE_CONFIG_H
 #include "printf_config.h"
 #endif
+
+#include <stdbool.h>
+#include <stdint.h>
+#ifdef PRINTF_SUPPORT_MSVC_STYLE_INTEGER_SPECIFIERS
+#include <limits.h>
+#endif
+
 
 #include <printf/printf.h>
 
@@ -131,12 +144,61 @@ extern "C" {
 #define FLAGS_UPPERCASE (1U <<  5U)
 #define FLAGS_CHAR      (1U <<  6U)
 #define FLAGS_SHORT     (1U <<  7U)
-#define FLAGS_LONG      (1U <<  8U)
-#define FLAGS_LONG_LONG (1U <<  9U)
-#define FLAGS_PRECISION (1U << 10U)
-#define FLAGS_ADAPT_EXP (1U << 11U)
-#define FLAGS_POINTER   (1U << 12U)
-// Note: Similar, but not identical, effect as FLAGS_HASH
+#define FLAGS_INT       (1U <<  8U)
+  // Only used with PRINTF_SUPPORT_MSVC_STYLE_INTEGER_SPECIFIERS
+#define FLAGS_LONG      (1U <<  9U)
+#define FLAGS_LONG_LONG (1U << 10U)
+#define FLAGS_PRECISION (1U << 11U)
+#define FLAGS_ADAPT_EXP (1U << 12U)
+#define FLAGS_POINTER   (1U << 13U)
+  // Note: Similar, but not identical, effect as FLAGS_HASH
+#define FLAGS_SIGNED    (1U << 14U)
+  // Only used with PRINTF_SUPPORT_MSVC_STYLE_INTEGER_SPECIFIERS
+
+#ifdef PRINTF_SUPPORT_MSVC_STYLE_INTEGER_SPECIFIERS
+
+#define FLAGS_INT8 FLAGS_CHAR
+
+
+#if   (SHRT_MAX   == 32767LL)
+#define FLAGS_INT16       FLAGS_SHORT
+#elif (INT_MAX    == 32767LL)
+#define FLAGS_INT16       FLAGS_INT
+#elif (LONG_MAX   == 32767LL)
+#define FLAGS_INT16       FLAGS_LONG
+#elif (LLONG_MAX  == 32767LL)
+#define FLAGS_INT16       FLAGS_LONG_LONG
+#else
+#error "No basic integer type has a size of 16 bits exactly"
+#endif
+
+#if   (SHRT_MAX   == 2147483647LL)
+#define FLAGS_INT32       FLAGS_SHORT
+#elif (INT_MAX    == 2147483647LL)
+#define FLAGS_INT32       FLAGS_INT
+#elif (LONG_MAX   == 2147483647LL)
+#define FLAGS_INT32       FLAGS_LONG
+#elif (LLONG_MAX  == 2147483647LL)
+#define FLAGS_INT32       FLAGS_LONG_LONG
+#else
+#error "No basic integer type has a size of 32 bits exactly"
+#endif
+
+#if   (SHRT_MAX   == 9223372036854775807LL)
+#define FLAGS_INT64       FLAGS_SHORT
+#elif (INT_MAX    == 9223372036854775807LL)
+#define FLAGS_INT64       FLAGS_INT
+#elif (LONG_MAX   == 9223372036854775807LL)
+#define FLAGS_INT64       FLAGS_LONG
+#elif (LLONG_MAX  == 9223372036854775807LL)
+#define FLAGS_INT64       FLAGS_LONG_LONG
+#else
+#error "No basic integer type has a size of 64 bits exactly"
+#endif
+
+#endif // PRINTF_SUPPORT_MSVC_STYLE_INTEGER_SPECIFIERS
+
+
 typedef unsigned int printf_flags_t;
 
 #define BASE_BINARY    2
@@ -829,6 +891,62 @@ static size_t print_floating_point(out_fct_type out, char* buffer, size_t idx, s
 
 #endif  // (PRINTF_SUPPORT_DECIMAL_SPECIFIERS || PRINTF_SUPPORT_EXPONENTIAL_SPECIFIERS)
 
+static printf_size_t
+process_integral_specifier(out_fct_type out, char *buffer, printf_size_t maxlen, va_list va, printf_flags_t flags, printf_size_t width, printf_size_t precision, printf_size_t idx, numeric_base_t base)
+{
+  // ignore '0' flag when precision is given
+  if (flags & FLAGS_PRECISION) {
+    flags &= ~FLAGS_ZEROPAD;
+  }
+
+  if (flags & FLAGS_SIGNED) {
+    // A signed specifier: d, i or possibly I + bit size if enabled
+
+    if (flags & FLAGS_LONG_LONG) {
+#if PRINTF_SUPPORT_LONG_LONG
+      const long long value = va_arg(va, long long);
+      idx = print_integer(out, buffer, idx, maxlen, ABS_FOR_PRINTING(value), value < 0, base, precision, width, flags);
+#endif
+    }
+    else if (flags & FLAGS_LONG) {
+      const long value = va_arg(va, long);
+      idx = print_integer(out, buffer, idx, maxlen, ABS_FOR_PRINTING(value), value < 0, base, precision, width, flags);
+    }
+    else {
+      // We never try to interpret the argument as something potentially-smaller than int,
+      // due to integer promotion rules: Even if the user passed a short int, short unsigned
+      // etc. - these will come in after promotion, as int's (or unsigned for the case of
+      // short unsigned when it has the same size as int)
+      const int value = (flags & FLAGS_CHAR) ?
+        (signed char) va_arg(va, int) :
+        (flags & FLAGS_SHORT) ?
+          (short int) va_arg(va, int) :
+          va_arg(va, int);
+      idx = print_integer(out, buffer, idx, maxlen, ABS_FOR_PRINTING(value), value < 0, base, precision, width, flags);
+    }
+  }
+  else {
+    // An unsigned specifier: u, x, X, o, b
+
+    flags &= ~(FLAGS_PLUS | FLAGS_SPACE);
+
+    if (flags & FLAGS_LONG_LONG) {
+#if PRINTF_SUPPORT_LONG_LONG
+      idx = print_integer(out, buffer, idx, maxlen, (printf_unsigned_value_t) va_arg(va, unsigned long long), false, base, precision, width, flags);
+#endif
+    }
+    else if (flags & FLAGS_LONG) {
+      idx = print_integer(out, buffer, idx, maxlen, (printf_unsigned_value_t) va_arg(va, unsigned long), false, base, precision, width, flags);
+    }
+    else {
+      const unsigned int value = (flags & FLAGS_CHAR) ? (unsigned char)va_arg(va, unsigned int) : (flags & FLAGS_SHORT) ? (unsigned short int)va_arg(va, unsigned int) : va_arg(va, unsigned int);
+      idx = print_integer(out, buffer, idx, maxlen, (printf_unsigned_value_t) value, false, base, precision, width, flags);
+    }
+  }
+  return idx;
+}
+
+
 // internal vsnprintf
 static int _vsnprintf(out_fct_type out, char* buffer, printf_size_t maxlen, const char* format, va_list va)
 {
@@ -902,6 +1020,31 @@ static int _vsnprintf(out_fct_type out, char* buffer, printf_size_t maxlen, cons
 
     // evaluate length field
     switch (*format) {
+#ifdef PRINTF_SUPPORT_MSVC_STYLE_INTEGER_SPECIFIERS
+      case 'I' : {
+        format++;
+        // Greedily parse for size in bits: 8, 16, 32 or 64
+        switch(*format) {
+          case '8':               flags |= FLAGS_INT8;
+            format++;
+            break;
+          case '1':
+            format++;
+            if (*format == '6') { format++; flags |= FLAGS_INT16; }
+            break;
+          case '3':
+            format++;
+            if (*format == '2') { format++; flags |= FLAGS_INT32; }
+            break;
+          case '6':
+            format++;
+            if (*format == '4') { format++; flags |= FLAGS_INT64; }
+            break;
+          default: break;
+        }
+        break;
+      }
+#endif
       case 'l' :
         flags |= FLAGS_LONG;
         format++;
@@ -943,7 +1086,11 @@ static int _vsnprintf(out_fct_type out, char* buffer, printf_size_t maxlen, cons
       case 'X' :
       case 'o' :
       case 'b' : {
-        // set the base
+
+        if (*format == 'd' || *format == 'i') {
+          flags |= FLAGS_SIGNED;
+        }
+
         numeric_base_t base;
         if (*format == 'x' || *format == 'X') {
           base = BASE_HEX;
@@ -956,57 +1103,15 @@ static int _vsnprintf(out_fct_type out, char* buffer, printf_size_t maxlen, cons
         }
         else {
           base = BASE_DECIMAL;
-          flags &= ~FLAGS_HASH;   // no hash for dec format
+          flags &= ~FLAGS_HASH; // decimal integers have no alternative presentation
         }
-        // uppercase
+
         if (*format == 'X') {
           flags |= FLAGS_UPPERCASE;
         }
 
-        // no plus or space flag for u, x, X, o, b
-        if ((*format != 'i') && (*format != 'd')) {
-          flags &= ~(FLAGS_PLUS | FLAGS_SPACE);
-        }
-
-        // ignore '0' flag when precision is given
-        if (flags & FLAGS_PRECISION) {
-          flags &= ~FLAGS_ZEROPAD;
-        }
-
-        // convert the integer
-        if ((*format == 'i') || (*format == 'd')) {
-          // signed
-          if (flags & FLAGS_LONG_LONG) {
-#if PRINTF_SUPPORT_LONG_LONG
-            const long long value = va_arg(va, long long);
-            idx = print_integer(out, buffer, idx, maxlen, ABS_FOR_PRINTING(value), value < 0, base, precision, width, flags);
-#endif
-          }
-          else if (flags & FLAGS_LONG) {
-            const long value = va_arg(va, long);
-            idx = print_integer(out, buffer, idx, maxlen, ABS_FOR_PRINTING(value), value < 0, base, precision, width, flags);
-          }
-          else {
-            const int value = (flags & FLAGS_CHAR) ? (signed char)va_arg(va, int) : (flags & FLAGS_SHORT) ? (short int)va_arg(va, int) : va_arg(va, int);
-            idx = print_integer(out, buffer, idx, maxlen, ABS_FOR_PRINTING(value), value < 0, base, precision, width, flags);
-          }
-        }
-        else {
-          // unsigned
-          if (flags & FLAGS_LONG_LONG) {
-#if PRINTF_SUPPORT_LONG_LONG
-            idx = print_integer(out, buffer, idx, maxlen, (printf_unsigned_value_t) va_arg(va, unsigned long long), false, base, precision, width, flags);
-#endif
-          }
-          else if (flags & FLAGS_LONG) {
-            idx = print_integer(out, buffer, idx, maxlen, (printf_unsigned_value_t) va_arg(va, unsigned long), false, base, precision, width, flags);
-          }
-          else {
-            const unsigned int value = (flags & FLAGS_CHAR) ? (unsigned char)va_arg(va, unsigned int) : (flags & FLAGS_SHORT) ? (unsigned short int)va_arg(va, unsigned int) : va_arg(va, unsigned int);
-            idx = print_integer(out, buffer, idx, maxlen, (printf_unsigned_value_t) value, false, base, precision, width, flags);
-          }
-        }
         format++;
+        idx = process_integral_specifier(out, buffer, maxlen, va, flags, width, precision, idx, base);
         break;
       }
 #if PRINTF_SUPPORT_DECIMAL_SPECIFIERS

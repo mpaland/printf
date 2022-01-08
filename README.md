@@ -83,8 +83,9 @@ Options used both in CMake and in the library source code via a preprocessor def
 | PRINTF_DECIMAL_BUFFER_SIZE             | 32      |  ftoa (float) conversion buffer size. This must be big enough to hold one converted float number _including_ leading zeros, normally 32 is a sufficient value. Created on the stack. |
 | PRINTF_DEFAULT_FLOAT_PRECISION         | 6       |  Define the default floating point precision|
 | PRINTF_MAX_INTEGRAL_DIGITS_FOR_DECIMAL | 9       |  Maximum number of integral-part digits of a floating-point value for which printing with %f uses decimal (non-exponential) notation |
-| PRINTF_SUPPORT_DECIMAL_SPECIFIERS      | YES     |  Support decimal notation floating-point conversion specifiers (%f,%F) |
-| PRINTF_SUPPORT_EXPONENTIAL_SPECIFIERS  | YES     |  Support exponential floating point format conversion specifiers (%e,%E,%g,%G) |
+| PRINTF_SUPPORT_DECIMAL_SPECIFIERS      | YES     |  Support decimal notation floating-point conversion specifiers (%f, %F) |
+| PRINTF_SUPPORT_EXPONENTIAL_SPECIFIERS  | YES     |  Support exponential floating point format conversion specifiers (%e, %E, %g, %G) |
+| SUPPORT_MSVC_STYLE_INTEGER_SPECIFIERS  | YES     |  Support the 'I' + bit size integer specifiers (%I8, %I16, %I32, %I64) as in Microsoft Visual C++ |
 | PRINTF_SUPPORT_WRITEBACK_SPECIFIER     | YES     |  Support the length write-back specifier (%n) |
 | PRINTF_SUPPORT_LONG_LONG               | YES     |  Support long long integral types (allows for the ll length modifier and affects %p) |
 
@@ -175,6 +176,7 @@ Notes:
 * The `%a` specifier for hexadecimal floating-point notation (introduced in C99 and C++11) is _not_ currently supported.
 * If you want to print the percent sign (`%`, US-ASCII character 37), use "%%" in your format string.
 * The C standard library's `printf()`-style functions don't accept `float` arguments, only `double`'s; that is true for this library as well. `float`'s get converted to `double`'s.
+* There is no unsigned equivalent of the `I` specifier at the moment.
 
 #### Flags
 
@@ -207,22 +209,28 @@ Notes:
 
 The length sub-specifier modifies the length of the data type.
 
-| Length | With `d`, `i`             | With `u`,`o`,`x`, `X`  | Support enabled by...           |
-|--------|---------------------------|------------------------|---------------------------------|
-| (none) | int                       | unsigned int           |                                 |
-| hh     | signed char               | unsigned char          |                                 |
-| h      | short int                 | unsigned short int     |                                 |
-| l      | long int                  | unsigned long int      |                                 |
-| ll     | long long int             | unsigned long long int | PRINTF_SUPPORT_LONG_LONG        |
-| j      | intmax_t                  | uintmax_t              |                                 |
-| z      | signed version of size_t  | size_t                 |                                 |
-| t      | ptrdiff_t                 | ptrdiff_t              |                                 |
+| Length | With `d`, `i`             | With `u`,`o`,`x`, `X`  | Support enabled by...                 |
+|--------|---------------------------|------------------------|---------------------------------------|
+| (none) | int                       | unsigned int           |                                       |
+| hh     | signed char               | unsigned char          |                                       |
+| h      | short int                 | unsigned short int     |                                       |
+| l      | long int                  | unsigned long int      |                                       |
+| ll     | long long int             | unsigned long long int | PRINTF_SUPPORT_LONG_LONG              |
+| j      | intmax_t                  | uintmax_t              |                                       |
+| z      | signed version of size_t  | size_t                 |                                       |
+| t      | ptrdiff_t                 | ptrdiff_t              |                                       |
+| I8     | int8_t                    | uint8_t                | SUPPORT_MSVC_STYLE_INTEGER_SPECIFIERS |
+| I16    | int16_t                   | uint16_t               | SUPPORT_MSVC_STYLE_INTEGER_SPECIFIERS |
+| I32    | int32_t                   | uint32_t               | SUPPORT_MSVC_STYLE_INTEGER_SPECIFIERS |
+| I64    | int64_t                   | uint64_t               | SUPPORT_MSVC_STYLE_INTEGER_SPECIFIERS |
+
 
 Notes:
 
 * The `L` modifier, for `long double`, is not currently supported.
 * A `"%zd"` or `"%zi"` takes a signed integer of the same size as `size_t`. 
 * The implementation currently assumes each of `intmax_t`, signed `size_t`, and `ptrdiff_t` has the same size as `long int` or as `long long int`. If this is not the case for your platform, please open an issue.
+* The `Ixx` length modifiers are not in the C (nor C++) standard, but are somewhat popular, as it makes it easier to handle integer types of specific size. One must specify the argument size in bits immediately after the `I`. The printing is "integer-promotion-safe", i.e. the fact that an `int8_t` may actually be passed in promoted into a larger `int` will not prevent it from being printed using its origina value.
 
 ### Return Value
 
