@@ -1,3 +1,4 @@
+
 ///////////////////////////////////////////////////////////////////////////////
 // \author (c) Marco Paland (info@paland.com)
 //             2017-2019, PALANDesign Hannover, Germany
@@ -66,6 +67,7 @@ do {                                                             \
   INFO( #printer_ << " arguments, replicated ( \"arg := arg\" "  \
   "):\n----"); \
   CAPTURE( __VA_ARGS__);                                         \
+  std::memset(buffer_, 0xCC, 100);                               \
   printer_(buffer_, __VA_ARGS__);                                \
   if (!strcmp(buffer_, expected_)) {                             \
     buffer_[strlen(expected_)] = '\0';                           \
@@ -133,7 +135,6 @@ void _out_fct(char character, void* arg)
   (void)arg;
   printf_buffer[printf_idx++] = character;
 }
-
 
 TEST_CASE("printf", "[]" ) {
   printf_idx = 0U;
@@ -263,8 +264,8 @@ TEST_CASE("vsnprintf_", "[]" ) {
 
 TEST_CASE("space flag", "[]" ) {
   char buffer[100];
-  PRINTING_CHECK(" 42",           ==, test::sprintf_, buffer, "% d", 42);
-  PRINTING_CHECK("-42",           ==, test::sprintf_, buffer, "% d", -42);
+  PRINTING_CHECK(" 42",             ==, test::sprintf_, buffer, "% d", 42);
+  PRINTING_CHECK("-42",             ==, test::sprintf_, buffer, "% d", -42);
   PRINTING_CHECK("   42",           ==, test::sprintf_, buffer, "% 5d", 42);
   PRINTING_CHECK("  -42",           ==, test::sprintf_, buffer, "% 5d", -42);
   PRINTING_CHECK("             42", ==, test::sprintf_, buffer, "% 15d", 42);
@@ -309,6 +310,14 @@ TEST_CASE("+ flag", "[]" ) {
   PRINTING_CHECK("-1024",           ==, test::sprintf_, buffer, "%+d", -1024);
   PRINTING_CHECK("+1024",           ==, test::sprintf_, buffer, "%+i", 1024);
   PRINTING_CHECK("-1024",           ==, test::sprintf_, buffer, "%+i", -1024);
+#ifdef PRINTF_SUPPORT_MSVC_STYLE_INTEGER_SPECIFIERS
+  PRINTING_CHECK("+1024",           ==, test::sprintf_, buffer, "%+I16", (int16_t)  1024);
+//  PRINTING_CHECK("-1024",           ==, test::sprintf_, buffer, "%+I16", (int16_t) -1024);
+//  PRINTING_CHECK("+1024",           ==, test::sprintf_, buffer, "%+I32", (int32_t)  1024);
+//  PRINTING_CHECK("-1024",           ==, test::sprintf_, buffer, "%+I32", (int32_t) -1024);
+//  PRINTING_CHECK("+1024",           ==, test::sprintf_, buffer, "%+I64", (int64_t)  1024);
+//  PRINTING_CHECK("-1024",           ==, test::sprintf_, buffer, "%+I64", (int64_t) -1024);
+#endif
   PRINTING_CHECK("+",               ==, test::sprintf_, buffer, "%+.0d", 0);
 }
 
@@ -451,21 +460,39 @@ TEST_CASE("specifier", "[]" ) {
 
 DISABLE_WARNING_PUSH
 DISABLE_WARNING_PRINTF_FORMAT_OVERFLOW
-  PRINTING_CHECK( "(null)", ==, test::sprintf_, buffer, "%s", (const char*) NULL);
+  PRINTING_CHECK( "(null)", ==, test::sprintf_, buffer, "%s", (const char*) nullptr);
 DISABLE_WARNING_POP
   PRINTING_CHECK("1024",        ==, test::sprintf_, buffer, "%d", 1024);
-  PRINTING_CHECK("-1024",       ==, test::sprintf_, buffer, "%d", -1024);
-  PRINTING_CHECK("1024",        ==, test::sprintf_, buffer, "%i", 1024);
-  PRINTING_CHECK("-1024",       ==, test::sprintf_, buffer, "%i", -1024);
-  PRINTING_CHECK("1024",        ==, test::sprintf_, buffer, "%u", 1024);
+#if INT_MAX >= 2147483647LL
+  PRINTING_CHECK("2147483647",  ==, test::sprintf_, buffer, "%d", 2147483647);
   PRINTING_CHECK("4294966272",  ==, test::sprintf_, buffer, "%u", 4294966272U);
-  PRINTING_CHECK("777",         ==, test::sprintf_, buffer, "%o", 511);
   PRINTING_CHECK("37777777001", ==, test::sprintf_, buffer, "%o", 4294966785U);
   PRINTING_CHECK("1234abcd",    ==, test::sprintf_, buffer, "%x", 305441741);
   PRINTING_CHECK("edcb5433",    ==, test::sprintf_, buffer, "%x", 3989525555U);
   PRINTING_CHECK("1234ABCD",    ==, test::sprintf_, buffer, "%X", 305441741);
   PRINTING_CHECK("EDCB5433",    ==, test::sprintf_, buffer, "%X", 3989525555U);
+#endif
+  PRINTING_CHECK("-1024",       ==, test::sprintf_, buffer, "%d", -1024);
+  PRINTING_CHECK("1024",        ==, test::sprintf_, buffer, "%i", 1024);
+  PRINTING_CHECK("-1024",       ==, test::sprintf_, buffer, "%i", -1024);
+  PRINTING_CHECK("1024",        ==, test::sprintf_, buffer, "%u", 1024);
+  PRINTING_CHECK("777",         ==, test::sprintf_, buffer, "%o", 511);
   PRINTING_CHECK("%",           ==, test::sprintf_, buffer, "%%");
+
+#ifdef PRINTF_SUPPORT_MSVC_STYLE_INTEGER_SPECIFIERS
+  std::cerr << "Checking MSVC_STYLE_INTEGER_SPECIFIERS" << std::endl;
+  PRINTING_CHECK("255",         ==, test::sprintf_, buffer, "%I8", (int8_t) 255LL);
+#if (SHRT_MAX >= 32767)
+  PRINTING_CHECK("32767",  ==, test::sprintf_, buffer, "%I16", (int16_t) 32767LL);
+#endif
+#if (LLONG_MAX >= 2147483647)
+  PRINTING_CHECK("2147483647",  ==, test::sprintf_, buffer, "%I32", (int32_t)  2147483647LL);
+#if (LLONG_MAX >= 9223372036854775807LL)
+  PRINTING_CHECK("9223372036854775807",  ==, test::sprintf_, buffer, "%I64", (int64_t) 9223372036854775807LL);
+  std::cerr << "buffer is " << buffer << std::endl;
+#endif
+#endif
+#endif // PRINTF_SUPPORT_MSVC_STYLE_INTEGER_SPECIFIERS
 }
 
 
