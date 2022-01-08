@@ -70,11 +70,20 @@ __attribute__((format(__printf__, (one_based_format_index), (first_arg))))
 # define vprintf_   vprintf
 #endif
 
+// If you want to include this implementation file directly rather than
+// link against, this will let you control the functions' visibility,
+// e.g. make them static so as not to clash with other objects also
+// using them.
+#ifndef PRINTF_VISIBILITY
+#define PRINTF_VISIBILITY
+#endif
+
 /**
  * Output a character to a custom device like UART, used by the printf() function
  * This function is declared here only. You have to write your custom implementation somewhere
  * @param character Character to output
  */
+PRINTF_VISIBILITY
 void putchar_(char character);
 
 
@@ -86,6 +95,7 @@ void putchar_(char character);
  * @param format A string that specifies the format of the output
  * @return The number of characters that are written into the array, not counting the terminating null character
  */
+PRINTF_VISIBILITY
 int printf_(const char* format, ...) ATTR_PRINTF(1, 2);
 
 
@@ -97,7 +107,9 @@ int printf_(const char* format, ...) ATTR_PRINTF(1, 2);
  * @param va A value identifying a variable arguments list
  * @return The number of characters that are WRITTEN into the buffer, not counting the terminating null character
  */
+PRINTF_VISIBILITY
 int  sprintf_(char* buffer, const char* format, ...) ATTR_PRINTF(2, 3);
+PRINTF_VISIBILITY
 int vsprintf_(char* buffer, const char* format, va_list va) ATTR_VPRINTF(2);
 
 
@@ -111,7 +123,9 @@ int vsprintf_(char* buffer, const char* format, va_list va) ATTR_VPRINTF(2);
  *         null character. A value equal or larger than count indicates truncation. Only when the returned value
  *         is non-negative and less than count, the string has been completely written.
  */
+PRINTF_VISIBILITY
 int  snprintf_(char* buffer, size_t count, const char* format, ...) ATTR_PRINTF(3, 4);
+PRINTF_VISIBILITY
 int vsnprintf_(char* buffer, size_t count, const char* format, va_list va) ATTR_VPRINTF(3);
 
 
@@ -121,6 +135,7 @@ int vsnprintf_(char* buffer, size_t count, const char* format, va_list va) ATTR_
  * @param va A value identifying a variable arguments list
  * @return The number of characters that are WRITTEN into the buffer, not counting the terminating null character
  */
+PRINTF_VISIBILITY
 int vprintf_(const char* format, va_list va) ATTR_VPRINTF(1);
 
 
@@ -133,7 +148,9 @@ int vprintf_(const char* format, va_list va) ATTR_VPRINTF(1);
  * @param va A value identifying a variable arguments list
  * @return The number of characters that are sent to the output function, not counting the terminating null character
  */
+PRINTF_VISIBILITY
 int fctprintf(void (*out)(char character, void* arg), void* arg, const char* format, ...) ATTR_PRINTF(3, 4);
+PRINTF_VISIBILITY
 int vfctprintf(void (*out)(char character, void* arg), void* arg, const char* format, va_list va) ATTR_VPRINTF(3);
 
 #ifdef __cplusplus

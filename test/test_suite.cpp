@@ -45,6 +45,9 @@ typedef SSIZE_T ssize_t;
 #endif
 
 namespace test {
+  // This is not actually necessary, but it would tbe typicaly to use before including
+  // the printf.c implementation file.
+  #define PRINTF_VISIBILITY static
   // use functions in own test namespace to avoid stdio conflicts
   #include "../src/printf/printf.c"
 } // namespace test
