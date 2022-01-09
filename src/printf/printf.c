@@ -42,7 +42,7 @@ extern "C" {
 #else
 #include <stdbool.h>
 #include <stdint.h>
-#endif
+#endif // __cplusplus
 
 // Define this globally (e.g. gcc -DPRINTF_INCLUDE_CONFIG_H ...) to include the
 // printf_config.h header file
@@ -565,7 +565,7 @@ static struct double_components get_normalized_components(bool negative, printf_
   }
   return components;
 }
-#endif
+#endif // PRINTF_SUPPORT_EXPONENTIAL_SPECIFIERS
 
 static size_t print_broken_up_decimal(
   struct double_components number_, out_fct_type out, char *buffer, size_t idx, size_t maxlen, printf_size_t precision,
@@ -1140,7 +1140,6 @@ int printf_(const char* format, ...)
   return ret;
 }
 
-
 int sprintf_(char* buffer, const char* format, ...)
 {
   va_list va;
@@ -1150,7 +1149,6 @@ int sprintf_(char* buffer, const char* format, ...)
   return ret;
 }
 
-
 int snprintf_(char* buffer, size_t count, const char* format, ...)
 {
   va_list va;
@@ -1159,7 +1157,6 @@ int snprintf_(char* buffer, size_t count, const char* format, ...)
   va_end(va);
   return ret;
 }
-
 
 int vprintf_(const char* format, va_list va)
 {
@@ -1176,7 +1173,6 @@ int vsnprintf_(char* buffer, size_t count, const char* format, va_list va)
 {
   return _vsnprintf(out_buffer, buffer, count, format, va);
 }
-
 
 int fctprintf(void (*out)(char character, void* arg), void* arg, const char* format, ...)
 {
