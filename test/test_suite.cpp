@@ -27,8 +27,7 @@
 ///////////////////////////////////////////////////////////////////////////////
 
 #define PRINTF_VISIBILITY static
-// use functions in own test namespace to avoid stdio conflicts
-#include "../src/printf/printf.c"
+#include <printf/printf.c>
 
 // use the 'catch' test framework
 #define CATCH_CONFIG_MAIN
