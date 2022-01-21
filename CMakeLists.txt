@@ -88,10 +88,10 @@ set_target_properties(printf PROPERTIES
          LIBRARY_OUTPUT_DIRECTORY ${PROJECT_BINARY_DIR}/lib
          ARCHIVE_OUTPUT_DIRECTORY ${PROJECT_BINARY_DIR}/lib)
 
-if (CMAKE_CXX_COMPILER_ID STREQUAL "MSVC")
+if (CMAKE_C_COMPILER_ID STREQUAL "MSVC")
 	target_compile_options(printf PRIVATE /W4)
-elseif (CMAKE_CXX_COMPILER_ID STREQUAL "GNU" OR
-        CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
+elseif (CMAKE_C_COMPILER_ID STREQUAL "GNU" OR
+        CMAKE_C_COMPILER_ID STREQUAL "Clang")
 	target_compile_options(printf PRIVATE -Wall -Wextra -pedantic)
 endif()
 

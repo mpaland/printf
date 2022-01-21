@@ -36,10 +36,17 @@ set_target_properties(
 list(APPEND test_targets aliasing)
 
 foreach(tgt ${test_targets})
-	if (CMAKE_CXX_COMPILER_ID STREQUAL "MSVC")
+	get_target_property(tgt_lang ${tgt} LANGUAGE)
+	if (tgt_lang EQUAL "CXX")
+		set(tgt_compiler_id ${CMAKE_CXX_COMPILER_ID})
+	else() # it's C
+		set(tgt_compiler_id ${CMAKE_C_COMPILER_ID})
+	endif()
+
+	if (tgt_compiler_id STREQUAL "MSVC")
 		target_compile_options(${tgt} PRIVATE /W4)
-	elseif (CMAKE_CXX_COMPILER_ID STREQUAL "GNU" OR
-			CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
+	elseif (tgt_compiler_id STREQUAL "GNU" OR
+			tgt_compiler_id STREQUAL "Clang")
 		# lots of warnings and all warnings as errors
 		target_compile_options(${tgt} PRIVATE
 			-g
