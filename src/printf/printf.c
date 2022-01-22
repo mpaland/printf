@@ -1235,34 +1235,6 @@ static int _vsnprintf(out_fct_type out, char* buffer, printf_size_t maxlen, cons
 
 ///////////////////////////////////////////////////////////////////////////////
 
-int printf_(const char* format, ...)
-{
-  va_list va;
-  va_start(va, format);
-  char buffer[1];
-  const int ret = _vsnprintf(&out_putchar, buffer, (printf_size_t)-1, format, va);
-  va_end(va);
-  return ret;
-}
-
-int sprintf_(char* buffer, const char* format, ...)
-{
-  va_list va;
-  va_start(va, format);
-  const int ret = _vsnprintf(out_buffer, buffer, (printf_size_t)-1, format, va);
-  va_end(va);
-  return ret;
-}
-
-int snprintf_(char* buffer, size_t count, const char* format, ...)
-{
-  va_list va;
-  va_start(va, format);
-  const int ret = _vsnprintf(out_buffer, buffer, count, format, va);
-  va_end(va);
-  return ret;
-}
-
 int vprintf_(const char* format, va_list va)
 {
   char buffer[1];
@@ -1279,6 +1251,40 @@ int vsnprintf_(char* buffer, size_t count, const char* format, va_list va)
   return _vsnprintf(out_buffer, buffer, count, format, va);
 }
 
+int vfctprintf(void (*out)(char character, void* arg), void* arg, const char* format, va_list va)
+{
+  const out_function_wrapper_type out_fct_wrap = { out, arg };
+  return _vsnprintf(out_wrapped_function, (char*)(uintptr_t)&out_fct_wrap, (printf_size_t)-1, format, va);
+}
+
+
+int printf_(const char* format, ...)
+{
+  va_list va;
+  va_start(va, format);
+  const int ret = vprintf_(format, va);
+  va_end(va);
+  return ret;
+}
+
+int sprintf_(char* buffer, const char* format, ...)
+{
+  va_list va;
+  va_start(va, format);
+  const int ret = vsprintf_(buffer, format, va);
+  va_end(va);
+  return ret;
+}
+
+int snprintf_(char* buffer, size_t count, const char* format, ...)
+{
+  va_list va;
+  va_start(va, format);
+  const int ret = vsnprintf_(buffer, count, format, va);
+  va_end(va);
+  return ret;
+}
+
 int fctprintf(void (*out)(char character, void* arg), void* arg, const char* format, ...)
 {
   va_list va;
@@ -1288,11 +1294,6 @@ int fctprintf(void (*out)(char character, void* arg), void* arg, const char* for
   return ret;
 }
 
-int vfctprintf(void (*out)(char character, void* arg), void* arg, const char* format, va_list va)
-{
-  const out_function_wrapper_type out_fct_wrap = { out, arg };
-  return _vsnprintf(out_wrapped_function, (char*)(uintptr_t)&out_fct_wrap, (printf_size_t)-1, format, va);
-}
 
 #ifdef __cplusplus
 } // extern "C"
