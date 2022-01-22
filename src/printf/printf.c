@@ -950,14 +950,28 @@ process_integral_specifier(out_fct_type out, char *buffer, printf_size_t maxlen,
   return idx;
 }
 
+// Advances the format pointer past the flags, and returns the parsed flags
+// due to the characters passed
+static printf_flags_t parse_flags(const char** format)
+{
+  printf_flags_t flags = 0U;
+  do {
+    switch (**format) {
+      case '0': flags |= FLAGS_ZEROPAD; (*format)++; break;
+      case '-': flags |= FLAGS_LEFT;    (*format)++; break;
+      case '+': flags |= FLAGS_PLUS;    (*format)++; break;
+      case ' ': flags |= FLAGS_SPACE;   (*format)++; break;
+      case '#': flags |= FLAGS_HASH;    (*format)++; break;
+      default : return flags;
+    }
+  } while (true);
+}
 
 // internal vsnprintf - used for implementing _all library functions
 // Note: We don't like the C standard's parameter names, so using more informative parameter names
 // here instead.
 static int _vsnprintf(out_fct_type out, char* buffer, printf_size_t buffer_size, const char* format, va_list args)
 {
-  printf_flags_t flags;
-  printf_size_t width, precision, n;
   printf_size_t idx = 0U;
 
   if (!buffer) {
@@ -979,21 +993,10 @@ static int _vsnprintf(out_fct_type out, char* buffer, printf_size_t buffer_size,
       format++;
     }
 
-    // evaluate flags
-    flags = 0U;
-    do {
-      switch (*format) {
-        case '0': flags |= FLAGS_ZEROPAD; format++; n = 1U; break;
-        case '-': flags |= FLAGS_LEFT;    format++; n = 1U; break;
-        case '+': flags |= FLAGS_PLUS;    format++; n = 1U; break;
-        case ' ': flags |= FLAGS_SPACE;   format++; n = 1U; break;
-        case '#': flags |= FLAGS_HASH;    format++; n = 1U; break;
-        default :                                   n = 0U; break;
-      }
-    } while (n);
+    printf_flags_t flags = parse_flags(&format);
 
     // evaluate width field
-    width = 0U;
+    printf_size_t width = 0U;
     if (is_digit_(*format)) {
       width = (printf_size_t) atou_(&format);
     }
@@ -1010,7 +1013,7 @@ static int _vsnprintf(out_fct_type out, char* buffer, printf_size_t buffer_size,
     }
 
     // evaluate precision field
-    precision = 0U;
+    printf_size_t precision = 0U;
     if (*format == '.') {
       flags |= FLAGS_PRECISION;
       format++;
