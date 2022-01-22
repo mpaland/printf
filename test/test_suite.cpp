@@ -65,7 +65,7 @@ do {                                                             \
   std::memset(buffer_, 0xCC, 100);                               \
   printer_(buffer_, __VA_ARGS__);                                \
   if (!strcmp(buffer_, expected_)) {                             \
-    buffer_[strlen(expected_)] = '\0';                           \
+    buffer_[strlen(expected_) + 1] = '\0';                       \
   }                                                              \
   INFO( "----");                                                 \
   INFO( "Resulting buffer contents: " << '"' << buffer_ << '"'); \
@@ -1139,14 +1139,17 @@ TEST_CASE("ret value", "[]" ) {
   CHECK(!strcmp(buffer, "01234"));
   CHECK(ret == 5);
 
+  std::memset(buffer, 0xCC, sizeof(buffer));
   ret = snprintf_(buffer, 6, "0%s", "12345");
   CHECK(!strcmp(buffer, "01234"));
   CHECK(ret == 6);  // "5" is truncated
 
+  std::memset(buffer, 0xCC, sizeof(buffer));
   ret = snprintf_(buffer, 6, "0%s", "1234567");
   CHECK(!strcmp(buffer, "01234"));
   CHECK(ret == 8);  // "567" are truncated
 
+  std::memset(buffer, 0xCC, sizeof(buffer));
 DISABLE_WARNING_PUSH
 DISABLE_WARNING_PRINTF_FORMAT_OVERFLOW
   ret = snprintf_(buffer, 6, "0%s", (const char*) NULL);
@@ -1154,9 +1157,11 @@ DISABLE_WARNING_POP
   CHECK(!strcmp(buffer, "0(nul"));
   CHECK(ret == 7);  // "l)" is truncated
 
+  std::memset(buffer, 0xCC, sizeof(buffer));
   ret = snprintf_(buffer, 10, "hello, world");
   CHECK(ret == 12);
 
+  std::memset(buffer, 0xCC, sizeof(buffer));
   ret = snprintf_(buffer, 3, "%d", 10000);
   CHECK(ret == 5);
   CHECK(strlen(buffer) == 2U);
