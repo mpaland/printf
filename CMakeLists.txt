@@ -5,7 +5,7 @@ include(CheckTypeSize)
 project(
 	printf
 	LANGUAGES C
-	DESCRIPTION "Mostly-stand-alone C implementation of printf, vprintf, sprintf and related functions"
+	DESCRIPTION "Self-contained C implementation of printf, vprintf, sprintf and related functions"
 	HOMEPAGE_URL https://github.com/eyalroz/printf
 	VERSION 5.3.0
 )
