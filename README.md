@@ -112,18 +112,18 @@ Note: The preprocessor definitions are taken into account when compiling `printf
 The library offers the following, with the same signatures as in the standard C library (plus an extra underscore):
 ```
 int printf_(const char* format, ...);
-int sprintf_(char* buffer, const char* format, ...);
-int vsprintf_(char* buffer, const char* format, va_list va);
-int snprintf_(char* buffer, size_t count, const char* format, ...);
-int vsnprintf_(char* buffer, size_t count, const char* format, va_list va);
-int vprintf_(const char* format, va_list va);
+int sprintf_(char* s, const char* format, ...);
+int vsprintf_(char* s, const char* format, va_list arg);
+int snprintf_(char* s, size_t n, const char* format, ...);
+int vsnprintf_(char* s, size_t n, const char* format, va_list arg);
+int vprintf_(const char* format, va_list arg);
 ```
 Note that `printf()` and `vprintf()`  don't actually write anything on their own: In addition to their parameters, you must provide them with a lower-level `putchar_()` function which they can call for actual printing. This is part of this library's independence: It is isolated from dealing with console/serial output, files etc.
 
 Two additional functions are provided beyond those available in the standard library:
 ```
-int fctprintf(void (*out)(char character, void* arg), void* arg, const char* format, ...);
-int vfctprintf(void (*out)(char character, void* arg), void* arg, const char* format, va_list va);
+int fctprintf(void (*out)(char c, void* extra_arg), void* extra_arg, const char* format, ...);
+int vfctprintf(void (*out)(char c, void* extra_arg), void* extra_arg, const char* format, va_list arg);
 ```
 These higher-order functions allow for better flexibility of use: You can decide to do different things with the individual output characters: Encode them, compress them, filter them, append them to a buffer or a file, or just discard them. This is achieved by you passing a pointer to your own state information - through `(v)fctprintf()` and all the way to your own `out()` function.
 
