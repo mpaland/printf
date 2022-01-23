@@ -842,6 +842,15 @@ TEST_CASE("float", "[]" ) {
   PRINTING_CHECK("3.1415",    ==, sprintf_, buffer, "%.4f", 3.1415354);
   PRINTING_CHECK("30343.142", ==, sprintf_, buffer, "%.3f", 30343.1415354);
 
+  PRINTING_CHECK("2.1474836470e+09", ==, sprintf_, buffer, "%.10f", 2147483647.0); // 2^31 - 1
+  PRINTING_CHECK("2.1474836480e+09", ==, sprintf_, buffer, "%.10f", 2147483648.0); // 2^31
+  PRINTING_CHECK("4.2949672950e+09", ==, sprintf_, buffer, "%.10f", 4294967295.0); // 2^32 - 1
+  PRINTING_CHECK("4.2949672960e+09", ==, sprintf_, buffer, "%.10f", 4294967296.0); // 2^32
+  PRINTING_CHECK("2147483647", ==, sprintf_, buffer, "%.10g", 2147483647.0); // 2^31 - 1
+  PRINTING_CHECK("2147483648", ==, sprintf_, buffer, "%.10g", 2147483648.0); // 2^31
+  PRINTING_CHECK("4294967295", ==, sprintf_, buffer, "%.10g", 4294967295.0); // 2^32 - 1
+  PRINTING_CHECK("4294967296", ==, sprintf_, buffer, "%.10g", 4294967296.0); // 2^32
+
   // switch from decimal to exponential representation
   //
   CAPTURE_AND_PRINT(sprintf_, buffer, "%.0f", (double) ((int64_t)1 * 1000 ) );
