@@ -66,7 +66,7 @@ Whichever way you choose to use the library:
 
 * You can have this library stand-in for the C standard library's `printf()` family of functions, e.g. provide `snprintf()` instead of `snprintf_()`, by setting an appropriate [preprocessor definition](#cmake-options-and-preprocessor-definitions) during compilation and use. 
 * Speaking of the preprocessor definition [preprocessor definitions](#cmake-options-and-preprocessor-definitions) which affect the library's behavior - you have to be consistent in their choice when building and when using the library. (The easiest way to do that is just not to change any of them and accept the reasonable defaults.)
-* Two of the functions --- `printf_()` and `vprintf_()` --- will only be usable if you implement a `_putchar(char c)` function for them to use.
+* Two of the functions --- `printf_()` and `vprintf_()` --- will only be usable if you implement a `putchar_(char c)` function for them to use.
 * **Avoid `sprintf()` in favor of `snprintf()` for safety and security** - and that goes for the standard C library `sprintf()` as well:. `sprintf()` is unaware of the amount of memory allocated for the string it writes into, and will "happily" overflow your buffer; instead of calling it, pass your buffer size to `snprintf()` - and avoid overflow.
 
 Finally, if you've started using the library in a publicly-available (FOSS or commercial) project, please consider emailing [@eyalroz](https://github.com/eyalroz), or open an [issue](https://github.com/eyalroz/printf/issues/), to announce this.
@@ -117,7 +117,7 @@ int snprintf_(char* buffer, size_t count, const char* format, ...);
 int vsnprintf_(char* buffer, size_t count, const char* format, va_list va);
 int vprintf_(const char* format, va_list va);
 ```
-Note that `printf()` and `vprintf()`  don't actually write anything on their own: In addition to their parameters, you must provide them with a lower-level `_putchar()` function which they can call for actual printing. This is part of this library's independence: It is isolated from dealing with console/serial output, files etc.
+Note that `printf()` and `vprintf()`  don't actually write anything on their own: In addition to their parameters, you must provide them with a lower-level `putchar_()` function which they can call for actual printing. This is part of this library's independence: It is isolated from dealing with console/serial output, files etc.
 
 Two additional functions are provided beyond those available in the standard library:
 ```

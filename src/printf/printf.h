@@ -125,7 +125,7 @@ int vprintf_(const char* format, va_list va) ATTR_VPRINTF(1);
 
 /**
  * printf/vprintf with output function
- * You may use this as dynamic alternative to printf() with its fixed _putchar() output
+ * You may use this as dynamic alternative to printf() with its fixed putchar_() output
  * @param out An output function which takes one character and an argument pointer
  * @param arg An argument pointer for user data passed to output function
  * @param format A string that specifies the format of the output
