@@ -261,10 +261,10 @@ static inline double_with_bit_access get_bit_access(double x)
   return dwba;
 }
 
-static inline int get_sign(double x)
+static inline int get_sign_bit(double x)
 {
   // The sign is stored in the highest bit
-  return get_bit_access(x).U >> (DOUBLE_SIZE_IN_BITS - 1);
+  return (int) (get_bit_access(x).U >> (DOUBLE_SIZE_IN_BITS - 1));
 }
 
 static inline int get_exp2(double_with_bit_access x)
@@ -561,7 +561,7 @@ static const double powers_of_10[NUM_DECIMAL_DIGITS_IN_INT64_T] = {
 static struct double_components get_components(double number, printf_size_t precision)
 {
   struct double_components number_;
-  number_.is_negative = get_sign(number);
+  number_.is_negative = get_sign_bit(number);
   double abs_number = (number_.is_negative) ? -number : number;
   number_.integral = (int_fast64_t)abs_number;
   double remainder = (abs_number - number_.integral) * powers_of_10[precision];
@@ -765,7 +765,7 @@ static void print_decimal_number(output_gadget_t* output, double number, printf_
 // internal ftoa variant for exponential floating-point type, contributed by Martijn Jasperse <m.jasperse@gmail.com>
 static void print_exponential_number(output_gadget_t* output, double number, printf_size_t precision, printf_size_t width, printf_flags_t flags, char* buf, printf_size_t len)
 {
-  const bool negative = get_sign(number);
+  const bool negative = get_sign_bit(number);
   // This number will decrease gradually (by factors of 10) as we "extract" the exponent out of it
   double abs_number =  negative ? -number : number;
 
