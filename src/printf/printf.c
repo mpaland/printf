@@ -38,16 +38,12 @@
 
 #ifdef __cplusplus
 #include <cstdint>
-#ifdef PRINTF_SUPPORT_MSVC_STYLE_INTEGER_SPECIFIERS
 #include <climits>
-#endif
 extern "C" {
 #else
 #include <stdbool.h>
 #include <stdint.h>
-#ifdef PRINTF_SUPPORT_MSVC_STYLE_INTEGER_SPECIFIERS
 #include <limits.h>
-#endif
 #endif // __cplusplus
 
 // Define this globally (e.g. gcc -DPRINTF_INCLUDE_CONFIG_H ...) to include the
@@ -62,10 +58,6 @@ extern "C" {
 
 #include <stdbool.h>
 #include <stdint.h>
-#ifdef PRINTF_SUPPORT_MSVC_STYLE_INTEGER_SPECIFIERS
-#include <limits.h>
-#endif
-
 
 #include <printf/printf.h>
 
