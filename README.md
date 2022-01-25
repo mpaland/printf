@@ -129,7 +129,13 @@ These higher-order functions allow for better flexibility of use: You can decide
 
 #### "... but I don't like the underscore-suffix names :-("
 
-You can [configure](#CMake-options-and-preprocessor-definitions) the library to alias the standard library's names, in which case it exposes `printf()`, `sprintf()`, `vsprintf()` and so on. Alternatively, you can write short wrappers with your preferred names. This is completely trivial with the v-functions, e.g.:
+You can [configure](#CMake-options-and-preprocessor-definitions) the library to alias the standard library's names, in which case it exposes `printf()`, `sprintf()`, `vsprintf()` and so on.
+
+If you alias the standard library function names, *be careful of GCC/clang's `printf()` optimizations!*: GCC and clang recognize patterns such as `printf("%s", str)` or `printf("%c", ch)`, and perform a "strength reduction" of sorts by invoking `puts(stdout, str)` or `putchar(ch)`. If you enable the `PRINTF_ALIAS_STANDARD_FUNCTION_NAMES` option (see below), and do not ensure your code is compiled with the `-fno-builtin-printf` option - you might inadvertantly pull in the standard library implementation - either succeeding and depending on it, or failing with a linker error. When using `printf` as a CMake imported target, that should already be arranged for, but again: Double-check.
+
+<br>
+
+Alternatively, you can write short wrappers with your preferred names. This is completely trivial with the v-functions, e.g.:
 ```
 int my_vprintf(const char* format, va_list va)
 {
