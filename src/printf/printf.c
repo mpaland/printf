@@ -358,7 +358,7 @@ static inline output_gadget_t discarding_gadget()
 static inline output_gadget_t buffer_gadget(char* buffer, size_t buffer_size)
 {
   printf_size_t usable_buffer_size = (buffer_size > PRINTF_MAX_POSSIBLE_BUFFER_SIZE) ?
-    PRINTF_MAX_POSSIBLE_BUFFER_SIZE : buffer_size;
+    PRINTF_MAX_POSSIBLE_BUFFER_SIZE : (printf_size_t) buffer_size;
   output_gadget_t result = discarding_gadget();
   if (buffer != NULL) {
     result.buffer = buffer;
@@ -539,9 +539,13 @@ static void print_integer(output_gadget_t* output, printf_unsigned_value_t value
 
 #if (PRINTF_SUPPORT_DECIMAL_SPECIFIERS || PRINTF_SUPPORT_EXPONENTIAL_SPECIFIERS)
 
+// Stores a fixed-precision representation of a double relative
+// to a fixed precision (which cannot be determined by examining this structure)
 struct double_components {
   int_fast64_t integral;
   int_fast64_t fractional;
+    // ... truncation of the actual fractional part of the double value, scaled
+    // by the precision value
   bool is_negative;
 };
 
@@ -564,7 +568,7 @@ static struct double_components get_components(double number, printf_size_t prec
   number_.is_negative = get_sign_bit(number);
   double abs_number = (number_.is_negative) ? -number : number;
   number_.integral = (int_fast64_t)abs_number;
-  double remainder = (abs_number - number_.integral) * powers_of_10[precision];
+  double remainder = (abs_number - (double) number_.integral) * powers_of_10[precision];
   number_.fractional = (int_fast64_t)remainder;
 
   remainder -= (double) number_.fractional;
@@ -654,7 +658,7 @@ static struct double_components get_normalized_components(bool negative, printf_
   }
   else {
     components.fractional = (int_fast64_t) scaled_remainder;
-    scaled_remainder -= components.fractional;
+    scaled_remainder -= (double) components.fractional;
 
     components.fractional += (scaled_remainder >= rounding_threshold);
     if (scaled_remainder == rounding_threshold) {

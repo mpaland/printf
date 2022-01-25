@@ -92,7 +92,7 @@ if (CMAKE_C_COMPILER_ID STREQUAL "MSVC")
 	target_compile_options(printf PRIVATE /W4)
 elseif (CMAKE_C_COMPILER_ID STREQUAL "GNU" OR
         CMAKE_C_COMPILER_ID STREQUAL "Clang")
-	target_compile_options(printf PRIVATE -Wall -Wextra -pedantic)
+	target_compile_options(printf PRIVATE -Wall -Wextra -pedantic -Wconversion)
 endif()
 
 if (BUILD_TESTS)
