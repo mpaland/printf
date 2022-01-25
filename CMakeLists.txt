@@ -93,6 +93,12 @@ if (CMAKE_C_COMPILER_ID STREQUAL "MSVC")
 elseif (CMAKE_C_COMPILER_ID STREQUAL "GNU" OR
         CMAKE_C_COMPILER_ID STREQUAL "Clang")
 	target_compile_options(printf PRIVATE -Wall -Wextra -pedantic -Wconversion)
+	if (ALIAS_STANDARD_FUNCTION_NAMES)
+		# This is important for preventing our aliased implementation
+		# from being replaced, e.g. printf("%c", 'a') by putchar('a');
+		# clang and GCC apparently do this as an optimization
+		target_compile_options(printf PUBLIC -fno-builtin-printf)
+	endif()
 endif()
 
 if (BUILD_TESTS)
