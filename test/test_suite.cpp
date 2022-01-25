@@ -83,6 +83,7 @@ do {                                                             \
     #define DISABLE_WARNING_PRINTF_FORMAT
     #define DISABLE_WARNING_PRINTF_FORMAT_EXTRA_ARGS
     #define DISABLE_WARNING_PRINTF_FORMAT_OVERFLOW
+    #define DISABLE_WARNING_PRINTF_FORMAT_INVALID_SPECIFIER
 
 #elif defined(__GNUC__) || defined(__clang__)
     #define DO_PRAGMA(X) _Pragma(#X)
@@ -94,20 +95,24 @@ do {                                                             \
     #define DISABLE_WARNING_PRINTF_FORMAT_EXTRA_ARGS DISABLE_WARNING(-Wformat-extra-args)
 #if defined(__clang__)
     #define DISABLE_WARNING_PRINTF_FORMAT_OVERFLOW
+    #define DISABLE_WARNING_PRINTF_FORMAT_INVALID_SPECIFIER DISABLE_WARNING(-Wformat-invalid-specifier)
 #else
     #define DISABLE_WARNING_PRINTF_FORMAT_OVERFLOW DISABLE_WARNING(-Wformat-overflow)
+    #define DISABLE_WARNING_PRINTF_FORMAT_INVALID_SPECIFIER
 #endif
 #else
     #define DISABLE_WARNING_PUSH
     #define DISABLE_WARNING_POP
     #define DISABLE_WARNING_PRINTF_FORMAT
     #define DISABLE_WARNING_PRINTF_FORMAT_EXTRA_ARGS
+    #define DISABLE_WARNING_PRINTF_FORMAT_INVALID_SPECIFIER
 #endif
 
 #ifdef TEST_WITH_NON_STANDARD_FORMAT_STRINGS
 DISABLE_WARNING_PUSH
 DISABLE_WARNING_PRINTF_FORMAT
 DISABLE_WARNING_PRINTF_FORMAT_EXTRA_ARGS
+DISABLE_WARNING_PRINTF_FORMAT_INVALID_SPECIFIER
 #endif
 
 #if defined(_MSC_VER)
@@ -1093,7 +1098,6 @@ TEST_CASE("string length", "[]" ) {
   PRINTING_CHECK("123", ==, sprintf_, buffer, "%.7s", "123");
   PRINTING_CHECK("", ==, sprintf_, buffer, "%.7s", "");
   PRINTING_CHECK("1234ab", ==, sprintf_, buffer, "%.4s%.2s", "123456", "abcdef");
-  PRINTING_CHECK(".2s", ==, sprintf_, buffer, "%.4.2s", "123456");
   PRINTING_CHECK("123", ==, sprintf_, buffer, "%.*s", 3, "123456");
 
 DISABLE_WARNING_PUSH
@@ -1107,6 +1111,8 @@ TEST_CASE("string length (non-standard format)", "[]" ) {
   char buffer[100];
 DISABLE_WARNING_PUSH
 DISABLE_WARNING_PRINTF_FORMAT
+DISABLE_WARNING_PRINTF_FORMAT_EXTRA_ARGS
+DISABLE_WARNING_PRINTF_FORMAT_INVALID_SPECIFIER
   PRINTING_CHECK(".2s", ==, sprintf_, buffer, "%.4.2s", "123456");
 DISABLE_WARNING_POP
 }
