@@ -8,6 +8,7 @@ syntax: glob
 # Files which "ask" to be hidden
 *~
 .*
+!.github
 unused/
 
 # Build artifacts
