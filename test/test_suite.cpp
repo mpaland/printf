@@ -1,4 +1,6 @@
 ///////////////////////////////////////////////////////////////////////////////
+// @author (c) Eyal Rozenberg <eyalroz1@gmx.com>
+//             2021-2022, Haifa, Palestine/Israel
 // \author (c) Marco Paland (info@paland.com)
 //             2017-2019, PALANDesign Hannover, Germany
 //
