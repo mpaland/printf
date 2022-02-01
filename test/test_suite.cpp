@@ -833,7 +833,7 @@ TEST_CASE("length - non-standard format", "[]" ) {
 #endif
 
 
-TEST_CASE("float", "[]" ) {
+TEST_CASE("infinity and not-a-number values", "[]" ) {
   char buffer[100];
 
   // test special-case floats using math.h macros
@@ -843,12 +843,15 @@ TEST_CASE("float", "[]" ) {
   PRINTING_CHECK("-inf    ",  ==, sprintf_, buffer, "%-8f", (double) -INFINITY);
 #endif
 #if PRINTF_SUPPORT_EXPONENTIAL_SPECIFIERS
-  PRINTING_CHECK("    +inf",  ==, sprintf_, buffer, "%+8e", (double) INFINITY);
+  PRINTING_CHECK("     nan",  ==, sprintf_, buffer, "%8e", (double) NAN);
+  PRINTING_CHECK("     inf",  ==, sprintf_, buffer, "%8e", (double) INFINITY);
+  PRINTING_CHECK("-inf    ",  ==, sprintf_, buffer, "%-8e", (double) -INFINITY);
 #endif
-#if PRINTF_SUPPORT_DECIMAL_SPECIFIERS
-  PRINTING_CHECK("3.1415",    ==, sprintf_, buffer, "%.4f", 3.1415354);
-  PRINTING_CHECK("30343.142", ==, sprintf_, buffer, "%.3f", 30343.1415354);
+}
 
+#if PRINTF_SUPPORT_DECIMAL_SPECIFIERS
+TEST_CASE("floating-point specifiers with 31-32 bit integer values", "[]" ) {
+  char buffer[100];
   PRINTING_CHECK("2.1474836470e+09", ==, sprintf_, buffer, "%.10f", 2147483647.0); // 2^31 - 1
   PRINTING_CHECK("2.1474836480e+09", ==, sprintf_, buffer, "%.10f", 2147483648.0); // 2^31
   PRINTING_CHECK("4.2949672950e+09", ==, sprintf_, buffer, "%.10f", 4294967295.0); // 2^32 - 1
@@ -857,9 +860,12 @@ TEST_CASE("float", "[]" ) {
   PRINTING_CHECK("2147483648", ==, sprintf_, buffer, "%.10g", 2147483648.0); // 2^31
   PRINTING_CHECK("4294967295", ==, sprintf_, buffer, "%.10g", 4294967295.0); // 2^32 - 1
   PRINTING_CHECK("4294967296", ==, sprintf_, buffer, "%.10g", 4294967296.0); // 2^32
+}
+#endif
 
-  // switch from decimal to exponential representation
-  //
+#if PRINTF_SUPPORT_DECIMAL_SPECIFIERS
+TEST_CASE("fallback from decimal to exponential", "[]" ) {
+  char buffer[100];
   CAPTURE_AND_PRINT(sprintf_, buffer, "%.0f", (double) ((int64_t)1 * 1000 ) );
   if (PRINTF_MAX_INTEGRAL_DIGITS_FOR_DECIMAL < 3) {
     CHECK(!strcmp(buffer, "1e+3"));
@@ -908,6 +914,25 @@ TEST_CASE("float", "[]" ) {
   else {
     CHECK(!strcmp(buffer, "1000000000000000"));
   }
+#endif
+
+  // A value which should Should definitely be out of range for float
+#if PRINTF_SUPPORT_DECIMAL_SPECIFIERS
+  CAPTURE_AND_PRINT(sprintf_, buffer, "%.1f", 1E20);
+#if PRINTF_SUPPORT_EXPONENTIAL_SPECIFIERS
+  CHECK(!strcmp(buffer, "1.0e+20"));
+#else
+  CHECK(!strcmp(buffer, ""));
+#endif
+#endif
+
+}
+
+TEST_CASE("floating-point specifiers, precision and flags", "[]" ) {
+  char buffer[100];
+#if PRINTF_SUPPORT_DECIMAL_SPECIFIERS
+  PRINTING_CHECK("3.1415",    ==, sprintf_, buffer, "%.4f", 3.1415354);
+  PRINTING_CHECK("30343.142", ==, sprintf_, buffer, "%.3f", 30343.1415354);
   PRINTING_CHECK("34",               ==, sprintf_, buffer, "%.0f", 34.1415354);
   PRINTING_CHECK("1",                ==, sprintf_, buffer, "%.0f", 1.3);
   PRINTING_CHECK("2",                ==, sprintf_, buffer, "%.0f", 1.55);
@@ -960,15 +985,6 @@ TEST_CASE("float", "[]" ) {
   PRINTING_CHECK("-8.380923438e+04", ==, sprintf_, buffer, "%.9e", -83809.234375);
 #endif
 
-  // out of range for float: should switch to exp notation if supported, else empty
-#if PRINTF_SUPPORT_DECIMAL_SPECIFIERS
-  CAPTURE_AND_PRINT(sprintf_, buffer, "%.1f", 1E20);
-#if PRINTF_SUPPORT_EXPONENTIAL_SPECIFIERS
-  CHECK(!strcmp(buffer, "1.0e+20"));
-#else
-  CHECK(!strcmp(buffer, ""));
-#endif
-#endif
 
 #if PRINTF_SUPPORT_DECIMAL_SPECIFIERS
   // brute force float
@@ -999,7 +1015,7 @@ TEST_CASE("float", "[]" ) {
 }
 
 
-TEST_CASE("types", "[]" ) {
+TEST_CASE("integer types", "[]" ) {
   char buffer[100];
   PRINTING_CHECK("0",                    ==, sprintf_, buffer, "%i", 0);
   PRINTING_CHECK("1234",                 ==, sprintf_, buffer, "%i", 1234);
