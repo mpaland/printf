@@ -1021,28 +1021,40 @@ TEST_CASE("floating-point specifiers, precision and flags", "[]" ) {
 
 #if PRINTF_SUPPORT_DECIMAL_SPECIFIERS
   // brute force float
-  bool fail = false;
+  bool any_failed = false;
   std::stringstream sstr;
   sstr.precision(5);
-  for (float i = -100000; i < 100000; i += 1) {
-    sprintf_(buffer, "%.5f", (double)(i / 10000));
+  for (float i = -100000; i < 100000; i += (float) 1) {
+    sprintf_(buffer, "%.5f", (double) (i / 10000));
     sstr.str("");
     sstr << std::fixed << i / 10000;
-    fail = fail || !!strcmp(buffer, sstr.str().c_str());
+    if (strcmp(buffer, sstr.str().c_str()) != 0) {
+      std::cerr
+        << ": sprintf_(\"%.5f\", " << std::setw(6) << i << ") = " << std::setw(10) << buffer   << " , "
+        << "expected " << std::setw(10) << sstr.str().c_str() << "\n";
+      any_failed = true;
+    }
   }
-  CHECK(!fail);
+  CHECK(not any_failed);
 
 #if PRINTF_SUPPORT_EXPONENTIAL_SPECIFIERS
   // This is tested when _both_ decimal and exponential specifiers are supported.
   // brute force exp
   sstr.setf(std::ios::scientific, std::ios::floatfield);
-  for (float i = (float) -1e20; i < (float) 1e20; i += (float) 1e15) {
+  any_failed = false;
+  long n = 0;
+  for (float i = (float) -1e20; i < (float) 1e20; i += (float) 1e15, n++) {
     sprintf_(buffer, "%.5f", (double) i);
     sstr.str("");
     sstr << i;
-    fail = fail || !!strcmp(buffer, sstr.str().c_str());
+    if (strcmp(buffer, sstr.str().c_str()) != 0) {
+      std::cerr
+        << n << ": sprintf_(\"%.5f\", " << std::setw(18) << std::setprecision(30) << i << ") = " << std::setw(15) << buffer << " , "
+        << "expected " << std::setw(12) << sstr.str().c_str() << "\n";
+      any_failed = true;
+    }
   }
-  CHECK(!fail);
+  CHECK(not any_failed);
 #endif
 #endif
 }
