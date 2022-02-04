@@ -29,6 +29,7 @@
 ///////////////////////////////////////////////////////////////////////////////
 
 #define PRINTF_VISIBILITY static
+#include <printf_config.h>
 #include <printf/printf.c>
 
 // use the 'catch' test framework
@@ -852,16 +853,24 @@ TEST_CASE("infinity and not-a-number values", "[]" ) {
 #if PRINTF_SUPPORT_DECIMAL_SPECIFIERS
 TEST_CASE("floating-point specifiers with 31-32 bit integer values", "[]" ) {
   char buffer[100];
+#if PRINTF_MAX_INTEGRAL_DIGITS_FOR_DECIMAL >= 10
+  PRINTING_CHECK("2147483647", ==, sprintf_, buffer, "%.10f", 2147483647.0); // 2^31 - 1
+  PRINTING_CHECK("2147483648", ==, sprintf_, buffer, "%.10f", 2147483648.0); // 2^31
+  PRINTING_CHECK("4294967295", ==, sprintf_, buffer, "%.10f", 4294967295.0); // 2^32 - 1
+  PRINTING_CHECK("4294967296", ==, sprintf_, buffer, "%.10f", 4294967296.0); // 2^32
+#else
   PRINTING_CHECK("2.1474836470e+09", ==, sprintf_, buffer, "%.10f", 2147483647.0); // 2^31 - 1
   PRINTING_CHECK("2.1474836480e+09", ==, sprintf_, buffer, "%.10f", 2147483648.0); // 2^31
   PRINTING_CHECK("4.2949672950e+09", ==, sprintf_, buffer, "%.10f", 4294967295.0); // 2^32 - 1
   PRINTING_CHECK("4.2949672960e+09", ==, sprintf_, buffer, "%.10f", 4294967296.0); // 2^32
+#endif
   PRINTING_CHECK("2147483647", ==, sprintf_, buffer, "%.10g", 2147483647.0); // 2^31 - 1
   PRINTING_CHECK("2147483648", ==, sprintf_, buffer, "%.10g", 2147483648.0); // 2^31
   PRINTING_CHECK("4294967295", ==, sprintf_, buffer, "%.10g", 4294967295.0); // 2^32 - 1
   PRINTING_CHECK("4294967296", ==, sprintf_, buffer, "%.10g", 4294967296.0); // 2^32
 }
 #endif
+
 
 #if PRINTF_SUPPORT_DECIMAL_SPECIFIERS
 TEST_CASE("fallback from decimal to exponential", "[]" ) {
