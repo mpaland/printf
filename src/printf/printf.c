@@ -6,7 +6,8 @@
  *
  * @note Others have made smaller contributions to this file: see the
  * contributors page at https://github.com/eyalroz/printf/graphs/contributors
- * or ask one of the authors.
+ * or ask one of the authors. The original code for exponential specifiers was
+ * contributed by Martijn Jasperse <m.jasperse@gmail.com>.
  *
  * @brief Small stand-alone implementation of the printf family of functions
  * (`(v)printf`, `(v)s(n)printf` etc., geared towards use on embedded systems with
@@ -819,7 +820,6 @@ static double pow10_of_int(int floored_exp10)
   return dwba.F;
 }
 
-// internal ftoa variant for exponential floating-point type, contributed by Martijn Jasperse <m.jasperse@gmail.com>
 static void print_exponential_number(output_gadget_t* output, double number, printf_size_t precision, printf_size_t width, printf_flags_t flags, char* buf, printf_size_t len)
 {
   const bool negative = get_sign_bit(number);
