@@ -765,6 +765,15 @@ static void print_decimal_number(output_gadget_t* output, double number, printf_
   print_broken_up_decimal(value_, output, precision, width, flags, buf, len);
 }
 
+// A floor function - but one which only works for numbers whose
+// floor value is representable by an int.
+static int bastardized_floor(double x)
+{
+  if (x >= 0) { return (int) x; }
+  int n = (int) x;
+  return ( ((double) n) == x ) ? n : n-1;
+}
+
 #if PRINTF_SUPPORT_EXPONENTIAL_SPECIFIERS
 // internal ftoa variant for exponential floating-point type, contributed by Martijn Jasperse <m.jasperse@gmail.com>
 static void print_exponential_number(output_gadget_t* output, double number, printf_size_t precision, printf_size_t width, printf_flags_t flags, char* buf, printf_size_t len)
@@ -791,9 +800,11 @@ static void print_exponential_number(output_gadget_t* output, double number, pri
 	  // drop the exponent, so conv.F comes into the range [1,2)
       conv.U = (conv.U & (( (double_uint_t)(1) << DOUBLE_STORED_MANTISSA_BITS) - 1U)) | ((double_uint_t) DOUBLE_BASE_EXPONENT << DOUBLE_STORED_MANTISSA_BITS);
       // now approximate log10 from the log2 integer part and an expansion of ln around 1.5
-      exp10 = (int)(0.1760912590558 + exp2 * 0.301029995663981 + (conv.F - 1.5) * 0.289529654602168);
+      double exp10_ = (0.1760912590558 + exp2 * 0.301029995663981 + (conv.F - 1.5) * 0.289529654602168);
+
+      exp10 = bastardized_floor(exp10_);
       // now we want to compute 10^exp10 but we want to be sure it won't overflow
-      exp2 = (int)(exp10 * 3.321928094887362 + 0.5);
+      exp2 = bastardized_floor(exp10 * 3.321928094887362 + 0.5);
       const double z  = exp10 * 2.302585092994046 - exp2 * 0.6931471805599453;
       const double z2 = z * z;
       conv.U = ((double_uint_t)(exp2) + DOUBLE_BASE_EXPONENT) << DOUBLE_STORED_MANTISSA_BITS;
