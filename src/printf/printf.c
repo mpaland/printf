@@ -765,6 +765,8 @@ static void print_decimal_number(output_gadget_t* output, double number, printf_
   print_broken_up_decimal(value_, output, precision, width, flags, buf, len);
 }
 
+#if PRINTF_SUPPORT_EXPONENTIAL_SPECIFIERS
+
 // A floor function - but one which only works for numbers whose
 // floor value is representable by an int.
 static int bastardized_floor(double x)
@@ -774,7 +776,19 @@ static int bastardized_floor(double x)
   return ( ((double) n) == x ) ? n : n-1;
 }
 
-#if PRINTF_SUPPORT_EXPONENTIAL_SPECIFIERS
+// Compute the base-10 logarithm of a positive number
+static double log10_of_positive(double abs_number)
+{
+  double_with_bit_access dwba = get_bit_access(abs_number);
+  // based on the algorithm by David Gay (https://www.ampl.com/netlib/fp/dtoa.c)
+  int exp2 = get_exp2(dwba);
+  // drop the exponent, so dwba.F comes into the range [1,2)
+  dwba.U = (dwba.U & (((double_uint_t) (1) << DOUBLE_STORED_MANTISSA_BITS) - 1U)) |
+           ((double_uint_t) DOUBLE_BASE_EXPONENT << DOUBLE_STORED_MANTISSA_BITS);
+  // now approximate log10 from the log2 integer part and an expansion of ln around 1.5
+  return (0.1760912590558 + exp2 * 0.301029995663981 + (dwba.F - 1.5) * 0.289529654602168);
+}
+
 // internal ftoa variant for exponential floating-point type, contributed by Martijn Jasperse <m.jasperse@gmail.com>
 static void print_exponential_number(output_gadget_t* output, double number, printf_size_t precision, printf_size_t width, printf_flags_t flags, char* buf, printf_size_t len)
 {
@@ -793,31 +807,23 @@ static void print_exponential_number(output_gadget_t* output, double number, pri
     floored_exp10 = 0; // ... and no need to set a normalization factor or check the powers table
   }
   else  {
-    double_with_bit_access conv = get_bit_access(abs_number);
-    {
-      // based on the algorithm by David Gay (https://www.ampl.com/netlib/fp/dtoa.c)
-      int exp2 = get_exp2(conv);
-	  // drop the exponent, so conv.F comes into the range [1,2)
-      conv.U = (conv.U & (( (double_uint_t)(1) << DOUBLE_STORED_MANTISSA_BITS) - 1U)) | ((double_uint_t) DOUBLE_BASE_EXPONENT << DOUBLE_STORED_MANTISSA_BITS);
-      // now approximate log10 from the log2 integer part and an expansion of ln around 1.5
-      double exp10 = (0.1760912590558 + exp2 * 0.301029995663981 + (conv.F - 1.5) * 0.289529654602168);
-
-      floored_exp10 = bastardized_floor(exp10);
-      // now we want to compute 10^(floored_exp10) but we want to be sure it won't overflow
-      exp2 = bastardized_floor(floored_exp10 * 3.321928094887362 + 0.5);
-      const double z  = floored_exp10 * 2.302585092994046 - exp2 * 0.6931471805599453;
-      const double z2 = z * z;
-      conv.U = ((double_uint_t)(exp2) + DOUBLE_BASE_EXPONENT) << DOUBLE_STORED_MANTISSA_BITS;
-      // compute exp(z) using continued fractions, see https://en.wikipedia.org/wiki/Exponential_function#Continued_fractions_for_ex
-      conv.F *= 1 + 2 * z / (2 - z + (z2 / (6 + (z2 / (10 + z2 / 14)))));
-      // correct for rounding errors
-      if (abs_number < conv.F) {
-        floored_exp10--;
-        conv.F /= 10;
-      }
+    double exp10 = log10_of_positive(abs_number);
+    floored_exp10 = bastardized_floor(exp10);
+    // now we want to compute 10^(floored_exp10) but we want to be sure it won't overflow
+    int exp2 = bastardized_floor(floored_exp10 * 3.321928094887362 + 0.5);
+    const double z  = floored_exp10 * 2.302585092994046 - exp2 * 0.6931471805599453;
+    const double z2 = z * z;
+    double_with_bit_access dwba;
+    dwba.U = ((double_uint_t)(exp2) + DOUBLE_BASE_EXPONENT) << DOUBLE_STORED_MANTISSA_BITS;
+    // compute exp(z) using continued fractions, see https://en.wikipedia.org/wiki/Exponential_function#Continued_fractions_for_ex
+    dwba.F *= 1 + 2 * z / (2 - z + (z2 / (6 + (z2 / (10 + z2 / 14)))));
+    // correct for rounding errors
+    if (abs_number < dwba.F) {
+      floored_exp10--;
+      dwba.F /= 10;
     }
     abs_exp10_covered_by_powers_table = PRINTF_ABS(floored_exp10) < PRINTF_MAX_PRECOMPUTED_POWER_OF_10;
-    normalization.raw_factor = abs_exp10_covered_by_powers_table ? powers_of_10[PRINTF_ABS(floored_exp10)] : conv.F;
+    normalization.raw_factor = abs_exp10_covered_by_powers_table ? powers_of_10[PRINTF_ABS(floored_exp10)] : dwba.F;
   }
 
   // We now begin accounting for the widths of the two parts of our printed field:
