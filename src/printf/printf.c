@@ -782,7 +782,7 @@ static void print_exponential_number(output_gadget_t* output, double number, pri
   // This number will decrease gradually (by factors of 10) as we "extract" the exponent out of it
   double abs_number =  negative ? -number : number;
 
-  int exp10;
+  int floored_exp10;
   bool abs_exp10_covered_by_powers_table;
   struct scaling_factor normalization;
 
@@ -790,7 +790,7 @@ static void print_exponential_number(output_gadget_t* output, double number, pri
   // Determine the decimal exponent
   if (abs_number == 0.0) {
     // TODO: This is a special-case for 0.0 (and -0.0); but proper handling is required for denormals more generally.
-    exp10 = 0; // ... and no need to set a normalization factor or check the powers table
+    floored_exp10 = 0; // ... and no need to set a normalization factor or check the powers table
   }
   else  {
     double_with_bit_access conv = get_bit_access(abs_number);
@@ -800,24 +800,24 @@ static void print_exponential_number(output_gadget_t* output, double number, pri
 	  // drop the exponent, so conv.F comes into the range [1,2)
       conv.U = (conv.U & (( (double_uint_t)(1) << DOUBLE_STORED_MANTISSA_BITS) - 1U)) | ((double_uint_t) DOUBLE_BASE_EXPONENT << DOUBLE_STORED_MANTISSA_BITS);
       // now approximate log10 from the log2 integer part and an expansion of ln around 1.5
-      double exp10_ = (0.1760912590558 + exp2 * 0.301029995663981 + (conv.F - 1.5) * 0.289529654602168);
+      double exp10 = (0.1760912590558 + exp2 * 0.301029995663981 + (conv.F - 1.5) * 0.289529654602168);
 
-      exp10 = bastardized_floor(exp10_);
-      // now we want to compute 10^exp10 but we want to be sure it won't overflow
-      exp2 = bastardized_floor(exp10 * 3.321928094887362 + 0.5);
-      const double z  = exp10 * 2.302585092994046 - exp2 * 0.6931471805599453;
+      floored_exp10 = bastardized_floor(exp10);
+      // now we want to compute 10^(floored_exp10) but we want to be sure it won't overflow
+      exp2 = bastardized_floor(floored_exp10 * 3.321928094887362 + 0.5);
+      const double z  = floored_exp10 * 2.302585092994046 - exp2 * 0.6931471805599453;
       const double z2 = z * z;
       conv.U = ((double_uint_t)(exp2) + DOUBLE_BASE_EXPONENT) << DOUBLE_STORED_MANTISSA_BITS;
       // compute exp(z) using continued fractions, see https://en.wikipedia.org/wiki/Exponential_function#Continued_fractions_for_ex
       conv.F *= 1 + 2 * z / (2 - z + (z2 / (6 + (z2 / (10 + z2 / 14)))));
       // correct for rounding errors
       if (abs_number < conv.F) {
-        exp10--;
+        floored_exp10--;
         conv.F /= 10;
       }
     }
-    abs_exp10_covered_by_powers_table = PRINTF_ABS(exp10) < PRINTF_MAX_PRECOMPUTED_POWER_OF_10;
-    normalization.raw_factor = abs_exp10_covered_by_powers_table ? powers_of_10[PRINTF_ABS(exp10)] : conv.F;
+    abs_exp10_covered_by_powers_table = PRINTF_ABS(floored_exp10) < PRINTF_MAX_PRECOMPUTED_POWER_OF_10;
+    normalization.raw_factor = abs_exp10_covered_by_powers_table ? powers_of_10[PRINTF_ABS(floored_exp10)] : conv.F;
   }
 
   // We now begin accounting for the widths of the two parts of our printed field:
@@ -830,20 +830,20 @@ static void print_exponential_number(output_gadget_t* output, double number, pri
   if (flags & FLAGS_ADAPT_EXP) {
     int required_significant_digits = (precision == 0) ? 1 : (int) precision;
     // Should we want to fall-back to "%f" mode, and only print the decimal part?
-    fall_back_to_decimal_only_mode = (exp10 >= -4 && exp10 < required_significant_digits);
+    fall_back_to_decimal_only_mode = (floored_exp10 >= -4 && floored_exp10 < required_significant_digits);
     // Now, let's adjust the precision
     // This also decided how we adjust the precision value - as in "%g" mode,
     // "precision" is the number of _significant digits_, and this is when we "translate"
     // the precision value to an actual number of decimal digits.
     int precision_ = fall_back_to_decimal_only_mode ?
-        (int) precision - 1 - exp10 :
+                     (int) precision - 1 - floored_exp10 :
         (int) precision - 1; // the presence of the exponent ensures only one significant digit comes before the decimal point
     precision = (precision_ > 0 ? (unsigned) precision_ : 0U);
     flags |= FLAGS_PRECISION;   // make sure print_broken_up_decimal respects our choice above
   }
 
-  normalization.multiply = (exp10 < 0 && abs_exp10_covered_by_powers_table);
-  bool should_skip_normalization = (fall_back_to_decimal_only_mode || exp10 == 0);
+  normalization.multiply = (floored_exp10 < 0 && abs_exp10_covered_by_powers_table);
+  bool should_skip_normalization = (fall_back_to_decimal_only_mode || floored_exp10 == 0);
   struct double_components decimal_part_components =
     should_skip_normalization ?
     get_components(negative ? -abs_number : abs_number, precision) :
@@ -852,8 +852,8 @@ static void print_exponential_number(output_gadget_t* output, double number, pri
   // Account for roll-over, e.g. rounding from 9.99 to 100.0 - which effects
   // the exponent and may require additional tweaking of the parts
   if (fall_back_to_decimal_only_mode) {
-    if ( (flags & FLAGS_ADAPT_EXP) && exp10 >= -1 && decimal_part_components.integral == powers_of_10[exp10 + 1]) {
-      exp10++; // Not strictly necessary, since exp10 is no longer really used
+    if ((flags & FLAGS_ADAPT_EXP) && floored_exp10 >= -1 && decimal_part_components.integral == powers_of_10[floored_exp10 + 1]) {
+      floored_exp10++; // Not strictly necessary, since floored_exp10 is no longer really used
       precision--;
       // ... and it should already be the case that decimal_part_components.fractional == 0
     }
@@ -861,15 +861,15 @@ static void print_exponential_number(output_gadget_t* output, double number, pri
   }
   else {
     if (decimal_part_components.integral >= 10) {
-      exp10++;
+      floored_exp10++;
       decimal_part_components.integral = 1;
       decimal_part_components.fractional = 0;
     }
   }
 
-  // the exp10 format is "E%+03d" and largest possible exp10 value for a 64-bit double
+  // the floored_exp10 format is "E%+03d" and largest possible floored_exp10 value for a 64-bit double
   // is "307" (for 2^1023), so we set aside 4-5 characters overall
-  printf_size_t exp10_part_width = fall_back_to_decimal_only_mode ? 0U : (PRINTF_ABS(exp10) < 100) ? 4U : 5U;
+  printf_size_t exp10_part_width = fall_back_to_decimal_only_mode ? 0U : (PRINTF_ABS(floored_exp10) < 100) ? 4U : 5U;
 
   printf_size_t decimal_part_width =
     ((flags & FLAGS_LEFT) && exp10_part_width) ?
@@ -892,8 +892,8 @@ static void print_exponential_number(output_gadget_t* output, double number, pri
   if (! fall_back_to_decimal_only_mode) {
     putchar_via_gadget(output, (flags & FLAGS_UPPERCASE) ? 'E' : 'e');
     print_integer(output,
-                ABS_FOR_PRINTING(exp10),
-                exp10 < 0, 10, 0, exp10_part_width - 1,
+                  ABS_FOR_PRINTING(floored_exp10),
+                  floored_exp10 < 0, 10, 0, exp10_part_width - 1,
                 FLAGS_ZEROPAD | FLAGS_PLUS);
     if (flags & FLAGS_LEFT) {
       // We need to right-pad with spaces to meet the width requirement
