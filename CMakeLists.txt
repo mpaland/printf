@@ -42,6 +42,7 @@ set(PRINTF_INTEGER_BUFFER_SIZE     "32" CACHE STRING "Integer to string conversi
 set(PRINTF_DECIMAL_BUFFER_SIZE     "32" CACHE STRING "Floating-point to decimal conversion buffer size")
 set(DEFAULT_FLOAT_PRECISION         "6" CACHE STRING "Default precision when printing floating-point values")
 set(MAX_INTEGRAL_DIGITS_FOR_DECIMAL "9" CACHE STRING "Maximum number of integral-part digits of a floating-point value for which printing with %f uses decimal (non-exponential) notation")
+set(LOG10_TAYLOR_TERMS              "4" CACHE STRING "The number of terms in a Taylor series expansion of log_10(x) to use for approximation")
 
 # Checks related to the 'j', 'z' and 't' size modifiers
 

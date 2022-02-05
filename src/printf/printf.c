@@ -118,6 +118,18 @@ extern "C" {
 #define PRINTF_SUPPORT_LONG_LONG 1
 #endif
 
+// The number of terms in a Taylor series expansion of log_10(x) to
+// use for approximation - including the power-zero term (i.e. the
+// value at the point of expansion).
+#ifndef PRINTF_LOG10_TAYLOR_TERMS
+#define PRINTF_LOG10_TAYLOR_TERMS 4
+#endif
+
+#if PRINTF_LOG10_TAYLOR_TERMS <= 1
+#error "At least one non-constant Taylor expansion is necessary for the log10() calculation"
+#endif
+
+
 #define PRINTF_PREFER_DECIMAL     false
 #define PRINTF_PREFER_EXPONENTIAL true
 
@@ -795,14 +807,20 @@ static double log10_of_positive(double positive_number)
   // drop the exponent, so dwba.F comes into the range [1,2)
   dwba.U = (dwba.U & (((double_uint_t) (1) << DOUBLE_STORED_MANTISSA_BITS) - 1U)) |
            ((double_uint_t) DOUBLE_BASE_EXPONENT << DOUBLE_STORED_MANTISSA_BITS);
+  double z = (dwba.F - 1.5);
   return (
     // Taylor expansion around 1.5:
-      0.176091259055681242                   // Expansion term 0: log_10(1.5) = ln(1.5)/ln(10)
-    + (dwba.F - 1.5) * 0.2895296546021678851 // Expansion term 1: (M - 1.5) * 1/(1.5 ln(10)) = (M/1.5 - 1) / ln(10)
-   // exact log_2 of the exponent x, with logarithm base change 
+    0.1760912590556812420           // Expansion term 0: ln(1.5)            / ln(10)
+    + z     * 0.2895296546021678851 // Expansion term 1: (M - 1.5)   * 2/3  / ln(10)
+#if PRINTF_LOG10_TAYLOR_TERMS > 2
+    - z*z   * 0.0965098848673892950 // Expansion term 2: (M - 1.5)^2 * 2/9  / ln(10)
+#if PRINTF_LOG10_TAYLOR_TERMS > 3
+    + z*z*z * 0.0428932821632841311 // Expansion term 2: (M - 1.5)^3 * 8/81 / ln(10)
+#endif
+#endif
+    // exact log_2 of the exponent x, with logarithm base change
     + exp2 * 0.30102999566398119521 // = exp2 * log_10(2) = exp2 * ln(2)/ln(10)
   );
-
 }
 
 
