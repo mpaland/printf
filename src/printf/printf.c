@@ -661,29 +661,22 @@ static struct double_components get_normalized_components(bool negative, printf_
   double scaled_remainder = apply_scaling(remainder, account_for_precision);
   double rounding_threshold = 0.5;
 
-  if (precision == 0U) {
-    components.fractional = 0;
-    components.integral += (scaled_remainder >= rounding_threshold);
-    if (scaled_remainder == rounding_threshold) {
-      // banker's rounding: Round towards the even number (making the mean error 0)
-      components.integral &= ~((int_fast64_t) 0x1);
-    }
-  }
-  else {
-    components.fractional = (int_fast64_t) scaled_remainder;
-    scaled_remainder -= (double) components.fractional;
+  components.fractional = (int_fast64_t) scaled_remainder; // when precision == 0, the assigned value should be 0
+  scaled_remainder -= (double) components.fractional; //when precision == 0, this will not change scaled_remainder
 
-    components.fractional += (scaled_remainder >= rounding_threshold);
-    if (scaled_remainder == rounding_threshold) {
-      // banker's rounding: Round towards the even number (making the mean error 0)
-      components.fractional &= ~((int_fast64_t) 0x1);
-    }
-    // handle rollover, e.g. the case of 0.99 with precision 1 becoming (0,100),
-    // and must then be corrected into (1, 0).
-    if ((double) components.fractional >= prec_power_of_10) {
-      components.fractional = 0;
-      ++components.integral;
-    }
+  components.fractional += (scaled_remainder >= rounding_threshold);
+  if (scaled_remainder == rounding_threshold) {
+    // banker's rounding: Round towards the even number (making the mean error 0)
+    components.fractional &= ~((int_fast64_t) 0x1);
+  }
+  // handle rollover, e.g. the case of 0.99 with precision 1 becoming (0,100),
+  // and must then be corrected into (1, 0).
+  // Note: for precision = 0, this will "translate" the rounding effect from
+  // the fractional part to the integral part where it should actually be
+  // felt (as prec_power_of_10 is 1)
+  if ((double) components.fractional >= prec_power_of_10) {
+    components.fractional = 0;
+    ++components.integral;
   }
   return components;
 }
