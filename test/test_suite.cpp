@@ -1012,6 +1012,9 @@ TEST_CASE("floating-point specifiers, precision and flags", "[]" ) {
   PRINTING_CHECK("-4e+04",           ==, sprintf_, buffer, "%.1g", -40661.5);
   PRINTING_CHECK("-4.e+04",          ==, sprintf_, buffer, "%#.1g", -40661.5);
   PRINTING_CHECK("100.",             ==, sprintf_, buffer, "%#.3g", 99.998580932617187500);
+  // Ensure high precision does make us exceed the representation threshold
+  // internally (e.g. with normalization factors and such
+  PRINTING_CHECK("1.2345678901e-308", ==, sprintf_, buffer, "%.10e", 1.2345678901e-308);
   // Rounding-focused checks
   PRINTING_CHECK("4.895512e+04",     ==, sprintf_, buffer, "%e", 48955.125);
   PRINTING_CHECK("9.2524e+04",       ==, sprintf_, buffer, "%.4e", 92523.5);
