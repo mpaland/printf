@@ -21,6 +21,7 @@ option(SUPPORT_MSVC_STYLE_INTEGER_SPECIFIERS  "Support the I + bit size integer 
 option(SUPPORT_WRITEBACK_SPECIFIER            "Support the length write-back specifier (%n)" ON)
 option(SUPPORT_LONG_LONG                      "Support long long integral types (allows for the ll length modifier and affects %p)" ON)
 option(ALIAS_STANDARD_FUNCTION_NAMES          "Alias the standard library function names (printf, sprintf etc.) to the library's functions" ON)
+option(USE_DOUBLE_INTERNALLY                  "Use the C `double` type - typically 64-bit in size - for internal floating-point arithmetic " ON)
 
 foreach(opt
 	SUPPORT_DECIMAL_SPECIFIERS
@@ -28,7 +29,9 @@ foreach(opt
 	SUPPORT_MSVC_STYLE_INTEGER_SPECIFIERS
 	SUPPORT_WRITEBACK_SPECIFIER
 	SUPPORT_LONG_LONG
-	ALIAS_STANDARD_FUNCTION_NAMES)
+	ALIAS_STANDARD_FUNCTION_NAMES
+	USE_DOUBLE_INTERNALLY
+)
 	if (${${opt}})
 		set("PRINTF_${opt}" 1)
 	else()
