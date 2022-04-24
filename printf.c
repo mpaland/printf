@@ -118,6 +118,8 @@
 #endif
 
 
+#include <stdio.h>
+
 // output function type
 typedef void (*out_fct_type)(char character, void* buffer, size_t idx, size_t maxlen);
 
@@ -911,4 +913,13 @@ int fctprintf(void (*out)(char character, void* arg), void* arg, const char* for
   const int ret = _vsnprintf(_out_fct, (char*)(uintptr_t)&out_fct_wrap, (size_t)-1, format, va);
   va_end(va);
   return ret;
+}
+
+void _putchar(char character) {
+	putchar(character);
+}
+
+int LLVMFuzzerTestOneInput(char* data, size_t size) {
+	printf_(data);
+	return 0;
 }
