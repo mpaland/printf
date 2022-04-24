@@ -1,4 +1,4 @@
-project: jacob-clemente/mayhem-cmake-example
+project: jacob-clemente/printf
 target: printf
 
 cmds:
