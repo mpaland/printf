@@ -149,9 +149,13 @@ static inline void _out_null(char character, void* buffer, size_t idx, size_t ma
 static inline void _out_char(char character, void* buffer, size_t idx, size_t maxlen)
 {
   (void)buffer; (void)idx; (void)maxlen;
+#ifdef PRINTF_NO_PUTCHAR
+  (void)character;
+#else
   if (character) {
     _putchar(character);
   }
+#endif
 }
 
 
