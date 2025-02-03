@@ -210,3 +210,14 @@ Running with the `--wait-for-keypress exit` option waits for the enter key after
 
 ## License
 printf is written under the [MIT license](http://www.opensource.org/licenses/MIT).
+## AI-generated ProductMaps
+
+
+
+| Github file | ProductMap |
+|-------------|------------|
+| [printf.c](https://github.com/mpaland/printf/blob/master/printf.c) | [Link to Map](https://product-map.ai/app/public?url=https://github.com/mpaland/printf/blob/master/printf.c) |
+
+Contact ProductMap if you have any questions at [juan@product-map.ai](juan@product-map.ai).
+
+Last updated on Mon Feb 03 22:56:02 UTC 2025.
