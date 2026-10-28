@@ -90,6 +90,11 @@ static int vsprintf_(char* buffer, const char* format, va_list va)
 #else
 #define PRINTF_SUPPORT_LONG_LONG 0
 #endif
+#if defined(PRINTF_SUPPORT_PTRDIFF_T)
+#define PRINTF_SUPPORT_PTRDIFF_T_SPECIFIER 1
+#else
+#define PRINTF_SUPPORT_PTRDIFF_T_SPECIFIER 0
+#endif
 #define PRINTF_MAX_INTEGRAL_DIGITS_FOR_DECIMAL 9   // default PRINTF_MAX_FLOAT is 1e9
 #define PRINTF_USE_DOUBLE_INTERNALLY           1
 #define TEST_WITH_NON_STANDARD_FORMAT_STRINGS

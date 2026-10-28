@@ -714,7 +714,7 @@ PRINTF_TEST_CASE(floating_point_specifiers_with_31_to_32_bit_integer_values)
   PRINTING_CHECK("2147483648",              ==, sprintf_, buffer, "%.10f", 2147483648.0); // 2^31
   PRINTING_CHECK("4294967295",              ==, sprintf_, buffer, "%.10f", 4294967295.0); // 2^32 - 1
   PRINTING_CHECK("4294967296",              ==, sprintf_, buffer, "%.10f", 4294967296.0); // 2^32
-#else
+#elif PRINTF_SUPPORT_EXPONENTIAL_SPECIFIERS
   PRINTING_CHECK("2.1474836470e+09",        ==, sprintf_, buffer, "%.10f", 2147483647.0); // 2^31 - 1
   PRINTING_CHECK("2.1474836480e+09",        ==, sprintf_, buffer, "%.10f", 2147483648.0); // 2^31
   PRINTING_CHECK("4.2949672950e+09",        ==, sprintf_, buffer, "%.10f", 4294967295.0); // 2^32 - 1
@@ -725,7 +725,7 @@ PRINTF_TEST_CASE(floating_point_specifiers_with_31_to_32_bit_integer_values)
   PRINTING_CHECK("2147483648",              ==, sprintf_, buffer, "%.10g", 2147483648.0); // 2^31
   PRINTING_CHECK("4294967295",              ==, sprintf_, buffer, "%.10g", 4294967295.0); // 2^32 - 1
   PRINTING_CHECK("4294967296",              ==, sprintf_, buffer, "%.10g", 4294967296.0); // 2^32
-#else
+#elif PRINTF_SUPPORT_EXPONENTIAL_SPECIFIERS
   // like %f, the fixed point notation of %g is limited to values up to PRINTF_MAX_FLOAT
   PRINTING_CHECK("2.147483647e+09",         ==, sprintf_, buffer, "%.10g", 2147483647.0); // 2^31 - 1
   PRINTING_CHECK("2.147483648e+09",         ==, sprintf_, buffer, "%.10g", 2147483648.0); // 2^31
@@ -965,9 +965,11 @@ PRINTF_TEST_CASE(integer_types)
   PRINTING_CHECK("281474976710656",         ==, sprintf_, buffer, "%llu", 281474976710656LLU);
   PRINTING_CHECK("18446744073709551615",    ==, sprintf_, buffer, "%llu", 18446744073709551615LLU);
 #endif
+#if PRINTF_SUPPORT_LONG_LONG || (SIZE_MAX == ULONG_MAX)
   PRINTING_CHECK("2147483647",              ==, sprintf_, buffer, "%zu", (size_t) 2147483647UL);
   PRINTING_CHECK("2147483647",              ==, sprintf_, buffer, "%zd", (size_t) 2147483647UL);
   PRINTING_CHECK("-2147483647",             ==, sprintf_, buffer, "%zi", (ssize_t) -2147483647L);
+#endif
   PRINTING_CHECK("165140",                  ==, sprintf_, buffer, "%o", 60000);
   PRINTING_CHECK("57060516",                ==, sprintf_, buffer, "%lo", 12345678L);
   PRINTING_CHECK("12345678",                ==, sprintf_, buffer, "%lx", 0x12345678L);
@@ -982,8 +984,12 @@ PRINTF_TEST_CASE(integer_types)
   PRINTING_CHECK("255",                     ==, sprintf_, buffer, "%hhu", (unsigned char) 0xFFU);
   PRINTING_CHECK("4660",                    ==, sprintf_, buffer, "%hu", (unsigned short) 0x1234u);
   PRINTING_CHECK("Test100 65535",           ==, sprintf_, buffer, "%s%hhi %hu", mkstr("Test"), (char) 100, (unsigned short) 0xFFFF);
+#if PRINTF_SUPPORT_PTRDIFF_T_SPECIFIER && (PRINTF_SUPPORT_LONG_LONG || (PTRDIFF_MAX == LONG_MAX))
   PRINTING_CHECK("a",                       ==, sprintf_, buffer, "%tx", &buffer[10] - &buffer[0]);
+#endif
+#if PRINTF_SUPPORT_LONG_LONG || (INTMAX_MAX == LONG_MAX)
   PRINTING_CHECK("-2147483647",             ==, sprintf_, buffer, "%ji", (intmax_t) -2147483647L);
+#endif
 }
 
 #ifdef TEST_WITH_NON_STANDARD_FORMAT_STRINGS
@@ -1159,7 +1165,9 @@ PRINTF_TEST_CASE(misc)
 
   // Two invocations which made clang 21's integer sanitizer suspicious (issue #220)
   PRINTING_CHECK("{",                         ==, sprintf_, buffer, "%s", "{");
+#if PRINTF_SUPPORT_EXPONENTIAL_SPECIFIERS
   PRINTING_CHECK("0.0014664",                 ==, sprintf_, buffer, "%g", 0.0014663999499999749);
+#endif
 }
 
 
