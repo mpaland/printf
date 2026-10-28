@@ -556,6 +556,26 @@ PRINTF_TEST_CASE(issues)
   // #119: subnormal values
   PRINTING_CHECK("1.000000e-310",           ==, sprintf_, buffer, "%e", 1e-310);
   PRINTING_CHECK("4.940656e-324",           ==, sprintf_, buffer, "%e", 4.9406564584124654e-324);
+
+  // #48, #55, #75: %g removes trailing zeros
+  PRINTING_CHECK("-42            ",         ==, sprintf_, buffer, "%0-15.3g", -42.0);
+  PRINTING_CHECK("0.0001",                  ==, sprintf_, buffer, "%g", 0.0001);
+  PRINTING_CHECK("1e-05",                   ==, sprintf_, buffer, "%g", 0.00001);
+  PRINTING_CHECK("4",                       ==, sprintf_, buffer, "%.4g", 4.0);
+  PRINTING_CHECK("100",                     ==, sprintf_, buffer, "%g", 100.0);
+
+  // #121, #122, #124: %g chooses the notation by the precision and the rounded exponent
+  PRINTING_CHECK("0",                       ==, sprintf_, buffer, "%g", 0.0);
+  PRINTING_CHECK("-0",                      ==, sprintf_, buffer, "%g", -0.0);
+  PRINTING_CHECK("-4e+04",                  ==, sprintf_, buffer, "%.1g", -40661.5);
+  PRINTING_CHECK("100",                     ==, sprintf_, buffer, "%.3g", 99.99);
+  PRINTING_CHECK("1e+06",                   ==, sprintf_, buffer, "%g", 999999.5);
+
+  // #111: the '#' flag with floating point values
+  PRINTING_CHECK("1.",                      ==, sprintf_, buffer, "%#.0f", 1.0);
+  PRINTING_CHECK("1.e+00",                  ==, sprintf_, buffer, "%#.0e", 1.0);
+  PRINTING_CHECK("1.00000",                 ==, sprintf_, buffer, "%#g", 1.0);
+  PRINTING_CHECK("100.",                    ==, sprintf_, buffer, "%#.3g", 99.99);
 #endif
 
   // #63: NULL string pointer

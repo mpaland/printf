@@ -395,6 +395,11 @@ static size_t _ftoa(out_fct_type out, char* buffer, size_t idx, size_t maxlen, d
   if (!(flags & FLAGS_PRECISION)) {
     prec = PRINTF_DEFAULT_FLOAT_PRECISION;
   }
+  // in "%g" mode trailing zeros are removed, unless the '#' flag is given
+  const bool strip_zeros = (flags & FLAGS_ADAPT_EXP) && !(flags & FLAGS_HASH);
+  if (strip_zeros && (prec > 9U)) {
+    prec = 9U;
+  }
   // limit precision to 9, cause a prec >= 10 can lead to overflow errors
   while ((len < PRINTF_FTOA_BUFFER_SIZE) && (prec > 9U)) {
     buf[len++] = '0';
@@ -421,6 +426,12 @@ static size_t _ftoa(out_fct_type out, char* buffer, size_t idx, size_t maxlen, d
     frac = 0;
     ++whole;
   }
+  if (strip_zeros) {
+    while (prec && !(frac % 10U)) {
+      frac /= 10U;
+      --prec;
+    }
+  }
 
   if (prec == 0U) {
     diff = value - (double)whole;
@@ -428,6 +439,10 @@ static size_t _ftoa(out_fct_type out, char* buffer, size_t idx, size_t maxlen, d
       // exactly 0.5 and ODD, then round up
       // 1.5 -> 2, but 2.5 -> 2
       ++whole;
+    }
+    if ((flags & FLAGS_HASH) && (len < PRINTF_FTOA_BUFFER_SIZE)) {
+      // the '#' flag forces the decimal point
+      buf[len++] = '.';
     }
   }
   else {
@@ -510,6 +525,12 @@ static size_t _etoa(out_fct_type out, char* buffer, size_t idx, size_t maxlen, d
   if (!(flags & FLAGS_PRECISION)) {
     prec = PRINTF_DEFAULT_FLOAT_PRECISION;
   }
+  // in "%g" mode the precision is the number of significant digits (0 is taken as 1), but from
+  // here on "prec" is the number of decimals of the mantissa in exponential notation
+  if ((flags & FLAGS_ADAPT_EXP) && prec) {
+    --prec;
+  }
+  flags |= FLAGS_PRECISION;  // make sure _ftoa respects the precision
 
   // determine the decimal exponent and scale the value into [1, 10), 0 keeps the exponent 0
   int expval = 0;
@@ -570,65 +591,40 @@ static size_t _etoa(out_fct_type out, char* buffer, size_t idx, size_t maxlen, d
     expval++;
   }
 
-  // the exponent format is "%+03d" and the largest value is "324" (subnormal), so set aside 4-5 characters
-  unsigned int minwidth = ((expval < 100) && (expval > -100)) ? 4U : 5U;
-
-  // in "%g" mode, "prec" is the number of *significant figures* not decimals
-  if (flags & FLAGS_ADAPT_EXP) {
-    // do we want to fall-back to "%f" mode?
-    if ((value >= 1e-4) && (value < 1e6)) {
-      if ((int)prec > expval) {
-        prec = (unsigned)((int)prec - expval - 1);
-      }
-      else {
-        prec = 0;
-      }
-      flags |= FLAGS_PRECISION;   // make sure _ftoa respects precision
-      // no characters in exponent
-      minwidth = 0U;
-      expval   = 0;
-    }
-    else {
-      // we use one sigfig for the whole part
-      if ((prec > 0) && (flags & FLAGS_PRECISION)) {
-        --prec;
-      }
-    }
+  // in "%g" mode, use the fixed point notation if P > X >= -4, where P is the number of significant
+  // digits and X the exponent (C11 7.21.6.1), unless the value is too large for _ftoa
+  if ((flags & FLAGS_ADAPT_EXP) && (expval <= (int)prec) && (expval >= -4) && !(value > PRINTF_MAX_FLOAT)) {
+    return _ftoa(out, buffer, idx, maxlen, negative ? -value : value, (unsigned int)((int)prec - expval), width, flags);
   }
+
+  // the exponent format is "%+03d" and the largest value is "324" (subnormal), so set aside 4-5 characters
+  const unsigned int minwidth = ((expval < 100) && (expval > -100)) ? 4U : 5U;
 
   // will everything fit?
   unsigned int fwidth = width;
   if (width > minwidth) {
-    // we didn't fall-back so subtract the characters required for the exponent
+    // subtract the characters required for the exponent
     fwidth -= minwidth;
   } else {
     // not enough characters, so go back to default sizing
     fwidth = 0U;
   }
-  if ((flags & FLAGS_LEFT) && minwidth) {
+  if (flags & FLAGS_LEFT) {
     // if we're padding on the right, DON'T pad the floating part
     fwidth = 0U;
   }
 
-  // use the scaled value in exponential notation
-  if (minwidth) {
-    value = mantissa;
-  }
-
   // output the floating part
   const size_t start_idx = idx;
-  idx = _ftoa(out, buffer, idx, maxlen, negative ? -value : value, prec, fwidth, flags & ~FLAGS_ADAPT_EXP);
+  idx = _ftoa(out, buffer, idx, maxlen, negative ? -mantissa : mantissa, prec, fwidth, flags);
 
-  // output the exponent part
-  if (minwidth) {
-    // output the exponential symbol
-    out((flags & FLAGS_UPPERCASE) ? 'E' : 'e', buffer, idx++, maxlen);
-    // output the exponent value
-    idx = _ntoa_long(out, buffer, idx, maxlen, (unsigned long)((expval < 0) ? -expval : expval), expval < 0, 10, 0, minwidth-1, FLAGS_ZEROPAD | FLAGS_PLUS);
-    // might need to right-pad spaces
-    if (flags & FLAGS_LEFT) {
-      while (idx - start_idx < width) out(' ', buffer, idx++, maxlen);
-    }
+  // output the exponential symbol
+  out((flags & FLAGS_UPPERCASE) ? 'E' : 'e', buffer, idx++, maxlen);
+  // output the exponent value
+  idx = _ntoa_long(out, buffer, idx, maxlen, (unsigned long)((expval < 0) ? -expval : expval), expval < 0, 10, 0, minwidth-1, FLAGS_ZEROPAD | FLAGS_PLUS);
+  // might need to right-pad spaces
+  if (flags & FLAGS_LEFT) {
+    while (idx - start_idx < width) out(' ', buffer, idx++, maxlen);
   }
   return idx;
 }

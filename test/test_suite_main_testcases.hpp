@@ -720,10 +720,18 @@ PRINTF_TEST_CASE(floating_point_specifiers_with_31_to_32_bit_integer_values)
   PRINTING_CHECK("4.2949672950e+09",        ==, sprintf_, buffer, "%.10f", 4294967295.0); // 2^32 - 1
   PRINTING_CHECK("4.2949672960e+09",        ==, sprintf_, buffer, "%.10f", 4294967296.0); // 2^32
 #endif
+#if PRINTF_MAX_INTEGRAL_DIGITS_FOR_DECIMAL >= 10
   PRINTING_CHECK("2147483647",              ==, sprintf_, buffer, "%.10g", 2147483647.0); // 2^31 - 1
   PRINTING_CHECK("2147483648",              ==, sprintf_, buffer, "%.10g", 2147483648.0); // 2^31
   PRINTING_CHECK("4294967295",              ==, sprintf_, buffer, "%.10g", 4294967295.0); // 2^32 - 1
   PRINTING_CHECK("4294967296",              ==, sprintf_, buffer, "%.10g", 4294967296.0); // 2^32
+#else
+  // like %f, the fixed point notation of %g is limited to values up to PRINTF_MAX_FLOAT
+  PRINTING_CHECK("2.147483647e+09",         ==, sprintf_, buffer, "%.10g", 2147483647.0); // 2^31 - 1
+  PRINTING_CHECK("2.147483648e+09",         ==, sprintf_, buffer, "%.10g", 2147483648.0); // 2^31
+  PRINTING_CHECK("4.294967295e+09",         ==, sprintf_, buffer, "%.10g", 4294967295.0); // 2^32 - 1
+  PRINTING_CHECK("4.294967296e+09",         ==, sprintf_, buffer, "%.10g", 4294967296.0); // 2^32
+#endif
 }
 
 #endif
