@@ -3,7 +3,7 @@
 [![Build and test](https://github.com/mpaland/printf/actions/workflows/build_and_test.yml/badge.svg)](https://github.com/mpaland/printf/actions/workflows/build_and_test.yml)
 [![Github Issues](https://img.shields.io/github/issues/mpaland/printf.svg)](http://github.com/mpaland/printf/issues)
 [![Github Releases](https://img.shields.io/github/release/mpaland/printf.svg)](https://github.com/mpaland/printf/releases)
-[![GitHub license](https://img.shields.io/badge/license-MIT-blue.svg)](https://raw.githubusercontent.com/mpaland/avl_array/master/LICENSE)
+[![GitHub license](https://img.shields.io/badge/license-MIT-blue.svg)](https://raw.githubusercontent.com/mpaland/printf/master/LICENSE)
 
 This is a tiny but **fully loaded** printf, sprintf and (v)snprintf implementation.
 Primarily designed for usage in embedded systems, where printf is not available due to memory issues or in avoidance of linking against libc.
@@ -26,7 +26,7 @@ Therefore I decided to write an own, final implementation which meets the follow
  - Support of decimal/floating number representation (with an own fast itoa/ftoa)
  - Reentrant and thread-safe, malloc free, no static vars/buffers
  - LINT and compiler L4 warning free, mature, coverity clean, automotive ready
- - Extensive test suite (> 400 test cases) passing
+ - Extensive test suite (> 550 checks) passing
  - Simply the best *printf* around the net
  - MIT license
 
@@ -34,6 +34,8 @@ Therefore I decided to write an own, final implementation which meets the follow
 ## Usage
 
 Add/link *printf.c* to your project and include *printf.h*. That's it.
+A C99 compiler is required (*stdbool.h* and *stdint.h* are used).
+With CMake, add this directory via `add_subdirectory()` and link the `printf` library target.
 Implement your low level output function needed for `printf()`:
 ```C
 void _putchar(char character)
@@ -94,8 +96,8 @@ The following format specifiers are supported:
 | e or E | Scientific-notation (exponential) floating point |
 | g or G | Scientific or decimal floating point |
 | c      | Single character |
-| s      | String of characters |
-| p      | Pointer address |
+| s      | String of characters (a NULL pointer is printed as `(null)`) |
+| p      | Pointer address (all digits in uppercase hex, without `0x` prefix) |
 | %      | A % followed by another % character will write a single % |
 
 
@@ -106,7 +108,7 @@ The following format specifiers are supported:
 | -     | Left-justify within the given field width; Right justification is the default. |
 | +     | Forces to precede the result with a plus or minus sign (+ or -) even for positive numbers.<br>By default, only negative numbers are preceded with a - sign. |
 | (space) | If no sign is going to be written, a blank space is inserted before the value. |
-| #     | Used with o, b, x or X specifiers the value is preceded with 0, 0b, 0x or 0X respectively for values different than zero.<br>Used with f, F it forces the written output to contain a decimal point even if no more digits follow. By default, if no digits follow, no decimal point is written. |
+| #     | Used with o, b, x or X specifiers the value is preceded with 0, 0b, 0x or 0X respectively for values different than zero.<br>Used with f, F, e, E, g or G it forces the written output to contain a decimal point even if no more digits follow. By default, if no digits follow, no decimal point is written. With g or G, trailing zeros are not removed. |
 | 0     | Left-pads the number with zeros (0) instead of spaces when padding is specified (see width sub-specifier). |
 
 
@@ -122,7 +124,7 @@ The following format specifiers are supported:
 
 | Precision	| Description |
 |-----------|-------------|
-| .number   | For integer specifiers (d, i, o, u, x, X): precision specifies the minimum number of digits to be written. If the value to be written is shorter than this number, the result is padded with leading zeros. The value is not truncated even if the result is longer. A precision of 0 means that no character is written for the value 0.<br>For f and F specifiers: this is the number of digits to be printed after the decimal point. **By default, this is 6, maximum is 9**.<br>For s: this is the maximum number of characters to be printed. By default all characters are printed until the ending null character is encountered.<br>If the period is specified without an explicit value for precision, 0 is assumed. |
+| .number   | For integer specifiers (d, i, o, u, x, X): precision specifies the minimum number of digits to be written. If the value to be written is shorter than this number, the result is padded with leading zeros. The value is not truncated even if the result is longer. A precision of 0 means that no character is written for the value 0.<br>For f, F, e and E specifiers: this is the number of digits to be printed after the decimal point. **By default, this is 6, maximum is 9** (further digits are printed as 0).<br>For g and G specifiers: this is the maximum number of significant digits to be printed (trailing zeros are removed).<br>For s: this is the maximum number of characters to be printed. By default all characters are printed until the ending null character is encountered.<br>If the period is specified without an explicit value for precision, 0 is assumed. |
 | .*        | The precision is not specified in the format string, but as an additional integer value argument preceding the argument that has to be formatted. |
 
 
@@ -140,6 +142,8 @@ The length sub-specifier modifies the length of the data type.
 | j      | intmax_t | uintmax_t |
 | z      | size_t | size_t |
 | t      | ptrdiff_t | ptrdiff_t (if PRINTF_SUPPORT_PTRDIFF_T is defined) |
+
+For the floating point types (f F e E g G), the length `L` denotes a `long double` argument, which is converted to `double`.
 
 
 ### Return Value
@@ -165,7 +169,7 @@ int length = sprintf(NULL, "Hello, world"); // length is set to 12
 | PRINTF_NTOA_BUFFER_SIZE            | 32        | ntoa (integer) conversion buffer size. This must be big enough to hold one converted numeric number _including_ leading zeros, normally 32 is a sufficient value. Created on the stack |
 | PRINTF_FTOA_BUFFER_SIZE            | 32        | ftoa (float) conversion buffer size. This must be big enough to hold one converted float number _including_ leading zeros, normally 32 is a sufficient value. Created on the stack |
 | PRINTF_DEFAULT_FLOAT_PRECISION     | 6         | Define the default floating point precision |
-| PRINTF_MAX_FLOAT                   | 1e9       | Define the largest suitable value to be printed with %f, before using exponential representation |
+| PRINTF_MAX_FLOAT                   | 1e9       | Define the largest suitable value to be printed with %f (and %g in decimal notation), before using exponential representation |
 | PRINTF_DISABLE_SUPPORT_FLOAT       | undefined | Define this to disable floating point (%f) support |
 | PRINTF_DISABLE_SUPPORT_EXPONENTIAL | undefined | Define this to disable exponential floating point (%e) support |
 | PRINTF_DISABLE_SUPPORT_LONG_LONG   | undefined | Define this to disable long long (%ll) support |
@@ -173,12 +177,30 @@ int length = sprintf(NULL, "Hello, world"); // length is set to 12
 
 
 ## Caveats
-None anymore (finally).
+The floating point conversion is optimized for size and uses `double` arithmetic. It is not a correctly rounded
+conversion like the one of glibc:
+- At most 9 digits after the decimal point are computed, further digits are printed as 0.
+- The last digit may differ from a correctly rounded result, e.g. `%.1f` of 0.95 prints `1.0` (the binary value of
+  0.95 is slightly smaller than 0.95).
+- Values larger than `PRINTF_MAX_FLOAT` are printed in exponential notation by %f (and %g), instead of printing all
+  digits.
+- A `long double` argument (length `L`) is printed with the precision of `double`.
+
+The specifiers %a, %A and %n and wide characters/strings (%lc, %ls) are not supported.
 
 
 ## Test Suite
-For testing just compile, build and run the test suite located in `test/test_suite.cpp`. This uses the [catch](https://github.com/catchorg/Catch2) framework for unit-tests, which is auto-adding main().
-Running with the `--wait-for-keypress exit` option waits for the enter key after test end.
+The test suite in `test/` uses the [catch](https://github.com/catchorg/Catch2) framework for unit-tests. Most of the
+test cases are taken from the actively maintained fork [eyalroz/printf](https://github.com/eyalroz/printf). Build and run
+it with CMake:
+```sh
+cmake -S . -B build
+cmake --build build
+ctest --test-dir build --output-on-failure
+```
+The compiler switches are available as CMake options, e.g. `-DPRINTF_DISABLE_SUPPORT_FLOAT=ON`.
+With `-DPRINTF_BUILD_AUTOTEST=ON` the `autotest` tool is built, which compares randomly generated format strings against
+the standard library printf until it is stopped.
 
 
 ## Projects Using printf
