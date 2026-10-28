@@ -53,13 +53,14 @@ int vsnprintf(char* buffer, size_t count, const char* format, va_list va);
 
 // use output function (instead of buffer) for streamlike interface
 int fctprintf(void (*out)(char character, void* arg), void* arg, const char* format, ...);
+int vfctprintf(void (*out)(char character, void* arg), void* arg, const char* format, va_list va);
 ```
 
 **Due to general security reasons it is highly recommended to prefer and use `snprintf` (with the max buffer size as `count` parameter) instead of `sprintf`.**
 `sprintf` has no buffer limitation, so when needed - use it really with care!
 
 ### Streamlike Usage
-Besides the regular standard `printf()` functions, this module also provides `fctprintf()`, which takes an output function as first parameter to build a streamlike output like `fprintf()`:
+Besides the regular standard `printf()` functions, this module also provides `fctprintf()` (and its `va_list` variant `vfctprintf()`), which takes an output function as first parameter to build a streamlike output like `fprintf()`:
 ```C
 // define the output function
 void my_stream_output(char character, void* arg)
