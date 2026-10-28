@@ -45,9 +45,25 @@ if(PRINTF_BUILD_TESTS)
   enable_testing()
 
   # the test suite includes printf.c directly, so it must not link the library
-  add_executable(test_suite test/test_suite.cpp)
+  add_executable(test_suite test/test_main.cpp test/test_suite.cpp)
   target_compile_definitions(test_suite PRIVATE ${PRINTF_DEFINES})
-  target_compile_options(test_suite PRIVATE ${PRINTF_WARNINGS})
+  target_compile_options(test_suite PRIVATE ${PRINTF_WARNINGS} $<$<CXX_COMPILER_ID:MSVC>:/permissive->)
   set_target_properties(test_suite PROPERTIES CXX_STANDARD 11 CXX_STANDARD_REQUIRED ON CXX_EXTENSIONS OFF)
   add_test(NAME test_suite COMMAND test_suite)
+
+  # check that a C program can use the library via the standard function names
+  add_executable(aliasing test/aliasing.c)
+  target_link_libraries(aliasing PRIVATE printf)
+  target_compile_options(aliasing PRIVATE ${PRINTF_WARNINGS})
+  set_target_properties(aliasing PROPERTIES C_STANDARD 99 C_STANDARD_REQUIRED ON C_EXTENSIONS OFF)
+  add_test(NAME aliasing COMMAND aliasing)
+
+  # random comparison against the standard library, runs until stopped (not part of CTest)
+  if(PRINTF_BUILD_AUTOTEST)
+    add_executable(autotest test/autotest.cpp)
+    target_link_libraries(autotest PRIVATE printf)
+    target_compile_definitions(autotest PRIVATE ${PRINTF_DEFINES})
+    set_target_properties(autotest PROPERTIES CXX_STANDARD 11 CXX_STANDARD_REQUIRED ON CXX_EXTENSIONS OFF
+                                              COMPILE_WARNING_AS_ERROR OFF)
+  endif()
 endif()
