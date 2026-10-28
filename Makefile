@@ -88,6 +88,7 @@ AR        = $(PATH_TOOLS_CC)ar
 AS        = $(PATH_TOOLS_CC)g++
 CC        = $(PATH_TOOLS_CC)g++
 CL        = $(PATH_TOOLS_CC)g++
+CPPFILT   = $(PATH_TOOLS_CC)c++filt
 NM        = $(PATH_TOOLS_CC)nm
 GCOV      = $(PATH_TOOLS_CC)gcov
 OBJDUMP   = $(PATH_TOOLS_CC)objdump
