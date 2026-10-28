@@ -231,24 +231,24 @@ static size_t _ntoa_format(out_fct_type out, char* buffer, size_t idx, size_t ma
     buf[len++] = '0';
   }
 
-  // pad leading zeros up to the width
-  if (!(flags & FLAGS_LEFT)) {
-    if (width && (flags & FLAGS_ZEROPAD) && (negative || (flags & (FLAGS_PLUS | FLAGS_SPACE)))) {
-      width--;
+  // the octal prefix is a leading zero, which is not needed if the number already starts with a zero
+  if ((flags & FLAGS_HASH) && (base == 8U) && len && (buf[len - 1U] == '0')) {
+    flags &= ~FLAGS_HASH;
+  }
+
+  // pad leading zeros up to the width, leaving room for the sign and the prefix
+  if (!(flags & FLAGS_LEFT) && (flags & FLAGS_ZEROPAD)) {
+    size_t reserved = (negative || (flags & (FLAGS_PLUS | FLAGS_SPACE))) ? 1U : 0U;
+    if (flags & FLAGS_HASH) {
+      reserved += (base == 8U) ? 1U : 2U;
     }
-    while ((flags & FLAGS_ZEROPAD) && (len < width) && (len < PRINTF_NTOA_BUFFER_SIZE)) {
+    while ((len + reserved < width) && (len < PRINTF_NTOA_BUFFER_SIZE)) {
       buf[len++] = '0';
     }
   }
 
   // handle hash
   if (flags & FLAGS_HASH) {
-    if (!(flags & FLAGS_PRECISION) && len && ((len == prec) || (len == width))) {
-      len--;
-      if (len && (base == 16U)) {
-        len--;
-      }
-    }
     if ((base == 16U) && !(flags & FLAGS_UPPERCASE) && (len < PRINTF_NTOA_BUFFER_SIZE)) {
       buf[len++] = 'x';
     }
@@ -285,8 +285,8 @@ static size_t _ntoa_long(out_fct_type out, char* buffer, size_t idx, size_t maxl
   char buf[PRINTF_NTOA_BUFFER_SIZE];
   size_t len = 0U;
 
-  // no hash for 0 values
-  if (!value) {
+  // no hash for 0 values, except for octal where it forces a leading zero
+  if (!value && (base != 8U)) {
     flags &= ~FLAGS_HASH;
   }
 
@@ -310,8 +310,8 @@ static size_t _ntoa_long_long(out_fct_type out, char* buffer, size_t idx, size_t
   char buf[PRINTF_NTOA_BUFFER_SIZE];
   size_t len = 0U;
 
-  // no hash for 0 values
-  if (!value) {
+  // no hash for 0 values, except for octal where it forces a leading zero
+  if (!value && (base != 8U)) {
     flags &= ~FLAGS_HASH;
   }
 

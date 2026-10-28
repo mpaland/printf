@@ -472,6 +472,30 @@ PRINTF_TEST_CASE(additional_cases)
 #endif
 }
 
+// the examples of the fixed GitHub issues of mpaland/printf
+PRINTF_TEST_CASE(issues)
+{
+  char buffer[base_buffer_size];
+  (void) buffer;
+
+  // #49, #113: precision with left alignment
+  PRINTING_CHECK("001024    ",              ==, sprintf_, buffer, "%-10.6d", 1024);
+  PRINTING_CHECK("00123               ",    ==, sprintf_, buffer, "%-20.5i", 123);
+
+  // #50, #99: the '0x' prefix must not replace digits
+  PRINTING_CHECK("0x1234",                  ==, sprintf_, buffer, "%#4x", 0x1234);
+  PRINTING_CHECK("0x1001",                  ==, sprintf_, buffer, "%#05x", 0x1001);
+  PRINTING_CHECK("0x01001",                 ==, sprintf_, buffer, "%#07x", 0x1001);
+  PRINTING_CHECK("0b00000101",              ==, sprintf_, buffer, "%#010b", 5);
+
+  // #53, #109, #110, #114: octal prefix is a leading zero
+  PRINTING_CHECK("06143",                   ==, sprintf_, buffer, "%#.5o", 06143);
+  PRINTING_CHECK("006143",                  ==, sprintf_, buffer, "%#.6o", 06143);
+  PRINTING_CHECK("0",                       ==, sprintf_, buffer, "%#.0o", 0);
+  PRINTING_CHECK("0001",                    ==, sprintf_, buffer, "%#.4o", 1);
+  PRINTING_CHECK("0",                       ==, sprintf_, buffer, "%#.0llo", (long long) 0);
+}
+
 #ifdef TEST_WITH_NON_STANDARD_FORMAT_STRINGS
 DISABLE_WARNING_POP
 #endif
