@@ -1,0 +1,4 @@
+# build output
+build/
+bin/
+tmp/
