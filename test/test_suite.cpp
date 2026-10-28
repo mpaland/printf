@@ -509,6 +509,21 @@ PRINTF_TEST_CASE(issues)
 #if PRINTF_SUPPORT_DECIMAL_SPECIFIERS
   PRINTING_CHECK("1.500000",                ==, sprintf_, buffer, "%.*f", -1, 1.5);
 #endif
+
+  // #63: NULL string pointer
+  PRINTING_CHECK("(null)",                  ==, sprintf_, buffer, "%s", (const char *) NULL);
+  PRINTING_CHECK("  (null)",                ==, sprintf_, buffer, "%8s", (const char *) NULL);
+
+  // #47: a '\0' printed by %c is output by printf_() and fctprintf() as well
+  printf_idx = 0U;
+  memset(printf_buffer, 0xCC, base_buffer_size);
+  CHECK(printf_("X%cX", '\0') == 3);
+  CHECK(printf_idx == 3U);
+  CHECK(!memcmp(printf_buffer, "X\0X", 3U));
+  printf_idx = 0U;
+  CHECK(fctprintf(&_out_fct, nullptr, "X%cX", '\0') == 3);
+  CHECK(printf_idx == 3U);
+  CHECK(!memcmp(printf_buffer, "X\0X", 3U));
 }
 
 #ifdef TEST_WITH_NON_STANDARD_FORMAT_STRINGS

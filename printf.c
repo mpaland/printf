@@ -149,9 +149,7 @@ static inline void _out_null(char character, void* buffer, size_t idx, size_t ma
 static inline void _out_char(char character, void* buffer, size_t idx, size_t maxlen)
 {
   (void)buffer; (void)idx; (void)maxlen;
-  if (character) {
-    _putchar(character);
-  }
+  _putchar(character);
 }
 
 
@@ -159,10 +157,8 @@ static inline void _out_char(char character, void* buffer, size_t idx, size_t ma
 static inline void _out_fct(char character, void* buffer, size_t idx, size_t maxlen)
 {
   (void)idx; (void)maxlen;
-  if (character) {
-    // buffer is the output fct pointer
-    ((out_fct_wrap_type*)buffer)->fct(character, ((out_fct_wrap_type*)buffer)->arg);
-  }
+  // buffer is the output fct pointer
+  ((out_fct_wrap_type*)buffer)->fct(character, ((out_fct_wrap_type*)buffer)->arg);
 }
 
 
@@ -802,11 +798,13 @@ static int _vsnprintf(out_fct_type out, char* buffer, const size_t maxlen, const
 
       case 's' : {
         const char* p = va_arg(va, char*);
-        unsigned int l = _strnlen_s(p, precision ? precision : (size_t)-1);
-        // pre padding
-        if (flags & FLAGS_PRECISION) {
-          l = (l < precision ? l : precision);
+        if (!p) {
+          // printing a NULL pointer is undefined behavior, print it like other implementations
+          p = "(null)";
+          flags &= ~FLAGS_PRECISION;
         }
+        unsigned int l = _strnlen_s(p, (flags & FLAGS_PRECISION) ? precision : (size_t)-1);
+        // pre padding
         if (!(flags & FLAGS_LEFT)) {
           while (l++ < width) {
             out(' ', buffer, idx++, maxlen);
@@ -856,8 +854,10 @@ static int _vsnprintf(out_fct_type out, char* buffer, const size_t maxlen, const
     }
   }
 
-  // termination
-  out((char)0, buffer, idx < maxlen ? idx : maxlen - 1U, maxlen);
+  // termination, only for buffer output (a NUL printed by %c is a regular character)
+  if (out == _out_buffer) {
+    out((char)0, buffer, idx < maxlen ? idx : maxlen - 1U, maxlen);
+  }
 
   // return written chars without terminating \0
   return (int)idx;
