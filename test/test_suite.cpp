@@ -510,6 +510,23 @@ PRINTF_TEST_CASE(issues)
   PRINTING_CHECK("1.500000",                ==, sprintf_, buffer, "%.*f", -1, 1.5);
 #endif
 
+#if PRINTF_SUPPORT_DECIMAL_SPECIFIERS
+  // #51: rounding carry at a decimal tie printed 32 garbage characters; the binary
+  // value of 0.95 is slightly below 0.95, but the scaled value 9.5 is rounded half to
+  // even by this implementation, so the result is "1.0" instead of glibc's "0.9"
+  PRINTING_CHECK("-1.0",                    ==, sprintf_, buffer, "%.1f", -.95);
+  PRINTING_CHECK("2.0",                     ==, sprintf_, buffer, "%.1f", 1.95);
+  PRINTING_CHECK("1.00",                    ==, sprintf_, buffer, "%.2f", 0.995);
+  PRINTING_CHECK("0.2",                     ==, sprintf_, buffer, "%.1f", 0.25);
+  PRINTING_CHECK("0.8",                     ==, sprintf_, buffer, "%.1f", 0.75);
+  PRINTING_CHECK("2",                       ==, sprintf_, buffer, "%.0f", 2.5);
+  PRINTING_CHECK("4",                       ==, sprintf_, buffer, "%.0f", 3.5);
+
+  // #108: whole part larger than a 16-bit int
+  PRINTING_CHECK("40000.000000",            ==, sprintf_, buffer, "%f", 40000.0);
+  PRINTING_CHECK("999999999.5",             ==, sprintf_, buffer, "%.1f", 999999999.5);
+#endif
+
   // #63: NULL string pointer
   PRINTING_CHECK("(null)",                  ==, sprintf_, buffer, "%s", (const char *) NULL);
   PRINTING_CHECK("  (null)",                ==, sprintf_, buffer, "%8s", (const char *) NULL);

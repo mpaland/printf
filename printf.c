@@ -378,29 +378,30 @@ static size_t _ftoa(out_fct_type out, char* buffer, size_t idx, size_t maxlen, d
     prec--;
   }
 
-  int whole = (int)value;
-  double tmp = (value - whole) * pow10[prec];
+  // the whole part is at most PRINTF_MAX_FLOAT, which doesn't fit into a 16-bit int
+  unsigned long whole = (unsigned long)value;
+  double tmp = (value - (double)whole) * pow10[prec];
   unsigned long frac = (unsigned long)tmp;
-  diff = tmp - frac;
+  diff = tmp - (double)frac;
 
   if (diff > 0.5) {
     ++frac;
-    // handle rollover, e.g. case 0.99 with prec 1 is 1.0
-    if (frac >= pow10[prec]) {
-      frac = 0;
-      ++whole;
-    }
   }
   else if (diff < 0.5) {
   }
-  else if ((frac == 0U) || (frac & 1U)) {
-    // if halfway, round up if odd OR if last digit is 0
+  else if ((prec > 0U) && ((frac == 0U) || (frac & 1U))) {
+    // if halfway, round up if odd OR if last digit is 0 (precision 0 is handled below)
     ++frac;
+  }
+  // handle rollover, e.g. case 0.99 with prec 1 is 1.0
+  if (frac >= pow10[prec]) {
+    frac = 0;
+    ++whole;
   }
 
   if (prec == 0U) {
     diff = value - (double)whole;
-    if ((!(diff < 0.5) || (diff > 0.5)) && (whole & 1)) {
+    if ((!(diff < 0.5) || (diff > 0.5)) && (whole & 1U)) {
       // exactly 0.5 and ODD, then round up
       // 1.5 -> 2, but 2.5 -> 2
       ++whole;
@@ -428,8 +429,8 @@ static size_t _ftoa(out_fct_type out, char* buffer, size_t idx, size_t maxlen, d
 
   // do whole part, number is reversed
   while (len < PRINTF_FTOA_BUFFER_SIZE) {
-    buf[len++] = (char)(48 + (whole % 10));
-    if (!(whole /= 10)) {
+    buf[len++] = (char)(48U + (whole % 10U));
+    if (!(whole /= 10U)) {
       break;
     }
   }
