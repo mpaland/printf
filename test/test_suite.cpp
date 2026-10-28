@@ -493,7 +493,22 @@ PRINTF_TEST_CASE(issues)
   PRINTING_CHECK("006143",                  ==, sprintf_, buffer, "%#.6o", 06143);
   PRINTING_CHECK("0",                       ==, sprintf_, buffer, "%#.0o", 0);
   PRINTING_CHECK("0001",                    ==, sprintf_, buffer, "%#.4o", 1);
+#if PRINTF_SUPPORT_LONG_LONG
   PRINTING_CHECK("0",                       ==, sprintf_, buffer, "%#.0llo", (long long) 0);
+#endif
+
+  // #118: no signed integer overflow for the most negative values
+  PRINTING_CHECK("-2147483648",             ==, sprintf_, buffer, "%d", (int) INT32_MIN);
+#if PRINTF_SUPPORT_LONG_LONG
+  PRINTING_CHECK("-9223372036854775808",    ==, sprintf_, buffer, "%lld", (long long) INT64_MIN);
+#endif
+
+  // a negative precision is taken as if the precision were omitted
+  PRINTING_CHECK("0",                       ==, sprintf_, buffer, "%.*d", -1, 0);
+  PRINTING_CHECK("abc",                     ==, sprintf_, buffer, "%.*s", -1, "abc");
+#if PRINTF_SUPPORT_DECIMAL_SPECIFIERS
+  PRINTING_CHECK("1.500000",                ==, sprintf_, buffer, "%.*f", -1, 1.5);
+#endif
 }
 
 #ifdef TEST_WITH_NON_STANDARD_FORMAT_STRINGS
