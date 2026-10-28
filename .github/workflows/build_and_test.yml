@@ -1,0 +1,48 @@
+name: Build and test
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  build-and-test:
+    name: ${{ matrix.os }} / ${{ matrix.cc }} / disable ${{ matrix.disable }}
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest]
+        cc: [gcc, clang]
+        disable: [none, FLOAT, EXPONENTIAL, LONG_LONG, PTRDIFF_T]
+        include:
+          - { os: windows-latest, cc: msvc, disable: none }
+          - { os: windows-latest, cc: msvc, disable: FLOAT }
+          - { os: windows-latest, cc: msvc, disable: EXPONENTIAL }
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Select compiler
+        if: matrix.cc != 'msvc'
+        shell: bash
+        run: |
+          if [ "${{ matrix.cc }}" = "clang" ]; then
+            echo "CC=clang" >> "$GITHUB_ENV"; echo "CXX=clang++" >> "$GITHUB_ENV"
+          else
+            echo "CC=gcc" >> "$GITHUB_ENV"; echo "CXX=g++" >> "$GITHUB_ENV"
+          fi
+
+      - name: Configure
+        shell: bash
+        run: |
+          options="-DCMAKE_BUILD_TYPE=Debug -DCMAKE_COMPILE_WARNING_AS_ERROR=ON -DPRINTF_BUILD_AUTOTEST=ON"
+          if [ "${{ matrix.disable }}" != "none" ]; then
+            options="$options -DPRINTF_DISABLE_SUPPORT_${{ matrix.disable }}=ON"
+          fi
+          cmake -S . -B build $options
+
+      - name: Build
+        run: cmake --build build --config Debug
+
+      - name: Test
+        run: ctest --test-dir build --build-config Debug --output-on-failure
