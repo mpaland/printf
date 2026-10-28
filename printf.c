@@ -110,6 +110,7 @@
 #define FLAGS_LONG_LONG (1U <<  9U)
 #define FLAGS_PRECISION (1U << 10U)
 #define FLAGS_ADAPT_EXP (1U << 11U)
+#define FLAGS_LONG_DOUBLE (1U << 12U)
 
 
 // import float.h for DBL_MAX
@@ -679,6 +680,10 @@ static int _vsnprintf(out_fct_type out, char* buffer, const size_t maxlen, const
         flags |= (sizeof(size_t) == sizeof(long) ? FLAGS_LONG : FLAGS_LONG_LONG);
         format++;
         break;
+      case 'L' :
+        flags |= FLAGS_LONG_DOUBLE;
+        format++;
+        break;
       default :
         break;
     }
@@ -762,7 +767,7 @@ static int _vsnprintf(out_fct_type out, char* buffer, const size_t maxlen, const
       case 'f' :
       case 'F' :
         if (*format == 'F') flags |= FLAGS_UPPERCASE;
-        idx = _ftoa(out, buffer, idx, maxlen, va_arg(va, double), precision, width, flags);
+        idx = _ftoa(out, buffer, idx, maxlen, (flags & FLAGS_LONG_DOUBLE) ? (double)va_arg(va, long double) : va_arg(va, double), precision, width, flags);
         format++;
         break;
 #if defined(PRINTF_SUPPORT_EXPONENTIAL)
@@ -772,7 +777,7 @@ static int _vsnprintf(out_fct_type out, char* buffer, const size_t maxlen, const
       case 'G':
         if ((*format == 'g')||(*format == 'G')) flags |= FLAGS_ADAPT_EXP;
         if ((*format == 'E')||(*format == 'G')) flags |= FLAGS_UPPERCASE;
-        idx = _etoa(out, buffer, idx, maxlen, va_arg(va, double), precision, width, flags);
+        idx = _etoa(out, buffer, idx, maxlen, (flags & FLAGS_LONG_DOUBLE) ? (double)va_arg(va, long double) : va_arg(va, double), precision, width, flags);
         format++;
         break;
 #endif  // PRINTF_SUPPORT_EXPONENTIAL
