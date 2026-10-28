@@ -1,2 +1,5 @@
+# normalize line endings (LF in repository and working tree)
+* text=auto eol=lf
+
 # ignore test path
 test/* linguist-vendored
