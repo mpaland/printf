@@ -527,6 +527,37 @@ PRINTF_TEST_CASE(issues)
   PRINTING_CHECK("999999999.5",             ==, sprintf_, buffer, "%.1f", 999999999.5);
 #endif
 
+#if PRINTF_SUPPORT_EXPONENTIAL_SPECIFIERS
+  // #98, #120: rounding of the mantissa to 10
+  PRINTING_CHECK("1.000000e+01",            ==, sprintf_, buffer, "%1.6e", 9.9999999);
+  PRINTING_CHECK("1.0e+01",                 ==, sprintf_, buffer, "%.1e", 9.96);
+  // powers of 10 were printed like "10.000000e+01"
+  PRINTING_CHECK("1.000000e+02",            ==, sprintf_, buffer, "%e", 100.0);
+  PRINTING_CHECK("1.000000e+100",           ==, sprintf_, buffer, "%e", 1e100);
+  {
+    bool any_failed = false;
+    for (int n = -307; n <= 307; n++) {
+      char expected[base_buffer_size];
+      std::snprintf(expected, sizeof(expected), "1.000000e%+03d", n);
+      sprintf_(buffer, "%e", std::pow(10.0, n));
+      if (strcmp(buffer, expected) != 0) {
+        std::cerr << "sprintf_(\"%e\", 1e" << n << ") = " << buffer << ", expected " << expected << "\n";
+        any_failed = true;
+      }
+    }
+    CHECK(!any_failed);
+  }
+
+  // #54: zero
+  PRINTING_CHECK("0.000000e+00",            ==, sprintf_, buffer, "%e", 0.0);
+  PRINTING_CHECK("-0.000000e+00",           ==, sprintf_, buffer, "%e", -0.0);
+  PRINTING_CHECK("-0.000000",               ==, sprintf_, buffer, "%f", -0.0);
+
+  // #119: subnormal values
+  PRINTING_CHECK("1.000000e-310",           ==, sprintf_, buffer, "%e", 1e-310);
+  PRINTING_CHECK("4.940656e-324",           ==, sprintf_, buffer, "%e", 4.9406564584124654e-324);
+#endif
+
   // #63: NULL string pointer
   PRINTING_CHECK("(null)",                  ==, sprintf_, buffer, "%s", (const char *) NULL);
   PRINTING_CHECK("  (null)",                ==, sprintf_, buffer, "%8s", (const char *) NULL);

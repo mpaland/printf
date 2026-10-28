@@ -328,6 +328,32 @@ static size_t _ntoa_long_long(out_fct_type out, char* buffer, size_t idx, size_t
 
 #if defined(PRINTF_SUPPORT_FLOAT)
 
+// powers of 10
+static const double _pow10[] = { 1, 10, 100, 1000, 10000, 100000, 1000000, 10000000, 100000000, 1000000000 };
+
+
+// internal test for a negative value, which also detects -0.0 (comparing equal to 0.0)
+static inline bool _is_negative(double value)
+{
+#if DBL_MANT_DIG == 24
+  // double is a 32-bit IEEE 754 type
+  union {
+    uint32_t U;
+    double   F;
+  } conv;
+  conv.F = value;
+  return (conv.U >> 31U) != 0U;
+#else
+  union {
+    uint64_t U;
+    double   F;
+  } conv;
+  conv.F = value;
+  return (conv.U >> 63U) != 0U;
+#endif
+}
+
+
 #if defined(PRINTF_SUPPORT_EXPONENTIAL)
 // forward declaration so that _ftoa can switch to exp notation for values > PRINTF_MAX_FLOAT
 static size_t _etoa(out_fct_type out, char* buffer, size_t idx, size_t maxlen, double value, unsigned int prec, unsigned int width, unsigned int flags);
@@ -340,9 +366,6 @@ static size_t _ftoa(out_fct_type out, char* buffer, size_t idx, size_t maxlen, d
   char buf[PRINTF_FTOA_BUFFER_SIZE];
   size_t len  = 0U;
   double diff = 0.0;
-
-  // powers of 10
-  static const double pow10[] = { 1, 10, 100, 1000, 10000, 100000, 1000000, 10000000, 100000000, 1000000000 };
 
   // test for special values
   if (value < -DBL_MAX)
@@ -363,9 +386,8 @@ static size_t _ftoa(out_fct_type out, char* buffer, size_t idx, size_t maxlen, d
   }
 
   // test for negative
-  bool negative = false;
-  if (value < 0) {
-    negative = true;
+  const bool negative = _is_negative(value);
+  if (negative) {
     value = 0 - value;
   }
 
@@ -381,7 +403,7 @@ static size_t _ftoa(out_fct_type out, char* buffer, size_t idx, size_t maxlen, d
 
   // the whole part is at most PRINTF_MAX_FLOAT, which doesn't fit into a 16-bit int
   unsigned long whole = (unsigned long)value;
-  double tmp = (value - (double)whole) * pow10[prec];
+  double tmp = (value - (double)whole) * _pow10[prec];
   unsigned long frac = (unsigned long)tmp;
   diff = tmp - (double)frac;
 
@@ -395,7 +417,7 @@ static size_t _ftoa(out_fct_type out, char* buffer, size_t idx, size_t maxlen, d
     ++frac;
   }
   // handle rollover, e.g. case 0.99 with prec 1 is 1.0
-  if (frac >= pow10[prec]) {
+  if (frac >= _pow10[prec]) {
     frac = 0;
     ++whole;
   }
@@ -466,13 +488,20 @@ static size_t _ftoa(out_fct_type out, char* buffer, size_t idx, size_t maxlen, d
 // internal ftoa variant for exponential floating-point type, contributed by Martijn Jasperse <m.jasperse@gmail.com>
 static size_t _etoa(out_fct_type out, char* buffer, size_t idx, size_t maxlen, double value, unsigned int prec, unsigned int width, unsigned int flags)
 {
+  // powers of 10 to scale the value: 10^(2^i)
+  static const double pow10_2i[] = { 1e1, 1e2, 1e4, 1e8, 1e16, 1e32
+#if DBL_MAX_10_EXP >= 256
+                                   , 1e64, 1e128, 1e256
+#endif
+  };
+
   // check for NaN and special values
   if (!((value >= -DBL_MAX) && (value <= DBL_MAX))) {
     return _ftoa(out, buffer, idx, maxlen, value, prec, width, flags);
   }
 
   // determine the sign
-  const bool negative = value < 0;
+  const bool negative = _is_negative(value);
   if (negative) {
     value = -value;
   }
@@ -482,32 +511,66 @@ static size_t _etoa(out_fct_type out, char* buffer, size_t idx, size_t maxlen, d
     prec = PRINTF_DEFAULT_FLOAT_PRECISION;
   }
 
-  // determine the decimal exponent
-  // based on the algorithm by David Gay (https://www.ampl.com/netlib/fp/dtoa.c)
-  union {
-    uint64_t U;
-    double   F;
-  } conv;
-
-  conv.F = value;
-  int exp2 = (int)((conv.U >> 52U) & 0x07FFU) - 1023;           // effectively log2
-  conv.U = (conv.U & ((1ULL << 52U) - 1U)) | (1023ULL << 52U);  // drop the exponent so conv.F is now in [1,2)
-  // now approximate log10 from the log2 integer part and an expansion of ln around 1.5
-  int expval = (int)(0.1760912590558 + exp2 * 0.301029995663981 + (conv.F - 1.5) * 0.289529654602168);
-  // now we want to compute 10^expval but we want to be sure it won't overflow
-  exp2 = (int)(expval * 3.321928094887362 + 0.5);
-  const double z  = expval * 2.302585092994046 - exp2 * 0.6931471805599453;
-  const double z2 = z * z;
-  conv.U = (uint64_t)(exp2 + 1023) << 52U;
-  // compute exp(z) using continued fractions, see https://en.wikipedia.org/wiki/Exponential_function#Continued_fractions_for_ex
-  conv.F *= 1 + 2 * z / (2 - z + (z2 / (6 + (z2 / (10 + z2 / 14)))));
-  // correct for rounding errors
-  if (value < conv.F) {
-    expval--;
-    conv.F /= 10;
+  // determine the decimal exponent and scale the value into [1, 10), 0 keeps the exponent 0
+  int expval = 0;
+  double mantissa = value;
+  double scale = 1.0;  // 10^expval for values >= 10, exact for values < 2^DBL_MANT_DIG
+  int i;
+  if (mantissa >= 10.0) {
+    for (i = (int)(sizeof(pow10_2i) / sizeof(pow10_2i[0])) - 1; i >= 0; --i) {
+      if (mantissa >= pow10_2i[i]) {
+        mantissa /= pow10_2i[i];
+        scale *= pow10_2i[i];
+        expval += 1 << i;
+      }
+    }
+  }
+  else if ((mantissa < 1.0) && (mantissa > 0.0)) {
+    // this also works for subnormal values
+    for (i = (int)(sizeof(pow10_2i) / sizeof(pow10_2i[0])) - 1; i >= 0; --i) {
+      if (mantissa * pow10_2i[i] < 10.0) {
+        mantissa *= pow10_2i[i];
+        expval -= 1 << i;
+      }
+    }
   }
 
-  // the exponent format is "%+03d" and largest value is "307", so set aside 4-5 characters
+  // round the mantissa to the precision (at most 9 digits are significant, see _ftoa)
+  const unsigned int mprec = (prec > 9U) ? 9U : prec;
+  if ((expval > 0) && (value < 2.0 / DBL_EPSILON)) {
+    // the value has an exact integer part: round the remainder after the first digit in the
+    // unscaled domain, so that exact decimal ties like 92523.5 with precision 4 round correctly
+    unsigned int digit = (mantissa < 9.0) ? (unsigned int)mantissa : 9U;
+    double rem = value - digit * scale;
+    if (rem < 0.0) {
+      // the scaled mantissa was rounded up to the next digit
+      --digit;
+      rem += scale;
+    }
+    rem = ((unsigned int)expval > mprec) ? rem / (scale / _pow10[mprec]) : rem * _pow10[mprec - (unsigned int)expval];
+    unsigned long frac = (unsigned long)rem;
+    const double diff = rem - (double)frac;
+    if ((diff > 0.5) || (!(diff < 0.5) && ((mprec ? frac : digit) & 1U))) {
+      // round half to even
+      ++frac;
+    }
+    if (frac >= _pow10[mprec]) {
+      frac = 0U;
+      ++digit;
+    }
+    if (digit > 9U) {
+      digit = 1U;
+      expval++;
+    }
+    mantissa = digit + frac / _pow10[mprec];
+  }
+  else if (mantissa >= 10.0 - 0.5 / _pow10[mprec]) {
+    // rounding the mantissa to the precision results in 10, e.g. 9.9996 with precision 3
+    mantissa /= 10.0;
+    expval++;
+  }
+
+  // the exponent format is "%+03d" and the largest value is "324" (subnormal), so set aside 4-5 characters
   unsigned int minwidth = ((expval < 100) && (expval > -100)) ? 4U : 5U;
 
   // in "%g" mode, "prec" is the number of *significant figures* not decimals
@@ -547,9 +610,9 @@ static size_t _etoa(out_fct_type out, char* buffer, size_t idx, size_t maxlen, d
     fwidth = 0U;
   }
 
-  // rescale the float value
-  if (expval) {
-    value /= conv.F;
+  // use the scaled value in exponential notation
+  if (minwidth) {
+    value = mantissa;
   }
 
   // output the floating part
