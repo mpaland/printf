@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.10)
 
-project(printf LANGUAGES C)
+project(printf VERSION 4.0.0 LANGUAGES C)   # x-release-please-version
 
 # build the tests by default only if this is the top level project
 if(CMAKE_SOURCE_DIR STREQUAL PROJECT_SOURCE_DIR)
