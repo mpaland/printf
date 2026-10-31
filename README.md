@@ -1,17 +1,31 @@
 # A printf / sprintf Implementation for Embedded Systems
 
-[![Build and test](https://github.com/mpaland/printf/actions/workflows/build_and_test.yml/badge.svg)](https://github.com/mpaland/printf/actions/workflows/build_and_test.yml)
-[![Github Issues](https://img.shields.io/github/issues/mpaland/printf.svg)](http://github.com/mpaland/printf/issues)
-[![Github Releases](https://img.shields.io/github/release/mpaland/printf.svg)](https://github.com/mpaland/printf/releases)
-[![GitHub license](https://img.shields.io/badge/license-MIT-blue.svg)](https://raw.githubusercontent.com/mpaland/printf/master/LICENSE)
+[![Release](https://img.shields.io/github/v/tag/mpaland/printf?label=release&sort=semver)](https://github.com/mpaland/printf/tags)
+[![CI](https://github.com/mpaland/printf/actions/workflows/build_and_test.yml/badge.svg?branch=master)](https://github.com/mpaland/printf/actions/workflows/build_and_test.yml)
+[![C99](https://img.shields.io/badge/C-99-blue.svg?logo=c)](https://en.cppreference.com/w/c/99)
+[![No dependencies](https://img.shields.io/badge/dependencies-none-brightgreen.svg)](#highlights-and-design-goals)
+[![No heap](https://img.shields.io/badge/heap-none-brightgreen.svg)](#highlights-and-design-goals)
+[![Compilers](https://img.shields.io/badge/compilers-MSVC%20%7C%20GCC%20%7C%20Clang-informational.svg)](.github/workflows/build_and_test.yml)
+[![Last commit](https://img.shields.io/github/last-commit/mpaland/printf.svg)](https://github.com/mpaland/printf/commits/master)
+[![Issues](https://img.shields.io/github/issues/mpaland/printf.svg)](https://github.com/mpaland/printf/issues)
+[![Stars](https://img.shields.io/github/stars/mpaland/printf.svg?style=social)](https://github.com/mpaland/printf/stargazers)
+[![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 
 This is a tiny but **fully loaded** printf, sprintf and (v)snprintf implementation.
-Primarily designed for usage in embedded systems, where printf is not available due to memory issues or in avoidance of linking against libc.
+Primarily designed for usage in embedded systems, where printf is not available due to memory issues or in avoidance of linking against libc.  
 Using the standard libc printf may pull **a lot** of unwanted library stuff and can bloat code size about 20k or is not 100% thread safe. In this cases the following implementation can be used.
 Absolutely **NO dependencies** are required, *printf.c* brings all necessary routines, even its own fast `ftoa` (floating point), `ntoa` (decimal) conversion.
 
 If memory footprint is really a critical issue, floating point, exponential and 'long long' support can be turned off via the `PRINTF_DISABLE_SUPPORT_FLOAT`, `PRINTF_DISABLE_SUPPORT_EXPONENTIAL` and `PRINTF_DISABLE_SUPPORT_LONG_LONG` compiler switches.
 When using printf (instead of sprintf/snprintf) you have to provide your own `_putchar()` low level function as console/serial output.
+
+
+## Notice 2026
+
+Due to other projects, work and challenging things in life, this repo unfortunately stalled the last few years. In the meantime Eyal Rozenberg took over maintenance in his fork [eyalroz/printf](https://github.com/eyalroz/printf).  
+Lately my old [turnkeyboard](https://github.com/mpaland/turnkeyboard) project needed to be brought back to life which was a great opportunity to update and reboot *printf* as well. This repo is now back on track and actively maintained again.  
+First of all I ported the improved test case suite of Eyal back. I closed a lot of issues, merged some PRs and some IMHO improvements came in carefully - mind that the code stays clean and small.  
+The updated test suit passes on all three main compilers now and all changes are backward compatible: `_putchar()`, the `printf_()` functions with their alias macros, the `PRINTF_DISABLE_SUPPORT_*` switches.
 
 
 ## Highlights and Design Goals
@@ -20,12 +34,13 @@ There is a boatload of so called 'tiny' printf implementations around. So why th
 I've tested many implementations, but most of them have very limited flag/specifier support, a lot of other dependencies or are just not standard compliant and failing most of the test suite.
 Therefore I decided to write an own, final implementation which meets the following items:
 
- - Very small implementation (around 600 code lines)
+ - Very small implementation (around 800 code lines)
  - NO dependencies, no libs, just one module file
  - Support of all important flags, width and precision sub-specifiers (see below)
  - Support of decimal/floating number representation (with an own fast itoa/ftoa)
  - Reentrant and thread-safe, malloc free, no static vars/buffers
  - LINT and compiler L4 warning free, mature, coverity clean, automotive ready
+ - Compiling on all main compilers: GCC, Clang and MSVC
  - Extensive test suite (> 550 checks) passing
  - Simply the best *printf* around the net
  - MIT license
@@ -51,7 +66,7 @@ int sprintf(char* buffer, const char* format, ...);
 int snprintf(char* buffer, size_t count, const char* format, ...);
 int vsnprintf(char* buffer, size_t count, const char* format, va_list va);
 
-// use output function (instead of buffer) for streamlike interface
+// use output function (instead of buffer) for a streamlike interface
 int fctprintf(void (*out)(char character, void* arg), void* arg, const char* format, ...);
 int vfctprintf(void (*out)(char character, void* arg), void* arg, const char* format, va_list va);
 ```
@@ -190,9 +205,8 @@ The specifiers %a, %A and %n and wide characters/strings (%lc, %ls) are not supp
 
 
 ## Test Suite
-The test suite in `test/` uses the [catch](https://github.com/catchorg/Catch2) framework for unit-tests. Most of the
-test cases are taken from the actively maintained fork [eyalroz/printf](https://github.com/eyalroz/printf). Build and run
-it with CMake:
+The test suite in `test/` uses the [catch](https://github.com/catchorg/Catch2) framework for unit-tests.  
+Build and run it with CMake:
 ```sh
 cmake -S . -B build
 cmake --build build
@@ -206,9 +220,8 @@ the standard library printf until it is stopped.
 ## Projects Using printf
 - [turnkeyboard](https://github.com/mpaland/turnkeyboard) uses printf as log and generic tty (formatting) output.
 - printf is part of [embeddedartistry/libc](https://github.com/embeddedartistry/libc), a libc targeted for embedded systems usage.
-- The [Hatchling Platform]( https://github.com/adrian3git/HatchlingPlatform) uses printf.
 
-(Just send me a mail/issue/PR to get *your* project listed here)
+(Just create a PR to get *your* project listed here)
 
 
 ## Contributing
