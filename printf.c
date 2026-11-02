@@ -399,13 +399,25 @@ static size_t _ftoa(out_fct_type out, char* buffer, size_t idx, size_t maxlen, d
   size_t len  = 0U;
   double diff = 0.0;
 
-  // test for special values
-  if (value < -DBL_MAX)
-    return _out_rev(out, buffer, idx, maxlen, "fni-", 4, width, flags);
-  if (value > DBL_MAX)
-    return _out_rev(out, buffer, idx, maxlen, (flags & FLAGS_PLUS) ? "fni+" : "fni", (flags & FLAGS_PLUS) ? 4U : 3U, width, flags);
-  if (!(value <= DBL_MAX))  // NaN is the only value which compares false
-    return _out_rev(out, buffer, idx, maxlen, "nan", 3, width, flags);
+  // test for special values: "inf" and "nan" like glibc, uppercase for %F, %E and %G, with the sign and the
+  // space flag, and padded with spaces as the '0' flag is ignored for them
+  if (!((value >= -DBL_MAX) && (value <= DBL_MAX))) {
+    const bool is_nan = !(value >= -DBL_MAX) && !(value <= DBL_MAX);  // NaN is the only value which compares false both ways
+    const char* str = (flags & FLAGS_UPPERCASE) ? (is_nan ? "NAN" : "INF") : (is_nan ? "nan" : "inf");
+    buf[len++] = str[2];
+    buf[len++] = str[1];
+    buf[len++] = str[0];
+    if (_is_negative(value)) {
+      buf[len++] = '-';
+    }
+    else if (flags & FLAGS_PLUS) {
+      buf[len++] = '+';
+    }
+    else if (flags & FLAGS_SPACE) {
+      buf[len++] = ' ';
+    }
+    return _out_rev(out, buffer, idx, maxlen, buf, len, width, flags & ~FLAGS_ZEROPAD);
+  }
 
   // test for very large values
   // standard printf behavior is to print EVERY whole number digit -- which could be 100s of characters overflowing your buffers == bad

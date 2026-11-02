@@ -104,11 +104,35 @@ TEST_CASE("infinity and not a number", "[floats]")
   CHECK_SPRINTF("     nan",                          "%8f",         (double)NAN);
   CHECK_SPRINTF("     inf",                          "%8f",         (double)INFINITY);
   CHECK_SPRINTF("-inf    ",                          "%-8f",        (double)-INFINITY);
+  CHECK_SPRINTF("    -nan",                          "%8f",         -(double)NAN);
+  CHECK_SPRINTF("+inf",                              "%+f",         (double)INFINITY);
+  CHECK_SPRINTF(" inf",                              "% f",         (double)INFINITY);
+  CHECK_SPRINTF("-inf",                              "%+f",         (double)-INFINITY);
+  CHECK_SPRINTF("inf",                               "%.3f",        (double)INFINITY);
+  // the '0' flag is ignored
+  CHECK_SPRINTF("     inf",                          "%08f",        (double)INFINITY);
+  CHECK_SPRINTF("    -inf",                          "%08f",        (double)-INFINITY);
+  CHECK_SPRINTF("     nan",                          "%08f",        (double)NAN);
+  // uppercase for %F
+  CHECK_SPRINTF("INF",                               "%F",          (double)INFINITY);
+  CHECK_SPRINTF("-INF",                              "%F",          (double)-INFINITY);
+  CHECK_SPRINTF("NAN",                               "%F",          (double)NAN);
+  CHECK_SPRINTF("INF     ",                          "%-8F",        (double)INFINITY);
+  CHECK_SPRINTF("    +INF",                          "%+8F",        (double)INFINITY);
 #if TEST_EXPONENTIAL
   CHECK_SPRINTF("     nan",                          "%8e",         (double)NAN);
   CHECK_SPRINTF("     inf",                          "%8e",         (double)INFINITY);
   CHECK_SPRINTF("-inf    ",                          "%-8e",        (double)-INFINITY);
   CHECK_SPRINTF("    +inf",                          "%+8e",        (double)INFINITY);
+  CHECK_SPRINTF("     inf",                          "%08e",        (double)INFINITY);
+  CHECK_SPRINTF("     nan",                          "%8g",         (double)NAN);
+  CHECK_SPRINTF("    -inf",                          "%8g",         (double)-INFINITY);
+  // uppercase for %E and %G
+  CHECK_SPRINTF("NAN",                               "%E",          (double)NAN);
+  CHECK_SPRINTF("-NAN",                              "%+G",         -(double)NAN);
+  CHECK_SPRINTF("INF",                               "%E",          (double)INFINITY);
+  CHECK_SPRINTF("    -INF",                          "%8G",         (double)-INFINITY);
+  CHECK_SPRINTF(" INF",                              "% G",         (double)INFINITY);
 #endif
 }
 
