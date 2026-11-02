@@ -289,6 +289,8 @@ static size_t _ntoa_long(out_fct_type out, char* buffer, size_t idx, size_t maxl
 {
   char buf[PRINTF_NTOA_BUFFER_SIZE];
   size_t len = 0U;
+  // the bases 2, 8 and 16 are powers of two: mask and shift instead of a division
+  const unsigned int shift = (base == 16U) ? 4U : (base == 8U) ? 3U : (base == 2U) ? 1U : 0U;
 
   // no hash for 0 values, except for octal where it forces a leading zero
   if (!value && (base != 8U)) {
@@ -298,9 +300,19 @@ static size_t _ntoa_long(out_fct_type out, char* buffer, size_t idx, size_t maxl
   // write if precision != 0 and value is != 0
   if (!(flags & FLAGS_PRECISION) || value) {
     do {
-      const char digit = (char)(value % base);
+      char digit;
+      if (shift) {
+        digit = (char)(value & (base - 1U));
+        value >>= shift;
+      }
+      else {
+        // a constant divisor, which the compiler can replace by a multiplication,
+        // and only one division for the quotient and the remainder
+        const unsigned long next = value / 10U;
+        digit = (char)(value - next * 10U);
+        value = next;
+      }
       buf[len++] = digit < 10 ? '0' + digit : (flags & FLAGS_UPPERCASE ? 'A' : 'a') + digit - 10;
-      value /= base;
     } while (value && (len < PRINTF_NTOA_BUFFER_SIZE));
   }
 
@@ -314,6 +326,8 @@ static size_t _ntoa_long_long(out_fct_type out, char* buffer, size_t idx, size_t
 {
   char buf[PRINTF_NTOA_BUFFER_SIZE];
   size_t len = 0U;
+  // the bases 2, 8 and 16 are powers of two: mask and shift instead of a division
+  const unsigned int shift = (base == 16U) ? 4U : (base == 8U) ? 3U : (base == 2U) ? 1U : 0U;
 
   // no hash for 0 values, except for octal where it forces a leading zero
   if (!value && (base != 8U)) {
@@ -323,9 +337,19 @@ static size_t _ntoa_long_long(out_fct_type out, char* buffer, size_t idx, size_t
   // write if precision != 0 and value is != 0
   if (!(flags & FLAGS_PRECISION) || value) {
     do {
-      const char digit = (char)(value % base);
+      char digit;
+      if (shift) {
+        digit = (char)(value & (base - 1U));
+        value >>= shift;
+      }
+      else {
+        // a constant divisor, which the compiler can replace by a multiplication,
+        // and only one division for the quotient and the remainder
+        const unsigned long long next = value / 10U;
+        digit = (char)(value - next * 10U);
+        value = next;
+      }
       buf[len++] = digit < 10 ? '0' + digit : (flags & FLAGS_UPPERCASE ? 'A' : 'a') + digit - 10;
-      value /= base;
     } while (value && (len < PRINTF_NTOA_BUFFER_SIZE));
   }
 
