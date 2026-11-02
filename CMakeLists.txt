@@ -51,9 +51,15 @@ if(PRINTF_BUILD_TESTS)
   set_target_properties(catch2 PROPERTIES CXX_STANDARD 14 CXX_STANDARD_REQUIRED ON CXX_EXTENSIONS OFF
                                           COMPILE_WARNING_AS_ERROR OFF)
 
-  # the test suite includes printf.c directly, so it must not link the library
-  add_executable(test_suite test/test_suite.cpp)
-  target_link_libraries(test_suite PRIVATE catch2)
+  # the test suite, one file per topic
+  add_executable(test_suite test/test_common.cpp
+                            test/test_api.cpp
+                            test/test_flags.cpp
+                            test/test_width_precision.cpp
+                            test/test_integers.cpp
+                            test/test_floats.cpp
+                            test/test_strings_pointers.cpp)
+  target_link_libraries(test_suite PRIVATE printf catch2)
   target_compile_definitions(test_suite PRIVATE ${PRINTF_DEFINES})
   target_compile_options(test_suite PRIVATE ${PRINTF_WARNINGS} $<$<CXX_COMPILER_ID:MSVC>:/permissive->)
   set_target_properties(test_suite PROPERTIES CXX_STANDARD 14 CXX_STANDARD_REQUIRED ON CXX_EXTENSIONS OFF)
