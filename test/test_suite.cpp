@@ -30,7 +30,7 @@
 //
 ///////////////////////////////////////////////////////////////////////////////
 
-#include "catch.hpp"
+#include "catch_amalgamated.hpp"
 
 #include <cstring>
 #include <cstdarg>
@@ -242,7 +242,7 @@ void _out_fct(char character, void* arg)
 #ifndef STRINGIFY
 #define STRINGIFY(_x) #_x
 #endif
-#define PRINTF_TEST_CASE(unstringified_name)  TEST_CASE(STRINGIFY(unstringified_name), "[]")
+#define PRINTF_TEST_CASE(unstringified_name)  TEST_CASE(STRINGIFY(unstringified_name))
 
 #if defined(PRINTF_SUPPORT_PUTCHAR)
 PRINTF_TEST_CASE(printf) {
@@ -280,7 +280,7 @@ static void vfctprintf_builder_1(out_fct_type_ f, char* buffer, ...)
 {
   va_list args;
   va_start(args, buffer);
-  CAPTURE_AND_PRINT(vfctprintf, f, nullptr, "This is a test of %X", args);
+  vfctprintf(f, nullptr, "This is a test of %X", args);
   va_end(args);
 }
 
@@ -312,7 +312,7 @@ static void vsprintf_builder_1(char* buffer, ...)
 {
   va_list args;
   va_start(args, buffer);
-  CAPTURE_AND_PRINT(vsprintf_, buffer, "%d", args);
+  vsprintf_(buffer, "%d", args);
   va_end(args);
 }
 
@@ -320,7 +320,7 @@ static void vsnprintf_builder_1(char* buffer, ...)
 {
   va_list args;
   va_start(args, buffer);
-  CAPTURE_AND_PRINT(vsnprintf_, buffer, 100U, "%d", args);
+  vsnprintf_(buffer, 100U, "%d", args);
   va_end(args);
 }
 
@@ -328,7 +328,7 @@ static void vsprintf_builder_3(char* buffer, ...)
 {
   va_list args;
   va_start(args, buffer);
-  CAPTURE_AND_PRINT(vsprintf_, buffer, "%d %d %s", args);
+  vsprintf_(buffer, "%d %d %s", args);
   va_end(args);
 }
 
@@ -336,7 +336,7 @@ static void vsnprintf_builder_3(char* buffer, ...)
 {
   va_list args;
   va_start(args, buffer);
-  CAPTURE_AND_PRINT(vsnprintf_, buffer, 100U, "%d %d %s", args);
+  vsnprintf_(buffer, 100U, "%d %d %s", args);
   va_end(args);
 }
 

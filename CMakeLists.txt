@@ -44,11 +44,19 @@ if(PRINTF_BUILD_TESTS)
   enable_language(CXX)
   enable_testing()
 
+  # the Catch2 v3 test framework (amalgamated files, provides main()), compiled without our warning flags
+  add_library(catch2 STATIC test/catch_amalgamated.cpp)
+  target_include_directories(catch2 SYSTEM PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/test)
+  target_compile_options(catch2 PRIVATE $<$<CXX_COMPILER_ID:MSVC>:/utf-8>)
+  set_target_properties(catch2 PROPERTIES CXX_STANDARD 14 CXX_STANDARD_REQUIRED ON CXX_EXTENSIONS OFF
+                                          COMPILE_WARNING_AS_ERROR OFF)
+
   # the test suite includes printf.c directly, so it must not link the library
-  add_executable(test_suite test/test_main.cpp test/test_suite.cpp)
+  add_executable(test_suite test/test_suite.cpp)
+  target_link_libraries(test_suite PRIVATE catch2)
   target_compile_definitions(test_suite PRIVATE ${PRINTF_DEFINES})
   target_compile_options(test_suite PRIVATE ${PRINTF_WARNINGS} $<$<CXX_COMPILER_ID:MSVC>:/permissive->)
-  set_target_properties(test_suite PROPERTIES CXX_STANDARD 11 CXX_STANDARD_REQUIRED ON CXX_EXTENSIONS OFF)
+  set_target_properties(test_suite PROPERTIES CXX_STANDARD 14 CXX_STANDARD_REQUIRED ON CXX_EXTENSIONS OFF)
   add_test(NAME test_suite COMMAND test_suite)
 
   # check that a C program can use the library via the standard function names
