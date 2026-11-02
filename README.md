@@ -41,7 +41,7 @@ Therefore I decided to write an own, final implementation which meets the follow
  - Reentrant and thread-safe, malloc free, no static vars/buffers
  - LINT and compiler L4 warning free, mature, coverity clean, automotive ready
  - Compiling on all main compilers: GCC, Clang and MSVC
- - Extensive test suite (> 550 checks) passing
+ - Extensive test suite (> 1800 checks) passing
  - Simply the best *printf* around the net
  - MIT license
 
@@ -211,17 +211,33 @@ The specifiers %a, %A and %n and wide characters/strings (%lc, %ls) are not supp
 
 
 ## Test Suite
-The test suite in `test/` uses the [catch](https://github.com/catchorg/Catch2) framework for unit-tests.  
-Build and run it with CMake:
+The test suite in `test/` uses the [Catch2](https://github.com/catchorg/Catch2) v3 framework (vendored as `catch_amalgamated.*`) and
+links the library compiled as C99. Build and run it with CMake:
 ```sh
 cmake -S . -B build
 cmake --build build
 ctest --test-dir build --output-on-failure
 ```
+The test cases are split by topic, one file per topic with a Catch2 tag to run it alone:
+
+| File | Tag | Content |
+|------|-----|---------|
+| `test_api.cpp` | `[api]` | the functions, their return values and the buffer handling |
+| `test_flags.cpp` | `[flags]` | the flags `-` `+` ` ` `#` `0` |
+| `test_width_precision.cpp` | `[width]` | field width and precision, also from `*` arguments |
+| `test_integers.cpp` | `[integers]` | `%d %i %u %o %x %X %b` and the length modifiers |
+| `test_floats.cpp` | `[floats]` | `%f %F %e %E %g %G`, rounding, limits, inf and nan |
+| `test_strings_pointers.cpp` | `[strings]` | `%s %c %p %%` |
+
+Checks of behavior beyond the C standard (e.g. `%b`, ignored flags) carry the additional tag `[non-standard]`.
+The regression checks of fixed GitHub issues are marked with the issue number. Run a single topic with e.g.
+`build/test_suite "[floats]"`.
+
 The compiler switches are available as CMake options, e.g. `-DPRINTF_DISABLE_SUPPORT_FLOAT=ON`, except `PRINTF_DISABLE_SUPPORT_PUTCHAR`: the
 `no_putchar` test always checks that the library links without `_putchar()` with it.
-With `-DPRINTF_BUILD_AUTOTEST=ON` the `autotest` tool is built, which compares randomly generated format strings against
-the standard library printf until it is stopped.
+With `-DPRINTF_BUILD_AUTOTEST=ON` the `autotest` tool is built, which compares randomly generated format strings and values
+against the standard library printf. It runs until stopped, or for `-n COUNT` rounds with the seed `-s SEED`, and exits with 1
+if any mismatch was found, e.g. `build/autotest -a -n 1000 -s 42 1>/dev/null` shows only the mismatches. See `autotest -h`.
 
 
 ## Projects Using printf
