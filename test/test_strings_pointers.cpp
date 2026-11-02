@@ -134,3 +134,17 @@ TEST_CASE("empty format", "[strings][non-standard]")
   CHECK_SPRINTF("",                                  "");
   DISABLE_WARNING_POP
 }
+
+
+// an incomplete format specifier at the end of the format string ends the output
+TEST_CASE("incomplete format specifier", "[strings][non-standard]")
+{
+  DISABLE_WARNING_PUSH
+  DISABLE_WARNING_NON_STANDARD_FORMAT
+  CHECK_SPRINTF("abc",                               "abc%");
+  CHECK_SPRINTF("abc",                               "abc%5");
+  CHECK_SPRINTF("abc",                               "abc%-05.3l");
+  CHECK_SPRINTF("",                                  "%");
+  CHECK_SPRINTF("1 ",                                "%d %",        1);
+  DISABLE_WARNING_POP
+}

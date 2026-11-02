@@ -791,6 +791,11 @@ static int _vsnprintf(out_fct_type out, char* buffer, const size_t maxlen, const
         break;
     }
 
+    // an incomplete format specifier at the end of the format string ends the output, like glibc does
+    if (*format == '\0') {
+      break;
+    }
+
     // evaluate specifier
     switch (*format) {
       case 'd' :
