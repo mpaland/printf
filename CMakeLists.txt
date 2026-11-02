@@ -79,12 +79,13 @@ if(PRINTF_BUILD_TESTS)
   set_target_properties(no_putchar PROPERTIES C_STANDARD 99 C_STANDARD_REQUIRED ON C_EXTENSIONS OFF)
   add_test(NAME no_putchar COMMAND no_putchar)
 
-  # random comparison against the standard library, runs until stopped (not part of CTest)
+  # random comparison against the standard library, not part of CTest as the host
+  # library differs in the documented caveats
   if(PRINTF_BUILD_AUTOTEST)
-    add_executable(autotest test/autotest.cpp)
+    add_executable(autotest test/autotest.c)
     target_link_libraries(autotest PRIVATE printf)
-    target_compile_definitions(autotest PRIVATE ${PRINTF_DEFINES})
-    set_target_properties(autotest PROPERTIES CXX_STANDARD 11 CXX_STANDARD_REQUIRED ON CXX_EXTENSIONS OFF
-                                              COMPILE_WARNING_AS_ERROR OFF)
+    target_compile_definitions(autotest PRIVATE ${PRINTF_DEFINES} $<$<C_COMPILER_ID:MSVC>:_CRT_SECURE_NO_WARNINGS>)
+    target_compile_options(autotest PRIVATE ${PRINTF_WARNINGS})
+    set_target_properties(autotest PROPERTIES C_STANDARD 99 C_STANDARD_REQUIRED ON C_EXTENSIONS OFF)
   endif()
 endif()
