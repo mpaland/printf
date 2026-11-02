@@ -247,6 +247,50 @@ TEST_CASE("sharp flag with floating point values", "[floats]")
   CHECK_SPRINTF("100.",                              "%#.3Lg",      99.998580932617187500L);
 }
 
+
+TEST_CASE("decimal conversion at PRINTF_MAX_FLOAT", "[floats]")
+{
+  CHECK_SPRINTF("1000000000.000000",                 "%f",          1000000000.0);
+  CHECK_SPRINTF("999999999.000000",                  "%f",          999999999.0);
+  CHECK_SPRINTF("-1000000000.000000",                "%f",          -1000000000.0);
+  CHECK_SPRINTF("1.000000e+09",                      "%f",          1000000001.0);
+  CHECK_SPRINTF("-1.000000e+09",                     "%f",          -1000000001.0);
+}
+
+
+// the expected values are the correctly rounded ones of the standard library
+TEST_CASE("exponential conversion of extremal values", "[floats]")
+{
+  CHECK_SPRINTF("1.797693e+308",                     "%e",          DBL_MAX);
+  CHECK_SPRINTF("-1.797693e+308",                    "%e",          -DBL_MAX);
+  CHECK_SPRINTF("2.225074e-308",                     "%e",          DBL_MIN);
+  CHECK_SPRINTF("2.220446e-16",                      "%e",          DBL_EPSILON);
+  CHECK_SPRINTF("1.79769e+308",                      "%g",          DBL_MAX);
+  CHECK_SPRINTF("2.22507e-308",                      "%g",          DBL_MIN);
+  CHECK_SPRINTF("2.22045e-16",                       "%g",          DBL_EPSILON);
+}
+
+
+// the exponent X of the value decides the notation: decimal if -4 <= X < P
+// (P is the precision, 6 by default), exponential otherwise
+TEST_CASE("general conversion at the notation boundaries", "[floats]")
+{
+  CHECK_SPRINTF("0.0001",                            "%g",          0.0001);
+  CHECK_SPRINTF("1e-05",                             "%g",          0.00001);
+  CHECK_SPRINTF("0.1",                               "%g",          0.1);
+  CHECK_SPRINTF("1",                                 "%g",          1.0);
+  CHECK_SPRINTF("100000",                            "%g",          100000.0);
+  CHECK_SPRINTF("123456",                            "%g",          123456.0);
+  CHECK_SPRINTF("999999",                            "%g",          999999.0);
+  CHECK_SPRINTF("1e+06",                             "%g",          1000000.0);
+  CHECK_SPRINTF("1.23457e+06",                       "%g",          1234567.0);
+  CHECK_SPRINTF("123",                               "%.3g",        123.0);
+  CHECK_SPRINTF("1.23e+03",                          "%.3g",        1234.0);
+  CHECK_SPRINTF("1e+100",                            "%g",          1e100);
+  CHECK_SPRINTF("1E-100",                            "%G",          1e-100);
+  CHECK_SPRINTF("-1.5E+300",                         "%G",          -1.5e300);
+}
+
 #endif  // TEST_EXPONENTIAL
 
 

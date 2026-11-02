@@ -228,3 +228,26 @@ TEST_CASE("negative precision", "[width]")
   CHECK_SPRINTF("1.500000",                          "%.*f",        -1, 1.5);
 #endif
 }
+
+
+TEST_CASE("width and precision from arguments", "[width]")
+{
+  CHECK_SPRINTF("     00042",                        "%*.*d",       10, 5, 42);
+  CHECK_SPRINTF("00042     ",                        "%-*.*d",      10, 5, 42);
+  CHECK_SPRINTF("       Hel",                        "%*.*s",       10, 3, "Hello");
+  CHECK_SPRINTF("Hel       ",                        "%-*.*s",      10, 3, "Hello");
+#if TEST_FLOAT
+  CHECK_SPRINTF("      3.14",                        "%*.*f",       10, 2, 3.14159);
+  CHECK_SPRINTF("3.14      ",                        "%-*.*f",      10, 2, 3.14159);
+  CHECK_SPRINTF("0000003.14",                        "%0*.*f",      10, 2, 3.14159);
+#endif
+}
+
+
+TEST_CASE("width and precision of strings", "[width]")
+{
+  CHECK_SPRINTF("       Hel",                        "%10.3s",      "Hello");
+  CHECK_SPRINTF("Hel       ",                        "%-10.3s",     "Hello");
+  CHECK_SPRINTF("     Hello",                        "%10.8s",      "Hello");
+  CHECK_SPRINTF("Hello",                             "%3.8s",       "Hello");
+}

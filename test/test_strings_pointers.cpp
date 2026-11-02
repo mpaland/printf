@@ -60,15 +60,15 @@ TEST_CASE("percent", "[strings]")
 TEST_CASE("pointer conversion", "[strings]")
 {
   if (sizeof(void*) == 4U) {
-    CHECK_SPRINTF("0x00001234",                      "%p",          (void*)0x1234U);
-    CHECK_SPRINTF("0x12345678",                      "%p",          (void*)0x12345678U);
-    CHECK_SPRINTF("0xffffffff",                      "%p",          (void*)(uintptr_t)0xFFFFFFFFU);
-    CHECK_SPRINTF("0x12345678-0x7edcba98",           "%p-%p",       (void*)0x12345678U, (void*)0x7EDCBA98U);
+    CHECK_SPRINTF("0x00001234",                        "%p",          (void*)0x1234U);
+    CHECK_SPRINTF("0x12345678",                        "%p",          (void*)0x12345678U);
+    CHECK_SPRINTF("0xffffffff",                        "%p",          (void*)(uintptr_t)0xFFFFFFFFU);
+    CHECK_SPRINTF("0x12345678-0x7edcba98",             "%p-%p",       (void*)0x12345678U, (void*)0x7EDCBA98U);
   }
   else {
-    CHECK_SPRINTF("0x0000000000001234",              "%p",          (void*)0x1234U);
-    CHECK_SPRINTF("0x0000000012345678",              "%p",          (void*)0x12345678U);
-    CHECK_SPRINTF("0x00000000ffffffff",              "%p",          (void*)(uintptr_t)0xFFFFFFFFU);
+    CHECK_SPRINTF("0x0000000000001234",                "%p",          (void*)0x1234U);
+    CHECK_SPRINTF("0x0000000012345678",                "%p",          (void*)0x12345678U);
+    CHECK_SPRINTF("0x00000000ffffffff",                "%p",          (void*)(uintptr_t)0xFFFFFFFFU);
     CHECK_SPRINTF("0x0000000012345678-0x000000007edcba98",
                                                      "%p-%p",       (void*)0x12345678U, (void*)0x7EDCBA98U);
   }
@@ -91,4 +91,46 @@ TEST_CASE("unknown conversion", "[strings][non-standard]")
 TEST_CASE("mixed conversions", "[strings]")
 {
   CHECK_SPRINTF("53000atest-20 bit",                 "%u%u%ctest%d %s", 5, 3000, 'a', -20, "bit");
+}
+
+
+TEST_CASE("percent with conversions", "[strings]")
+{
+  CHECK_SPRINTF("%d",                                "%%d");
+  CHECK_SPRINTF("%%",                                "%%%%");
+  CHECK_SPRINTF("100%",                              "%d%%",        100);
+  CHECK_SPRINTF("%42%",                              "%%%d%%",      42);
+}
+
+
+// the width is the number of digits, the '0x' prefix comes on top
+TEST_CASE("pointer conversion with width", "[strings]")
+{
+  CHECK_SPRINTF("0x00000000000000001234",            "%20p",        (void*)0x1234U);
+  CHECK_SPRINTF("0x1234                ",            "%-20p",       (void*)0x1234U);
+  CHECK_SPRINTF("(nil)   ",                          "%-8p",        (const void*)NULL);
+}
+
+
+// the unsupported conversions %a, %A and %n are printed like an unknown conversion
+TEST_CASE("unsupported conversions", "[strings][non-standard]")
+{
+  int n = 0;
+
+  DISABLE_WARNING_PUSH
+  DISABLE_WARNING_NON_STANDARD_FORMAT
+  CHECK_SPRINTF("a",                                 "%a",          1.0);
+  CHECK_SPRINTF("A",                                 "%A",          1.0);
+  CHECK_SPRINTF("n",                                 "%n",          &n);
+  DISABLE_WARNING_POP
+  CHECK(n == 0);
+}
+
+
+TEST_CASE("empty format", "[strings][non-standard]")
+{
+  DISABLE_WARNING_PUSH
+  DISABLE_WARNING_NON_STANDARD_FORMAT
+  CHECK_SPRINTF("",                                  "");
+  DISABLE_WARNING_POP
 }

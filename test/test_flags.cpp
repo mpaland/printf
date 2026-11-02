@@ -295,3 +295,30 @@ TEST_CASE("sharp flag with decimal conversions", "[flags][non-standard]")
   CHECK_SPRINTF("00000000004294966272",              "%#020u",      4294966272U);
   DISABLE_WARNING_POP
 }
+
+
+TEST_CASE("sharp flag with zero", "[flags]")
+{
+  // no prefix for a zero value
+  CHECK_SPRINTF("0",                                 "%#x",         0);
+  CHECK_SPRINTF("0",                                 "%#X",         0);
+  CHECK_SPRINTF("   0",                              "%#4x",        0);
+  CHECK_SPRINTF("0000",                              "%#04x",       0);
+}
+
+
+#if TEST_FLOAT
+TEST_CASE("sign flags with zero", "[flags]")
+{
+  CHECK_SPRINTF("+0.000000",                         "%+f",         0.0);
+  CHECK_SPRINTF("-0.000000",                         "%+f",         -0.0);
+  CHECK_SPRINTF(" 0.000000",                         "% f",         0.0);
+  CHECK_SPRINTF("-0.000000",                         "% f",         -0.0);
+  CHECK_SPRINTF("+0",                                "%+.0f",       0.0);
+#if TEST_EXPONENTIAL
+  CHECK_SPRINTF("+0.000000e+00",                     "%+e",         0.0);
+  CHECK_SPRINTF(" 0.000000e+00",                     "% e",         0.0);
+  CHECK_SPRINTF(" 0",                                "% g",         0.0);
+#endif
+}
+#endif

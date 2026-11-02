@@ -130,3 +130,41 @@ TEST_CASE("extremal unsigned values", "[integers]")
   CHECK_SPRINTF(expected,                            "%llu",        std::numeric_limits<unsigned long long>::max());
 #endif
 }
+
+
+// the argument is converted to the type of the length modifier
+TEST_CASE("length modifier wrap-around", "[integers]")
+{
+  CHECK_SPRINTF("0",                                 "%hhd",        256);
+  CHECK_SPRINTF("-1",                                "%hhd",        255);
+  CHECK_SPRINTF("127",                               "%hhd",        -129);
+  CHECK_SPRINTF("ff",                                "%hhx",        -1);
+  CHECK_SPRINTF("255",                               "%hhu",        -1);
+  CHECK_SPRINTF("0",                                 "%hu",         65536);
+  CHECK_SPRINTF("-1",                                "%hd",         65535);
+  CHECK_SPRINTF("2345",                              "%hx",         0x12345);
+  CHECK_SPRINTF("ffff",                              "%hx",         -1);
+}
+
+
+TEST_CASE("length modifiers j, z and t", "[integers]")
+{
+  char array[16];
+
+#if TEST_LONG_LONG || (INTMAX_MAX == LONG_MAX)
+  CHECK_SPRINTF("123",                               "%ju",         (uintmax_t)123);
+  CHECK_SPRINTF("-123",                              "%jd",         (intmax_t)-123);
+  CHECK_SPRINTF("7b",                                "%jx",         (uintmax_t)123);
+#endif
+#if TEST_LONG_LONG || (SIZE_MAX == ULONG_MAX)
+  CHECK_SPRINTF("beef",                              "%zx",         (size_t)0xbeef);
+  CHECK_SPRINTF("BEEF",                              "%zX",         (size_t)0xbeef);
+  CHECK_SPRINTF("17",                                "%zo",         (size_t)15);
+#endif
+#if TEST_PTRDIFF_T && (TEST_LONG_LONG || (PTRDIFF_MAX == LONG_MAX))
+  CHECK_SPRINTF("-5",                                "%td",         (ptrdiff_t)-5);
+  CHECK_SPRINTF("10",                                "%td",         &array[10] - &array[0]);
+  CHECK_SPRINTF("-10",                               "%ti",         &array[0] - &array[10]);
+#endif
+  (void)array;
+}

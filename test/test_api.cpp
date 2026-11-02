@@ -82,7 +82,7 @@ TEST_CASE("sprintf", "[api]")
 
 TEST_CASE("snprintf", "[api]")
 {
-  CHECK_SNPRINTF("-1000",                             5,   50U,  "%d",          -1000);
+  CHECK_SNPRINTF("-1000",                             5,   50U, "%d",          -1000);
   CHECK_SNPRINTF("-1",                                5,   3U,  "%d",          -1000);
 }
 
