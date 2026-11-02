@@ -251,3 +251,14 @@ TEST_CASE("width and precision of strings", "[width]")
   CHECK_SPRINTF("     Hello",                        "%10.8s",      "Hello");
   CHECK_SPRINTF("Hello",                             "%3.8s",       "Hello");
 }
+
+
+// #232 (eyalroz/printf): a width of INT_MIN cannot be negated as an int
+TEST_CASE("width INT_MIN from argument", "[width]")
+{
+  char buffer[8];
+
+  std::memset(buffer, 0xCC, sizeof(buffer));
+  snprintf_(buffer, sizeof(buffer), "%*d", INT_MIN, 5);
+  CHECK(std::string(buffer) == "5      ");
+}

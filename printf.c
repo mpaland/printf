@@ -724,7 +724,7 @@ static int _vsnprintf(out_fct_type out, char* buffer, const size_t maxlen, const
       const int w = va_arg(va, int);
       if (w < 0) {
         flags |= FLAGS_LEFT;    // reverse padding
-        width = (unsigned int)-w;
+        width = 0U - (unsigned int)w;   // negated as unsigned, INT_MIN cannot be negated as an int
       }
       else {
         width = (unsigned int)w;
