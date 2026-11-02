@@ -91,6 +91,10 @@ void my_stream_output(char character, void* arg)
 }
 ```
 
+### Format Checking
+With GCC and Clang, the functions are declared with the `format` attribute (the `ATTR_PRINTF` / `ATTR_VPRINTF` macros in *printf.h*), so `-Wformat` (part of `-Wall`) checks the arguments against the format string, like for the standard `printf`.
+`%b` is standard since C23 only: GCC warns about it with `-pedantic` and an older C standard, and compilers that don't know `%b` yet always do.
+
 ## Format Specifiers
 
 A format specifier follows this prototype: `%[flags][width][.precision][length]type`
