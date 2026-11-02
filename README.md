@@ -243,6 +243,7 @@ if any mismatch was found, e.g. `build/autotest -a -n 1000 -s 42 1>/dev/null` sh
 ## Projects Using printf
 - [turnkeyboard](https://github.com/mpaland/turnkeyboard) uses printf as log and generic tty (formatting) output.
 - printf is part of [embeddedartistry/libc](https://github.com/embeddedartistry/libc), a libc targeted for embedded systems usage.
+- [modm.io](https://modm.io/reference/module/modm-io/#using-printf) is also using this library, albeit with some [hacky hacks](https://github.com/modm-io/modm/blob/develop/src/modm/io/iostream_printf.cpp.in) to disable the native floating point functions on AVR.
 
 (Just create a PR to get *your* project listed here)
 
