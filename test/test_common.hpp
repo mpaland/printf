@@ -41,6 +41,7 @@
 #include <cfloat>
 #include <cmath>
 #include <string>
+#include <cstdio>
 
 #include "../printf.h"
 
@@ -176,6 +177,15 @@ inline std::string test_str(const char* buffer, std::size_t size)
     CHECK(test_str(buffer_, sizeof(buffer_)) == expected_);                   \
     CHECK(ret_ == static_cast<int>(expected_.size()));                        \
     CHECK(buffer_[expected_.size() + 1U] == static_cast<char>(0xCC));         \
+  } while (0)
+
+// checks sprintf_() against the output of the standard library for the same
+// format string and arguments
+#define CHECK_SPRINTF_STD(...)                                                \
+  do {                                                                        \
+    char expected_std_[test_buffer_size];                                     \
+    std::snprintf(expected_std_, sizeof(expected_std_), __VA_ARGS__);         \
+    CHECK_SPRINTF(expected_std_, __VA_ARGS__);                                \
   } while (0)
 
 // checks that snprintf_() with the given buffer size writes exactly the

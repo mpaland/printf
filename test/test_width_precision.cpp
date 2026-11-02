@@ -262,3 +262,42 @@ TEST_CASE("width INT_MIN from argument", "[width]")
   snprintf_(buffer, sizeof(buffer), "%*d", INT_MIN, 5);
   CHECK(std::string(buffer) == "5      ");
 }
+
+
+// the internal buffer of a number holds 32 characters, longer zero padding
+// and precision are output beyond it
+TEST_CASE("zero padding beyond the number buffer", "[width]")
+{
+  CHECK_SPRINTF_STD("%040d",      5);
+  CHECK_SPRINTF_STD("%040d",      -5);
+  CHECK_SPRINTF_STD("%+040d",     5);
+  CHECK_SPRINTF_STD("% 040d",     5);
+  CHECK_SPRINTF_STD("%040u",      5);
+  CHECK_SPRINTF_STD("%#040x",     255);
+  CHECK_SPRINTF_STD("%#040X",     255);
+  CHECK_SPRINTF_STD("%#040o",     255);
+  CHECK_SPRINTF_STD("%060d",      1);
+  CHECK_SPRINTF_STD("%.40d",      5);
+  CHECK_SPRINTF_STD("%.40d",      -5);
+  CHECK_SPRINTF_STD("%#.40x",     255);
+  CHECK_SPRINTF_STD("%#.40o",     5);
+  CHECK_SPRINTF_STD("%50.40d",    5);
+  CHECK_SPRINTF_STD("%-50.40d",   5);
+  CHECK_SPRINTF_STD("%.35ld",     123456789L);
+#if TEST_LONG_LONG
+  CHECK_SPRINTF_STD("%040lld",    -5LL);
+  CHECK_SPRINTF_STD("%#040llx",   0x123456789abcdefLL);
+#endif
+#if TEST_FLOAT
+  CHECK_SPRINTF_STD("%040.1f",    -5.5);
+  CHECK_SPRINTF_STD("%+040.1f",   5.5);
+  CHECK_SPRINTF_STD("% 040.3f",   12345.678);
+  CHECK_SPRINTF_STD("%040f",      0.0);
+#endif
+#if TEST_EXPONENTIAL
+  CHECK_SPRINTF_STD("%+040.1e",   5.5);
+  CHECK_SPRINTF_STD("%040E",      -5.5);
+  CHECK_SPRINTF_STD("%+040.3g",   5.5);
+  CHECK_SPRINTF_STD("%040g",      1e100);
+#endif
+}

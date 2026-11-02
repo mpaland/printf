@@ -228,27 +228,70 @@ static size_t _out_rev(out_fct_type out, char* buffer, size_t idx, size_t maxlen
 }
 
 
+// output a reversed number with additional leading zeros which did not fit into its buffer: the sign and the
+// prefix (the last 'reserved' characters of the buffer) come first, then the zeros, then the digits
+static size_t _out_rev_zeros(out_fct_type out, char* buffer, size_t idx, size_t maxlen, const char* buf, size_t len, size_t reserved, size_t zeros, unsigned int width, unsigned int flags)
+{
+  if (!zeros) {
+    return _out_rev(out, buffer, idx, maxlen, buf, len, width, flags);
+  }
+
+  const size_t start_idx = idx;
+
+  // pad spaces up to given width
+  if (!(flags & FLAGS_LEFT)) {
+    for (size_t i = len + zeros; i < width; i++) {
+      out(' ', buffer, idx++, maxlen);
+    }
+  }
+
+  idx = _out_rev(out, buffer, idx, maxlen, buf + len - reserved, reserved, 0U, flags);
+  while (zeros--) {
+    out('0', buffer, idx++, maxlen);
+  }
+  idx = _out_rev(out, buffer, idx, maxlen, buf, len - reserved, 0U, flags);
+
+  // append pad spaces up to given width
+  if (flags & FLAGS_LEFT) {
+    while (idx - start_idx < width) {
+      out(' ', buffer, idx++, maxlen);
+    }
+  }
+
+  return idx;
+}
+
+
 // internal itoa format
 static size_t _ntoa_format(out_fct_type out, char* buffer, size_t idx, size_t maxlen, char* buf, size_t len, bool negative, unsigned int base, unsigned int prec, unsigned int width, unsigned int flags)
 {
-  // pad leading zeros up to the precision
-  while ((len < prec) && (len < PRINTF_NTOA_BUFFER_SIZE)) {
-    buf[len++] = '0';
-  }
-
   // the octal prefix is a leading zero, which is not needed if the number already starts with a zero
-  if ((flags & FLAGS_HASH) && (base == 8U) && len && (buf[len - 1U] == '0')) {
+  if ((flags & FLAGS_HASH) && (base == 8U) && ((prec > len) || (len && (buf[len - 1U] == '0')))) {
     flags &= ~FLAGS_HASH;
   }
 
-  // pad leading zeros up to the width, leaving room for the sign and the prefix
+  // room in the buffer for the sign and the prefix
+  size_t reserved = (negative || (flags & (FLAGS_PLUS | FLAGS_SPACE))) ? 1U : 0U;
+  if (flags & FLAGS_HASH) {
+    reserved += (base == 8U) ? 1U : 2U;
+  }
+  const size_t limit = (reserved < PRINTF_NTOA_BUFFER_SIZE) ? PRINTF_NTOA_BUFFER_SIZE - reserved : 0U;
+
+  // pad leading zeros up to the precision, and up to the width with the '0' flag
+  // zeros which do not fit into the buffer are counted and output separately
+  size_t zeros = 0U;
+  while ((len < prec) && (len < limit)) {
+    buf[len++] = '0';
+  }
+  if (len < prec) {
+    zeros = prec - len;
+  }
   if (!(flags & FLAGS_LEFT) && (flags & FLAGS_ZEROPAD)) {
-    size_t reserved = (negative || (flags & (FLAGS_PLUS | FLAGS_SPACE))) ? 1U : 0U;
-    if (flags & FLAGS_HASH) {
-      reserved += (base == 8U) ? 1U : 2U;
-    }
-    while ((len + reserved < width) && (len < PRINTF_NTOA_BUFFER_SIZE)) {
+    while ((len + zeros + reserved < width) && (len < limit)) {
       buf[len++] = '0';
+    }
+    if (len + zeros + reserved < width) {
+      zeros = width - reserved - len;
     }
   }
 
@@ -280,7 +323,7 @@ static size_t _ntoa_format(out_fct_type out, char* buffer, size_t idx, size_t ma
     }
   }
 
-  return _out_rev(out, buffer, idx, maxlen, buf, len, width, flags);
+  return _out_rev_zeros(out, buffer, idx, maxlen, buf, len, reserved, zeros, width, flags);
 }
 
 
@@ -518,13 +561,16 @@ static size_t _ftoa(out_fct_type out, char* buffer, size_t idx, size_t maxlen, d
     }
   }
 
-  // pad leading zeros
+  // pad leading zeros up to the width, leaving room for the sign
+  // zeros which do not fit into the buffer are counted and output separately
+  const size_t reserved = (negative || (flags & (FLAGS_PLUS | FLAGS_SPACE))) ? 1U : 0U;
+  size_t zeros = 0U;
   if (!(flags & FLAGS_LEFT) && (flags & FLAGS_ZEROPAD)) {
-    if (width && (negative || (flags & (FLAGS_PLUS | FLAGS_SPACE)))) {
-      width--;
-    }
-    while ((len < width) && (len < PRINTF_FTOA_BUFFER_SIZE)) {
+    while ((len + reserved < width) && (len + reserved < PRINTF_FTOA_BUFFER_SIZE)) {
       buf[len++] = '0';
+    }
+    if (len + reserved < width) {
+      zeros = width - reserved - len;
     }
   }
 
@@ -540,7 +586,7 @@ static size_t _ftoa(out_fct_type out, char* buffer, size_t idx, size_t maxlen, d
     }
   }
 
-  return _out_rev(out, buffer, idx, maxlen, buf, len, width, flags);
+  return _out_rev_zeros(out, buffer, idx, maxlen, buf, len, reserved, zeros, width, flags);
 }
 
 
