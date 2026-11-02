@@ -891,13 +891,15 @@ static int _vsnprintf(out_fct_type out, char* buffer, const size_t maxlen, const
 
       case 'p' : {
         // print like glibc: '0x' prefix and lowercase hex digits, "(nil)" for a NULL pointer
-        width = sizeof(void*) * 2U + 2U;
-        flags |= FLAGS_ZEROPAD | FLAGS_HASH;
         const uintptr_t value = (uintptr_t)va_arg(va, void*);
-        if (value == 0U) {
+        if (value == (uintptr_t)NULL) {
+          // padded to the width like a string
           idx = _out_rev(out, buffer, idx, maxlen, ")lin(", 5U, width, flags);
         }
         else {
+          // the digits are zero padded to the width, or to all digits of the pointer
+          width = (width ? width : sizeof(void*) * 2U) + 2U;
+          flags |= FLAGS_ZEROPAD | FLAGS_HASH;
 #if defined(PRINTF_SUPPORT_LONG_LONG)
           const bool is_ll = sizeof(uintptr_t) == sizeof(long long);
           if (is_ll) {

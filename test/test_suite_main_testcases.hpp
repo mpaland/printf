@@ -1011,8 +1011,9 @@ PRINTF_TEST_CASE(pointer)
   (void) buffer;
 
   // the format of %p is implementation-defined: this implementation prints
-  // all digits of the pointer in lowercase hex with a '0x' prefix, and "(nil)"
-  // for a NULL pointer, like glibc
+  // lowercase hex digits with a '0x' prefix, and "(nil)" for a NULL pointer,
+  // like glibc; the digits are zero padded to the width, or to all digits of
+  // the pointer
   CAPTURE_AND_PRINT(sprintf_, buffer, "%p", (void *) 0x1234U);
   if (sizeof(void *) == 4U) {
     CHECK(!strcmp(buffer, "0x00001234"));
@@ -1040,15 +1041,9 @@ PRINTF_TEST_CASE(pointer)
   } else {
     CHECK(!strcmp(buffer, "0xffffffff"));
   }
-
-  CAPTURE_AND_PRINT(sprintf_, buffer, "%3p", (const void *) 0xff);
-  if (sizeof(void *) == 4U) {
-    CHECK(!strcmp(buffer, "0x000000ff"));
-  } else {
-    CHECK(!strcmp(buffer, "0x00000000000000ff"));
-  }
-
+  PRINTING_CHECK("0x0ff",                   ==, sprintf_, buffer, "%3p", (const void *) 0xff);
   PRINTING_CHECK("(nil)",                   ==, sprintf_, buffer, "%p", (const void *) NULL);
+  PRINTING_CHECK("   (nil)",                ==, sprintf_, buffer, "%8p", (const void *) NULL);
 }
 
 #ifdef TEST_WITH_NON_STANDARD_FORMAT_STRINGS
