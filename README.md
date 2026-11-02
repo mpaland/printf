@@ -41,7 +41,7 @@ Therefore I decided to write an own, final implementation which meets the follow
  - Reentrant and thread-safe, malloc free, no static vars/buffers
  - LINT and compiler L4 warning free, mature, coverity clean, automotive ready
  - Compiling on all main compilers: GCC, Clang and MSVC
- - Extensive test suite (> 1800 checks) passing
+ - Extensive test suite (> 2000 checks) passing
  - Simply the best *printf* around the net
  - MIT license
 
