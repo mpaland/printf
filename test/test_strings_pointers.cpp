@@ -148,3 +148,18 @@ TEST_CASE("incomplete format specifier", "[strings][non-standard]")
   CHECK_SPRINTF("1 ",                                "%d %",        1);
   DISABLE_WARNING_POP
 }
+
+
+// #234 (eyalroz/printf): the precision limits the characters read, so the
+// string needs no terminator
+TEST_CASE("string without terminator", "[strings]")
+{
+  const char abc[3] = { 'a', 'b', 'c' };
+
+  CHECK_SPRINTF("ab",                                "%.2s",        abc);
+  CHECK_SPRINTF("abc",                               "%.3s",        abc);
+  CHECK_SPRINTF("",                                  "%.0s",        abc);
+  CHECK_SPRINTF("",                                  "%.*s",        0, abc);
+  CHECK_SPRINTF("   ab",                             "%5.2s",       abc);
+  CHECK_SPRINTF("abc  ",                             "%-5.3s",      abc);
+}

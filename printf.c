@@ -176,7 +176,7 @@ static inline void _out_fct(char character, void* buffer, size_t idx, size_t max
 static inline unsigned int _strnlen_s(const char* str, size_t maxsize)
 {
   const char* s;
-  for (s = str; *s && maxsize--; ++s);
+  for (s = str; maxsize-- && *s; ++s);   // reads no more than maxsize characters
   return (unsigned int)(s - str);
 }
 
@@ -964,7 +964,9 @@ static int _vsnprintf(out_fct_type out, char* buffer, const size_t maxlen, const
           p = "(null)";
           flags &= ~FLAGS_PRECISION;
         }
-        unsigned int l = _strnlen_s(p, (flags & FLAGS_PRECISION) ? precision : (size_t)-1);
+        // the precision limits the characters read, the string needs no terminator then
+        const unsigned int len = _strnlen_s(p, (flags & FLAGS_PRECISION) ? precision : (size_t)-1);
+        unsigned int l = len;
         // pre padding
         if (!(flags & FLAGS_LEFT)) {
           while (l++ < width) {
@@ -972,8 +974,8 @@ static int _vsnprintf(out_fct_type out, char* buffer, const size_t maxlen, const
           }
         }
         // string output
-        while ((*p != 0) && (!(flags & FLAGS_PRECISION) || precision--)) {
-          out(*(p++), buffer, idx++, maxlen);
+        for (unsigned int i = 0U; i < len; i++) {
+          out(p[i], buffer, idx++, maxlen);
         }
         // post padding
         if (flags & FLAGS_LEFT) {
