@@ -1011,48 +1011,44 @@ PRINTF_TEST_CASE(pointer)
   (void) buffer;
 
   // the format of %p is implementation-defined: this implementation prints
-  // all digits of the pointer in uppercase hex, without a '0x' prefix
+  // all digits of the pointer in lowercase hex with a '0x' prefix, and "(nil)"
+  // for a NULL pointer, like glibc
   CAPTURE_AND_PRINT(sprintf_, buffer, "%p", (void *) 0x1234U);
   if (sizeof(void *) == 4U) {
-    CHECK(!strcmp(buffer, "00001234"));
+    CHECK(!strcmp(buffer, "0x00001234"));
   } else {
-    CHECK(!strcmp(buffer, "0000000000001234"));
+    CHECK(!strcmp(buffer, "0x0000000000001234"));
   }
 
   CAPTURE_AND_PRINT(sprintf_, buffer, "%p", (void *) 0x12345678U);
   if (sizeof(void *) == 4U) {
-    CHECK(!strcmp(buffer, "12345678"));
+    CHECK(!strcmp(buffer, "0x12345678"));
   } else {
-    CHECK(!strcmp(buffer, "0000000012345678"));
+    CHECK(!strcmp(buffer, "0x0000000012345678"));
   }
 
   CAPTURE_AND_PRINT(sprintf_, buffer, "%p-%p", (void *) 0x12345678U, (void *) 0x7EDCBA98U);
   if (sizeof(void *) == 4U) {
-    CHECK(!strcmp(buffer, "12345678-7EDCBA98"));
+    CHECK(!strcmp(buffer, "0x12345678-0x7edcba98"));
   } else {
-    CHECK(!strcmp(buffer, "0000000012345678-000000007EDCBA98"));
+    CHECK(!strcmp(buffer, "0x0000000012345678-0x000000007edcba98"));
   }
 
   CAPTURE_AND_PRINT(sprintf_, buffer, "%p", (void *) (uintptr_t) 0xFFFFFFFFU);
   if (sizeof(uintptr_t) == sizeof(uint64_t)) {
-    CHECK(!strcmp(buffer, "00000000FFFFFFFF"));
+    CHECK(!strcmp(buffer, "0x00000000ffffffff"));
   } else {
-    CHECK(!strcmp(buffer, "FFFFFFFF"));
+    CHECK(!strcmp(buffer, "0xffffffff"));
   }
 
   CAPTURE_AND_PRINT(sprintf_, buffer, "%3p", (const void *) 0xff);
   if (sizeof(void *) == 4U) {
-    CHECK(!strcmp(buffer, "000000FF"));
+    CHECK(!strcmp(buffer, "0x000000ff"));
   } else {
-    CHECK(!strcmp(buffer, "00000000000000FF"));
+    CHECK(!strcmp(buffer, "0x00000000000000ff"));
   }
 
-  CAPTURE_AND_PRINT(sprintf_, buffer, "%p", (const void *) NULL);
-  if (sizeof(void *) == 4U) {
-    CHECK(!strcmp(buffer, "00000000"));
-  } else {
-    CHECK(!strcmp(buffer, "0000000000000000"));
-  }
+  PRINTING_CHECK("(nil)",                   ==, sprintf_, buffer, "%p", (const void *) NULL);
 }
 
 #ifdef TEST_WITH_NON_STANDARD_FORMAT_STRINGS

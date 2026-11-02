@@ -112,7 +112,7 @@ The following format specifiers are supported:
 | g or G | Scientific or decimal floating point |
 | c      | Single character |
 | s      | String of characters (a NULL pointer is printed as `(null)`) |
-| p      | Pointer address (all digits in uppercase hex, without `0x` prefix) |
+| p      | Pointer address (`0x` prefix and all digits in lowercase hex, a NULL pointer is printed as `(nil)`) |
 | %      | A % followed by another % character will write a single % |
 
 
