@@ -95,6 +95,12 @@
 #define PRINTF_SUPPORT_PTRDIFF_T
 #endif
 
+// support for printf_() and vprintf_(), which need the _putchar() output function
+// default: activated
+#ifndef PRINTF_DISABLE_SUPPORT_PUTCHAR
+#define PRINTF_SUPPORT_PUTCHAR
+#endif
+
 ///////////////////////////////////////////////////////////////////////////////
 
 // internal flag definitions
@@ -147,11 +153,13 @@ static inline void _out_null(char character, void* buffer, size_t idx, size_t ma
 
 
 // internal _putchar wrapper
+#if defined(PRINTF_SUPPORT_PUTCHAR)
 static inline void _out_char(char character, void* buffer, size_t idx, size_t maxlen)
 {
   (void)buffer; (void)idx; (void)maxlen;
   _putchar(character);
 }
+#endif
 
 
 // internal output function wrapper
@@ -940,6 +948,7 @@ static int _vsnprintf(out_fct_type out, char* buffer, const size_t maxlen, const
 
 ///////////////////////////////////////////////////////////////////////////////
 
+#if defined(PRINTF_SUPPORT_PUTCHAR)
 int printf_(const char* format, ...)
 {
   va_list va;
@@ -949,6 +958,7 @@ int printf_(const char* format, ...)
   va_end(va);
   return ret;
 }
+#endif
 
 
 int sprintf_(char* buffer, const char* format, ...)
@@ -971,11 +981,13 @@ int snprintf_(char* buffer, size_t count, const char* format, ...)
 }
 
 
+#if defined(PRINTF_SUPPORT_PUTCHAR)
 int vprintf_(const char* format, va_list va)
 {
   char buffer[1];
   return _vsnprintf(_out_char, buffer, (size_t)-1, format, va);
 }
+#endif
 
 
 int vsnprintf_(char* buffer, size_t count, const char* format, va_list va)

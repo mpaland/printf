@@ -59,8 +59,10 @@ __attribute__((format(__printf__, (one_based_format_index), (first_arg))))
 
 
 /**
- * Output a character to a custom device like UART, used by the printf() function
+ * Output a character to a custom device like UART, used by the printf() and vprintf() functions
  * This function is declared here only. You have to write your custom implementation somewhere
+ * If printf.c is compiled with PRINTF_DISABLE_SUPPORT_PUTCHAR, printf() and vprintf() are not
+ * provided and no implementation is needed
  * \param character Character to output
  */
 void _putchar(char character);

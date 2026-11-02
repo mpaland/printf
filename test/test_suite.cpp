@@ -59,10 +59,12 @@ namespace test {
 #undef vsnprintf
 #undef vprintf
 
+#if defined(PRINTF_SUPPORT_PUTCHAR)
 using test::printf_;
+using test::vprintf_;
+#endif
 using test::sprintf_;
 using test::snprintf_;
-using test::vprintf_;
 using test::vsnprintf_;
 using test::fctprintf;
 using test::vfctprintf;
@@ -224,10 +226,12 @@ constexpr const size_t base_buffer_size { 100 };
 static char   printf_buffer[base_buffer_size];
 static size_t printf_idx = 0U;
 
+#if defined(PRINTF_SUPPORT_PUTCHAR)
 void test::_putchar(char character)
 {
   printf_buffer[printf_idx++] = character;
 }
+#endif
 
 void _out_fct(char character, void* arg)
 {
@@ -240,6 +244,7 @@ void _out_fct(char character, void* arg)
 #endif
 #define PRINTF_TEST_CASE(unstringified_name)  TEST_CASE(STRINGIFY(unstringified_name), "[]")
 
+#if defined(PRINTF_SUPPORT_PUTCHAR)
 PRINTF_TEST_CASE(printf) {
   printf_idx = 0U;
   memset(printf_buffer, 0xCC, base_buffer_size);
@@ -254,6 +259,7 @@ PRINTF_TEST_CASE(printf) {
   CAPTURE("% d", 4232);
   CHECK(!strcmp(printf_buffer, " 4232"));
 }
+#endif
 
 
 PRINTF_TEST_CASE(fctprintf) {
@@ -292,6 +298,7 @@ PRINTF_TEST_CASE(snprintf_) {
   PRINTING_CHECK_WITH_BUF_SIZE("-1",    ==, snprintf_, buffer, 3U, "%d", -1000);
 }
 
+#if defined(PRINTF_SUPPORT_PUTCHAR)
 static void vprintf_builder_1(char* buffer, ...)
 {
   va_list args;
@@ -299,6 +306,7 @@ static void vprintf_builder_1(char* buffer, ...)
   vprintf_("%d", args);
   va_end(args);
 }
+#endif
 
 static void vsprintf_builder_1(char* buffer, ...)
 {
@@ -333,6 +341,7 @@ static void vsnprintf_builder_3(char* buffer, ...)
 }
 
 
+#if defined(PRINTF_SUPPORT_PUTCHAR)
 PRINTF_TEST_CASE(vprintf) {
   char buffer[base_buffer_size];
   printf_idx = 0U;
@@ -342,6 +351,7 @@ PRINTF_TEST_CASE(vprintf) {
   printf_buffer[4] = 0;
   CHECK(!strcmp(printf_buffer, "2345"));
 }
+#endif
 
 
 PRINTF_TEST_CASE(vsprintf) {
@@ -588,11 +598,13 @@ PRINTF_TEST_CASE(issues)
   PRINTING_CHECK("  (null)",                ==, sprintf_, buffer, "%8s", (const char *) NULL);
 
   // #47: a '\0' printed by %c is output by printf_() and fctprintf() as well
+#if defined(PRINTF_SUPPORT_PUTCHAR)
   printf_idx = 0U;
   memset(printf_buffer, 0xCC, base_buffer_size);
   CHECK(printf_("X%cX", '\0') == 3);
   CHECK(printf_idx == 3U);
   CHECK(!memcmp(printf_buffer, "X\0X", 3U));
+#endif
   printf_idx = 0U;
   CHECK(fctprintf(&_out_fct, nullptr, "X%cX", '\0') == 3);
   CHECK(printf_idx == 3U);

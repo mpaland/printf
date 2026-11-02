@@ -58,6 +58,13 @@ if(PRINTF_BUILD_TESTS)
   set_target_properties(aliasing PROPERTIES C_STANDARD 99 C_STANDARD_REQUIRED ON C_EXTENSIONS OFF)
   add_test(NAME aliasing COMMAND aliasing)
 
+  # check that the library links without _putchar() when printf_() and vprintf_() are disabled
+  add_executable(no_putchar test/no_putchar.c printf.c)
+  target_compile_definitions(no_putchar PRIVATE PRINTF_DISABLE_SUPPORT_PUTCHAR)
+  target_compile_options(no_putchar PRIVATE ${PRINTF_WARNINGS})
+  set_target_properties(no_putchar PROPERTIES C_STANDARD 99 C_STANDARD_REQUIRED ON C_EXTENSIONS OFF)
+  add_test(NAME no_putchar COMMAND no_putchar)
+
   # random comparison against the standard library, runs until stopped (not part of CTest)
   if(PRINTF_BUILD_AUTOTEST)
     add_executable(autotest test/autotest.cpp)

@@ -17,7 +17,7 @@ Using the standard libc printf may pull **a lot** of unwanted library stuff and 
 Absolutely **NO dependencies** are required, *printf.c* brings all necessary routines, even its own fast `ftoa` (floating point), `ntoa` (decimal) conversion.
 
 If memory footprint is really a critical issue, floating point, exponential and 'long long' support can be turned off via the `PRINTF_DISABLE_SUPPORT_FLOAT`, `PRINTF_DISABLE_SUPPORT_EXPONENTIAL` and `PRINTF_DISABLE_SUPPORT_LONG_LONG` compiler switches.
-When using printf (instead of sprintf/snprintf) you have to provide your own `_putchar()` low level function as console/serial output.
+When using printf (instead of sprintf/snprintf) you have to provide your own `_putchar()` low level function as console/serial output. If you don't use printf, the `PRINTF_DISABLE_SUPPORT_PUTCHAR` compiler switch removes it, so `_putchar()` isn't needed.
 
 
 ## Notice 2026
@@ -58,6 +58,7 @@ void _putchar(char character)
   // send char to console etc.
 }
 ```
+If you only use `sprintf()`, `snprintf()` and `fctprintf()`, define `PRINTF_DISABLE_SUPPORT_PUTCHAR` when compiling *printf.c* instead. Then `printf()` and `vprintf()` are not provided and no `_putchar()` is needed.
 
 Usage is 1:1 like the according stdio.h library version:
 ```C
@@ -193,6 +194,7 @@ int length = sprintf(NULL, "Hello, world"); // length is set to 12
 | PRINTF_DISABLE_SUPPORT_EXPONENTIAL | undefined | Define this to disable exponential floating point (%e) support |
 | PRINTF_DISABLE_SUPPORT_LONG_LONG   | undefined | Define this to disable long long (%ll) support |
 | PRINTF_DISABLE_SUPPORT_PTRDIFF_T   | undefined | Define this to disable ptrdiff_t (%t) support |
+| PRINTF_DISABLE_SUPPORT_PUTCHAR     | undefined | Define this to remove `printf()` and `vprintf()`, so no `_putchar()` needs to be implemented when only the sprintf/snprintf/fctprintf functions are used |
 
 
 ## Caveats
@@ -216,7 +218,8 @@ cmake -S . -B build
 cmake --build build
 ctest --test-dir build --output-on-failure
 ```
-The compiler switches are available as CMake options, e.g. `-DPRINTF_DISABLE_SUPPORT_FLOAT=ON`.
+The compiler switches are available as CMake options, e.g. `-DPRINTF_DISABLE_SUPPORT_FLOAT=ON`, except `PRINTF_DISABLE_SUPPORT_PUTCHAR`: the
+`no_putchar` test always checks that the library links without `_putchar()` with it.
 With `-DPRINTF_BUILD_AUTOTEST=ON` the `autotest` tool is built, which compares randomly generated format strings against
 the standard library printf until it is stopped.
 

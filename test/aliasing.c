@@ -35,12 +35,15 @@ void clear_buffer(void)
 
 int main(void)
 {
+  const char* expected;
+#if !defined(PRINTF_DISABLE_SUPPORT_PUTCHAR)
   clear_buffer();
   printf("printf'ing an integer: %d and a string: %s\n", 12, "Hello world");
-  const char* expected = "printf'ing an integer: 12 and a string: Hello world\n";
+  expected = "printf'ing an integer: 12 and a string: Hello world\n";
   if (strcmp_(buffer, expected) != 0) {
     return(-1);
   }
+#endif
   clear_buffer();
   sprintf(buffer, "sprintf'ing an integer: %d and a string: %s\n", 34, "quick brown fox");
   expected = "sprintf'ing an integer: 34 and a string: quick brown fox\n";
