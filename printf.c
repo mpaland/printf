@@ -763,6 +763,7 @@ static int _vsnprintf(out_fct_type out, char* buffer, const size_t maxlen, const
         case '+': flags |= FLAGS_PLUS;    format++; n = 1U; break;
         case ' ': flags |= FLAGS_SPACE;   format++; n = 1U; break;
         case '#': flags |= FLAGS_HASH;    format++; n = 1U; break;
+        case '\'':                        format++; n = 1U; break;  // thousands grouping (POSIX), accepted and ignored
         default :                                   n = 0U; break;
       }
     } while (n);

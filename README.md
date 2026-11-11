@@ -21,12 +21,11 @@ If memory footprint is really a critical issue, floating point, exponential and 
 When using printf (instead of sprintf/snprintf) you have to provide your own `_putchar()` low level function as console/serial output. If you don't use printf, the `PRINTF_DISABLE_SUPPORT_PUTCHAR` compiler switch removes it, so `_putchar()` isn't needed.
 
 
-## Notice 2026
+## Status 2026
 
-Due to other projects, work and challenging things in life, this repo unfortunately stalled the last few years. In the meantime Eyal Rozenberg took over maintenance in his fork [eyalroz/printf](https://github.com/eyalroz/printf).  
-Lately my old [turnkeyboard](https://github.com/mpaland/turnkeyboard) project needed to be brought back to life which was a great opportunity to update and reboot *printf* as well. This repo is now back on track and actively maintained again.  
-First of all I ported the improved test case suite of Eyal back. I closed a lot of issues, merged some PRs and some IMHO improvements came in carefully - mind that the code stays clean and small.  
-The updated test suit passes on all three main compilers now and all changes are backward compatible: `_putchar()`, the `printf_()` functions with their alias macros, the `PRINTF_DISABLE_SUPPORT_*` switches.
+This library now covers all features of the glibc (C99 scope) without extensions and with the exceptions in the Caveats section below.  
+I heavily extended the test suite to over 2000 test cases which are all passing.  
+As of `4.2.1`, there are no known bugs.
 
 
 ## Highlights and Design Goals
@@ -131,6 +130,7 @@ The following format specifiers are supported:
 | (space) | If no sign is going to be written, a blank space is inserted before the value. |
 | #     | Used with o, b, x or X specifiers the value is preceded with 0, 0b, 0x or 0X respectively for values different than zero.<br>Used with f, F, e, E, g or G it forces the written output to contain a decimal point even if no more digits follow. By default, if no digits follow, no decimal point is written. With g or G, trailing zeros are not removed. |
 | 0     | Left-pads the number with zeros (0) instead of spaces when padding is specified (see width sub-specifier). |
+| '     | Thousands grouping flag of POSIX. It is accepted and ignored, no separators are printed. |
 
 
 ### Supported Width
@@ -215,8 +215,7 @@ the floating point specifiers if their support is disabled.
 
 
 ## Test Suite
-The test suite in `test/` uses the [Catch2](https://github.com/catchorg/Catch2) v3 framework (vendored as `catch_amalgamated.*`) and
-links the library compiled as C99. Build and run it with CMake:
+The test suite in `test/` uses the [Catch2](https://github.com/catchorg/Catch2) v3 framework (vendored as `catch_amalgamated.*`) and links the library compiled as C99. Build and run it with CMake:
 ```sh
 cmake -S . -B build
 cmake --build build
@@ -245,7 +244,7 @@ if any mismatch was found, e.g. `build/autotest -a -n 1000 -s 42 1>/dev/null` sh
 
 
 ## Projects Using printf
-- [turnkeyboard](https://github.com/mpaland/turnkeyboard) uses printf as log and generic tty (formatting) output.
+- [turnkeyboard](https://github.com/mpaland/turnkeyboard) uses printf as log, generic tty and screen formatting output.
 - printf is part of [embeddedartistry/libc](https://github.com/embeddedartistry/libc), a libc targeted for embedded systems usage.
 - [modm.io](https://modm.io/reference/module/modm-io/#using-printf) is also using this library, albeit with some [hacky hacks](https://github.com/modm-io/modm/blob/develop/src/modm/io/iostream_printf.cpp.in) to disable the native floating point functions on AVR.
 

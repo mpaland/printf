@@ -322,3 +322,37 @@ TEST_CASE("sign flags with zero", "[flags]")
 #endif
 }
 #endif
+
+
+// #71: the thousands grouping flag of POSIX is accepted and ignored, no
+// separators are printed, like glibc does in the "C" locale
+TEST_CASE("apostrophe flag", "[flags][non-standard]")
+{
+  DISABLE_WARNING_PUSH
+  DISABLE_WARNING_NON_STANDARD_FORMAT
+  CHECK_SPRINTF("1234",                              "%'d",         1234);
+  CHECK_SPRINTF("-1234567",                          "%'d",         -1234567);
+  CHECK_SPRINTF("1234",                              "%'i",         1234);
+  CHECK_SPRINTF("4294966272",                        "%'u",         4294966272U);
+  CHECK_SPRINTF("1234abcd",                          "%'x",         305441741);
+
+  // with other flags, in any order
+  CHECK_SPRINTF("+1234",                             "%'+d",        1234);
+  CHECK_SPRINTF("+1234",                             "%+'d",        1234);
+  CHECK_SPRINTF("0000001234",                        "%'010d",      1234);
+  CHECK_SPRINTF("0000001234",                        "%0'10d",      1234);
+  CHECK_SPRINTF("1234    |",                         "%-'8d|",      1234);
+  CHECK_SPRINTF("    1234",                          "%''8d",       1234);
+
+  // the argument is consumed, the following arguments are not shifted
+  CHECK_SPRINTF("1234 abc",                          "%'d %s",      1234, "abc");
+  CHECK_SPRINTF("1 1234 2",                          "%d %'d %d",   1, 1234, 2);
+#if TEST_LONG_LONG
+  CHECK_SPRINTF("1234567890123 abc",                 "%'lld %s",    1234567890123LL, "abc");
+#endif
+#if TEST_FLOAT
+  CHECK_SPRINTF("1234.50",                           "%'.2f",       1234.5);
+  CHECK_SPRINTF("1234.50 abc",                       "%'.2f %s",    1234.5, "abc");
+#endif
+  DISABLE_WARNING_POP
+}
