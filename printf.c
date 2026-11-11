@@ -1032,6 +1032,26 @@ static int _vsnprintf(out_fct_type out, char* buffer, const size_t maxlen, const
         format++;
         break;
 
+      // the unsupported hex float conversion is printed like an unknown conversion, but its argument is consumed
+      // so that the following arguments are not shifted
+      case 'a' :
+      case 'A' :
+        if (flags & FLAGS_LONG_DOUBLE) {
+          (void)va_arg(va, long double);
+        }
+        else {
+          (void)va_arg(va, double);
+        }
+        out(*format, buffer, idx++, maxlen);
+        format++;
+        break;
+
+      // %n is not supported for security reasons: nothing is stored, the argument is consumed and nothing is printed
+      case 'n' :
+        (void)va_arg(va, void*);
+        format++;
+        break;
+
       default :
         out(*format, buffer, idx++, maxlen);
         format++;

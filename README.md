@@ -207,7 +207,9 @@ conversion like the one of glibc:
   digits. With `PRINTF_DISABLE_SUPPORT_EXPONENTIAL` such a value is printed as `ovf` (overflow).
 - A `long double` argument (length `L`) is printed with the precision of `double`.
 
-The specifiers %a, %A and %n and wide characters/strings (%lc, %ls) are not supported.
+The specifiers %a and %A and wide characters/strings (%lc, %ls) are not supported.
+%n is not supported and won't be implemented for security reasons: it is the write primitive of format string attacks.
+The arguments of %a, %A and %n are consumed, so the following arguments are printed correctly.
 
 
 ## Test Suite

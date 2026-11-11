@@ -112,18 +112,42 @@ TEST_CASE("pointer conversion with width", "[strings]")
 }
 
 
-// the unsupported conversions %a, %A and %n are printed like an unknown conversion
-TEST_CASE("unsupported conversions", "[strings][non-standard]")
+// the unsupported hex float conversions %a and %A are printed like an unknown
+// conversion, their argument is consumed
+TEST_CASE("unsupported hex float conversion", "[strings][non-standard]")
 {
-  int n = 0;
-
   DISABLE_WARNING_PUSH
   DISABLE_WARNING_NON_STANDARD_FORMAT
   CHECK_SPRINTF("a",                                 "%a",          1.0);
   CHECK_SPRINTF("A",                                 "%A",          1.0);
-  CHECK_SPRINTF("n",                                 "%n",          &n);
+  CHECK_SPRINTF("a 7",                               "%a %d",       1.0, 7);
+  CHECK_SPRINTF("A abc",                             "%A %s",       -2.5, "abc");
+  CHECK_SPRINTF("a 7",                               "%La %d",      1.0L, 7);
+  CHECK_SPRINTF("1 a 2 A 3",                         "%d %a %d %A %d", 1, 1.0, 2, 2.0, 3);
   DISABLE_WARNING_POP
-  CHECK(n == 0);
+}
+
+
+// %n is not supported for security reasons: nothing is stored and nothing is
+// printed, the argument is consumed
+TEST_CASE("unsupported write-back conversion", "[strings][non-standard]")
+{
+  int       n  = -1;
+  long      ln = -1L;
+  short     hn = -1;
+
+  DISABLE_WARNING_PUSH
+  DISABLE_WARNING_NON_STANDARD_FORMAT
+  CHECK_SPRINTF("",                                  "%n",          &n);
+  CHECK_SPRINTF("abc",                               "abc%n",       &n);
+  CHECK_SPRINTF("abc7",                              "abc%n%d",     &n, 7);
+  CHECK_SPRINTF("1 2",                               "%d%n %d",     1, &n, 2);
+  CHECK_SPRINTF("ab",                                "a%lnb",       &ln);
+  CHECK_SPRINTF("ab 5",                              "a%hnb %d",    &hn, 5);
+  DISABLE_WARNING_POP
+  CHECK(n  == -1);
+  CHECK(ln == -1L);
+  CHECK(hn == -1);
 }
 
 
