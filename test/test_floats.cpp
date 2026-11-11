@@ -92,12 +92,21 @@ TEST_CASE("fallback from decimal to exponential", "[floats]")
   CHECK_SPRINTF("4.294967295e+09",        "%.10g",      4294967295.0);   // 2^32 - 1
   CHECK_SPRINTF("4.294967296e+09",        "%.10g",      4294967296.0);   // 2^32
 #else
-  // without exponential notation nothing is printed for the value, the rest of the output is kept
-  CHECK_SPRINTF("",                                  "%.0f",        1e12);
-  CHECK_SPRINTF("",                                  "%.0f",        1e15);
-  CHECK_SPRINTF("",                                  "%.1f",        1e20);
-  CHECK_SPRINTF("abc  def",                          "abc %.0f def", 1e12);
-  CHECK_SPRINTF("1  2",                              "%d %f %d",    1, -1e20, 2);
+  // without exponential notation "ovf" (overflow) is printed like the special values inf and nan
+  CHECK_SPRINTF("ovf",                               "%.0f",        1e12);
+  CHECK_SPRINTF("ovf",                               "%.0f",        1e15);
+  CHECK_SPRINTF("ovf",                               "%.1f",        1e20);
+  CHECK_SPRINTF("-ovf",                              "%f",          -1e20);
+  CHECK_SPRINTF("+ovf",                              "%+f",         1e20);
+  CHECK_SPRINTF(" ovf",                              "% f",         1e20);
+  CHECK_SPRINTF("     ovf",                          "%8.1f",       1e20);
+  CHECK_SPRINTF("     ovf",                          "%08.1f",      1e20);
+  CHECK_SPRINTF("ovf     ",                          "%-8f",        1e20);
+  CHECK_SPRINTF("OVF",                               "%F",          1e20);
+  CHECK_SPRINTF("-OVF",                              "%F",          -1e20);
+  CHECK_SPRINTF("ovf",                               "%f",          1000000001.0);
+  CHECK_SPRINTF("abc ovf def",                       "abc %.0f def", 1e12);
+  CHECK_SPRINTF("1 -ovf 2",                          "%d %f %d",    1, -1e20, 2);
 #endif
 }
 

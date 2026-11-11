@@ -444,12 +444,21 @@ static size_t _ftoa(out_fct_type out, char* buffer, size_t idx, size_t maxlen, d
 
   // test for special values: "inf" and "nan" like glibc, uppercase for %F, %E and %G, with the sign and the
   // space flag, and padded with spaces as the '0' flag is ignored for them
+  const char* special = NULL;
   if (!((value >= -DBL_MAX) && (value <= DBL_MAX))) {
     const bool is_nan = !(value >= -DBL_MAX) && !(value <= DBL_MAX);  // NaN is the only value which compares false both ways
-    const char* str = (flags & FLAGS_UPPERCASE) ? (is_nan ? "NAN" : "INF") : (is_nan ? "nan" : "inf");
-    buf[len++] = str[2];
-    buf[len++] = str[1];
-    buf[len++] = str[0];
+    special = (flags & FLAGS_UPPERCASE) ? (is_nan ? "NAN" : "INF") : (is_nan ? "nan" : "inf");
+  }
+#if !defined(PRINTF_SUPPORT_EXPONENTIAL)
+  // test for very large values, see below: without exponential notation "ovf" (overflow) is printed like a special value
+  else if ((value > PRINTF_MAX_FLOAT) || (value < -PRINTF_MAX_FLOAT)) {
+    special = (flags & FLAGS_UPPERCASE) ? "OVF" : "ovf";
+  }
+#endif
+  if (special) {
+    buf[len++] = special[2];
+    buf[len++] = special[1];
+    buf[len++] = special[0];
     if (_is_negative(value)) {
       buf[len++] = '-';
     }
@@ -462,16 +471,13 @@ static size_t _ftoa(out_fct_type out, char* buffer, size_t idx, size_t maxlen, d
     return _out_rev(out, buffer, idx, maxlen, buf, len, width, flags & ~FLAGS_ZEROPAD);
   }
 
+#if defined(PRINTF_SUPPORT_EXPONENTIAL)
   // test for very large values
   // standard printf behavior is to print EVERY whole number digit -- which could be 100s of characters overflowing your buffers == bad
   if ((value > PRINTF_MAX_FLOAT) || (value < -PRINTF_MAX_FLOAT)) {
-#if defined(PRINTF_SUPPORT_EXPONENTIAL)
     return _etoa(out, buffer, idx, maxlen, value, prec, width, flags);
-#else
-    // without exponential notation nothing is printed for the value, the output so far is kept
-    return idx;
-#endif
   }
+#endif
 
   // test for negative
   const bool negative = _is_negative(value);

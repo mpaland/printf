@@ -204,7 +204,7 @@ conversion like the one of glibc:
 - The last digit may differ from a correctly rounded result, e.g. `%.1f` of 0.95 prints `1.0` (the binary value of
   0.95 is slightly smaller than 0.95).
 - Values larger than `PRINTF_MAX_FLOAT` are printed in exponential notation by %f (and %g), instead of printing all
-  digits. With `PRINTF_DISABLE_SUPPORT_EXPONENTIAL` nothing is printed for such a value.
+  digits. With `PRINTF_DISABLE_SUPPORT_EXPONENTIAL` such a value is printed as `ovf` (overflow).
 - A `long double` argument (length `L`) is printed with the precision of `double`.
 
 The specifiers %a, %A and %n and wide characters/strings (%lc, %ls) are not supported.
