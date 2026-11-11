@@ -65,15 +65,11 @@ TEST_CASE("length modifiers", "[integers]")
   CHECK_SPRINTF("18446744073709551615",              "%llu",        18446744073709551615LLU);
   CHECK_SPRINTF("1234567891234567",                  "%llx",        0x1234567891234567LLU);
 #endif
-#if TEST_LONG_LONG || (SIZE_MAX == ULONG_MAX)
   CHECK_SPRINTF("2147483647",                        "%zu",         (size_t)2147483647UL);
   CHECK_SPRINTF("2147483647",                        "%zd",         (size_t)2147483647UL);
   CHECK_SPRINTF("-2147483647",                       "%zi",         (ptrdiff_t)-2147483647L);
-#endif
-#if TEST_LONG_LONG || (INTMAX_MAX == LONG_MAX)
   CHECK_SPRINTF("-2147483647",                       "%ji",         (intmax_t)-2147483647L);
-#endif
-#if TEST_PTRDIFF_T && (TEST_LONG_LONG || (PTRDIFF_MAX == LONG_MAX))
+#if TEST_PTRDIFF_T
   CHECK_SPRINTF("a",                                 "%tx",         &array[10] - &array[0]);
 #endif
   (void)array;
@@ -151,20 +147,33 @@ TEST_CASE("length modifiers j, z and t", "[integers]")
 {
   char array[16];
 
-#if TEST_LONG_LONG || (INTMAX_MAX == LONG_MAX)
   CHECK_SPRINTF("123",                               "%ju",         (uintmax_t)123);
   CHECK_SPRINTF("-123",                              "%jd",         (intmax_t)-123);
   CHECK_SPRINTF("7b",                                "%jx",         (uintmax_t)123);
-#endif
-#if TEST_LONG_LONG || (SIZE_MAX == ULONG_MAX)
   CHECK_SPRINTF("beef",                              "%zx",         (size_t)0xbeef);
   CHECK_SPRINTF("BEEF",                              "%zX",         (size_t)0xbeef);
   CHECK_SPRINTF("17",                                "%zo",         (size_t)15);
-#endif
-#if TEST_PTRDIFF_T && (TEST_LONG_LONG || (PTRDIFF_MAX == LONG_MAX))
+#if TEST_PTRDIFF_T
   CHECK_SPRINTF("-5",                                "%td",         (ptrdiff_t)-5);
   CHECK_SPRINTF("10",                                "%td",         &array[10] - &array[0]);
   CHECK_SPRINTF("-10",                               "%ti",         &array[0] - &array[10]);
 #endif
   (void)array;
 }
+
+
+#if !TEST_LONG_LONG
+// without long long support a long long argument is consumed and printed
+// truncated to long, so that the following arguments are not shifted
+TEST_CASE("long long without long long support", "[integers]")
+{
+  CHECK_SPRINTF("5 7",                               "%lld %d",     5LL, 7);
+  CHECK_SPRINTF("-5 7",                              "%lli %d",     -5LL, 7);
+  CHECK_SPRINTF("5|abc",                             "%llu|%s",     5ULL, "abc");
+  CHECK_SPRINTF("beef x",                            "%llx %c",     0xbeefULL, 'x');
+  CHECK_SPRINTF("17 -1 2",                           "%llo %d %lld", 15ULL, -1, 2LL);
+  CHECK_SPRINTF("2147483647 1",                      "%lld %d",     2147483647LL, 1);
+  CHECK_SPRINTF("-2147483647 1",                     "%lld %d",     -2147483647LL, 1);
+  CHECK_SPRINTF("  0005 9",                          "%6.4lld %d",  5LL, 9);
+}
+#endif

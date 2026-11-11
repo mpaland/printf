@@ -889,6 +889,10 @@ static int _vsnprintf(out_fct_type out, char* buffer, const size_t maxlen, const
 #if defined(PRINTF_SUPPORT_LONG_LONG)
             const long long value = va_arg(va, long long);
             idx = _ntoa_long_long(out, buffer, idx, maxlen, (value > 0) ? (unsigned long long)value : 0U - (unsigned long long)value, value < 0, base, precision, width, flags);
+#else
+            // without long long support the argument is consumed and printed truncated to long
+            const long value = (long)va_arg(va, long long);
+            idx = _ntoa_long(out, buffer, idx, maxlen, (value > 0) ? (unsigned long)value : 0U - (unsigned long)value, value < 0, base, precision, width, flags);
 #endif
           }
           else if (flags & FLAGS_LONG) {
@@ -905,6 +909,9 @@ static int _vsnprintf(out_fct_type out, char* buffer, const size_t maxlen, const
           if (flags & FLAGS_LONG_LONG) {
 #if defined(PRINTF_SUPPORT_LONG_LONG)
             idx = _ntoa_long_long(out, buffer, idx, maxlen, va_arg(va, unsigned long long), false, base, precision, width, flags);
+#else
+            // without long long support the argument is consumed and printed truncated to long
+            idx = _ntoa_long(out, buffer, idx, maxlen, (unsigned long)va_arg(va, unsigned long long), false, base, precision, width, flags);
 #endif
           }
           else if (flags & FLAGS_LONG) {

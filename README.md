@@ -158,7 +158,7 @@ The length sub-specifier modifies the length of the data type.
 | hh     | signed char | unsigned char |
 | h      | short int | unsigned short int |
 | l      | long int | unsigned long int |
-| ll     | long long int | unsigned long long int (if PRINTF_SUPPORT_LONG_LONG is defined) |
+| ll     | long long int | unsigned long long int (truncated to long with PRINTF_DISABLE_SUPPORT_LONG_LONG) |
 | j      | intmax_t | uintmax_t |
 | z      | size_t | size_t |
 | t      | ptrdiff_t | ptrdiff_t (if PRINTF_SUPPORT_PTRDIFF_T is defined) |
@@ -192,7 +192,7 @@ int length = sprintf(NULL, "Hello, world"); // length is set to 12
 | PRINTF_MAX_FLOAT                   | 1e9       | Define the largest suitable value to be printed with %f (and %g in decimal notation), before using exponential representation |
 | PRINTF_DISABLE_SUPPORT_FLOAT       | undefined | Define this to disable floating point (%f) support |
 | PRINTF_DISABLE_SUPPORT_EXPONENTIAL | undefined | Define this to disable exponential floating point (%e) support |
-| PRINTF_DISABLE_SUPPORT_LONG_LONG   | undefined | Define this to disable long long (%ll) support |
+| PRINTF_DISABLE_SUPPORT_LONG_LONG   | undefined | Define this to disable long long (%ll) support, long long arguments are printed truncated to long then |
 | PRINTF_DISABLE_SUPPORT_PTRDIFF_T   | undefined | Define this to disable ptrdiff_t (%t) support |
 | PRINTF_DISABLE_SUPPORT_PUTCHAR     | undefined | Define this to remove `printf()` and `vprintf()`, so no `_putchar()` needs to be implemented when only the sprintf/snprintf/fctprintf functions are used |
 
