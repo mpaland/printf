@@ -202,16 +202,12 @@ int length = sprintf(NULL, "Hello, world"); // length is set to 12
 The floating point conversion is optimized for size and uses `double` arithmetic. It is not a correctly rounded
 conversion like the one of glibc:
 - At most 9 digits after the decimal point are computed, further digits are printed as 0.
-- The last digit may differ from a correctly rounded result, e.g. `%.1f` of 0.95 prints `1.0` (the binary value of
-  0.95 is slightly smaller than 0.95).
-- Values larger than `PRINTF_MAX_FLOAT` are printed in exponential notation by %f (and %g), instead of printing all
-  digits. With `PRINTF_DISABLE_SUPPORT_EXPONENTIAL` such a value is printed as `ovf` (overflow).
+- The last digit may differ from a correctly rounded result, e.g. `%.1f` of 0.95 prints `1.0` (the binary value of 0.95 is slightly smaller than 0.95).
+- Values larger than `PRINTF_MAX_FLOAT` are printed in exponential notation by %f (and %g), instead of printing all digits. With `PRINTF_DISABLE_SUPPORT_EXPONENTIAL` such a value is printed as `ovf` (overflow).
 - A `long double` argument (length `L`) is printed with the precision of `double`.
-
-The specifiers %a and %A and wide characters/strings (%lc, %ls) are not supported.
-%n is not supported and won't be implemented for security reasons: it is the write primitive of format string attacks.
-The arguments of %a, %A and %n are consumed, so the following arguments are printed correctly. The same applies to
-the floating point specifiers if their support is disabled.
+- The specifiers %a and %A and wide characters/strings (%lc, %ls) are not supported.
+- %n is not supported and won't be implemented for security reasons: it is the write primitive of format string attacks.
+- The arguments of %a, %A and %n are consumed, so the following arguments are printed correctly. The same applies to the floating point specifiers if their support is disabled.
 
 
 ## Test Suite
