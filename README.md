@@ -2,6 +2,7 @@
 
 [![Release](https://img.shields.io/github/v/tag/mpaland/printf?label=release&sort=semver)](https://github.com/mpaland/printf/tags)
 [![CI](https://github.com/mpaland/printf/actions/workflows/build_and_test.yml/badge.svg?branch=master)](https://github.com/mpaland/printf/actions/workflows/build_and_test.yml)
+[![CodeQL](https://github.com/mpaland/printf/actions/workflows/codeql.yml/badge.svg?branch=master)](https://github.com/mpaland/printf/actions/workflows/codeql.yml)
 [![C99](https://img.shields.io/badge/C-99-blue.svg?logo=c)](https://en.cppreference.com/w/c/99)
 [![No dependencies](https://img.shields.io/badge/dependencies-none-brightgreen.svg)](#highlights-and-design-goals)
 [![No heap](https://img.shields.io/badge/heap-none-brightgreen.svg)](#highlights-and-design-goals)
