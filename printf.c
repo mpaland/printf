@@ -1032,10 +1032,21 @@ static int _vsnprintf(out_fct_type out, char* buffer, const size_t maxlen, const
         format++;
         break;
 
-      // the unsupported hex float conversion is printed like an unknown conversion, but its argument is consumed
-      // so that the following arguments are not shifted
+      // the unsupported hex float conversion and the floating point conversions without floating point or
+      // exponential support are printed like an unknown conversion, but their argument is consumed so that the
+      // following arguments are not shifted
       case 'a' :
       case 'A' :
+#if !defined(PRINTF_SUPPORT_FLOAT)
+      case 'f' :
+      case 'F' :
+#endif
+#if !defined(PRINTF_SUPPORT_FLOAT) || !defined(PRINTF_SUPPORT_EXPONENTIAL)
+      case 'e' :
+      case 'E' :
+      case 'g' :
+      case 'G' :
+#endif
         if (flags & FLAGS_LONG_DOUBLE) {
           (void)va_arg(va, long double);
         }

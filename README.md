@@ -209,7 +209,8 @@ conversion like the one of glibc:
 
 The specifiers %a and %A and wide characters/strings (%lc, %ls) are not supported.
 %n is not supported and won't be implemented for security reasons: it is the write primitive of format string attacks.
-The arguments of %a, %A and %n are consumed, so the following arguments are printed correctly.
+The arguments of %a, %A and %n are consumed, so the following arguments are printed correctly. The same applies to
+the floating point specifiers if their support is disabled.
 
 
 ## Test Suite

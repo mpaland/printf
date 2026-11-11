@@ -374,3 +374,33 @@ TEST_CASE("brute force", "[floats]")
 }
 
 #endif  // TEST_FLOAT
+
+
+#if !TEST_FLOAT
+// without floating point support the conversions are printed like an unknown
+// conversion, their argument is consumed
+TEST_CASE("decimal conversion without floating point support", "[floats][non-standard]")
+{
+  CHECK_SPRINTF("f",                                 "%f",          1.5);
+  CHECK_SPRINTF("F",                                 "%F",          1.5);
+  CHECK_SPRINTF("f 7",                               "%f %d",       1.5, 7);
+  CHECK_SPRINTF("F abc",                             "%8.3F %s",    -1.5, "abc");
+  CHECK_SPRINTF("f 7",                               "%Lf %d",      1.5L, 7);
+  CHECK_SPRINTF("1 f 2",                             "%d %f %d",    1, 1e20, 2);
+}
+#endif
+
+
+#if !TEST_EXPONENTIAL
+// without exponential support the conversions are printed like an unknown
+// conversion, their argument is consumed
+TEST_CASE("exponential conversion without exponential support", "[floats][non-standard]")
+{
+  CHECK_SPRINTF("e",                                 "%e",          1.5);
+  CHECK_SPRINTF("E 7",                               "%E %d",       1.5, 7);
+  CHECK_SPRINTF("g 7",                               "%g %d",       1.5, 7);
+  CHECK_SPRINTF("G abc",                             "%10.3G %s",   -1.5, "abc");
+  CHECK_SPRINTF("e 7",                               "%Le %d",      1.5L, 7);
+  CHECK_SPRINTF("1 e 2 g 3",                         "%d %e %d %g %d", 1, 1.5, 2, 2.5, 3);
+}
+#endif
