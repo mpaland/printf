@@ -1,5 +1,16 @@
 # Changelog
 
+## [4.2.1](https://github.com/mpaland/printf/compare/v4.2.0...v4.2.1) (2026-11-11)
+
+
+### Bug Fixes
+
+* accept and ignore the apostrophe flag ([cbff3ba](https://github.com/mpaland/printf/commit/cbff3ba6e63568af806296a636d3d1d17f8a17eb)), closes [#71](https://github.com/mpaland/printf/issues/71)
+* consume long long arguments without long long support ([f0501c3](https://github.com/mpaland/printf/commit/f0501c37ee1084ecba0b958ba1111689b7b3d32d))
+* consume the arguments of disabled floating point conversions ([e3e3d20](https://github.com/mpaland/printf/commit/e3e3d2063f3bc3d54b68c9e06c74b39b1997e8bb))
+* consume the arguments of the unsupported %a, %A and %n ([ebea6c3](https://github.com/mpaland/printf/commit/ebea6c3623740f91443d03bb090342885a1e7b37))
+* print 'ovf' for %f above PRINTF_MAX_FLOAT without exponential support ([fb2283c](https://github.com/mpaland/printf/commit/fb2283c150e094e33c02479f1c02142d7d5f491e))
+
 ## [4.2.0](https://github.com/mpaland/printf/compare/v4.1.0...v4.2.0) (2026-11-02)
 
 
