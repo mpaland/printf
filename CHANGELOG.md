@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.2.2](https://github.com/mpaland/printf/compare/v4.2.1...v4.2.2) (2026-11-23)
+
+
+### Bug Fixes
+
+* **config:** Introduce printf_config_template.h for customization ([fecf30e](https://github.com/mpaland/printf/commit/fecf30ead9189c431da81b473f38a09fb294f372))
+
 ## [4.2.1](https://github.com/mpaland/printf/compare/v4.2.0...v4.2.1) (2026-11-11)
 
 
